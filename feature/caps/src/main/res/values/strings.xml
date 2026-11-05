@@ -5,6 +5,7 @@
     <string name="caps_empty_body">A cap is what you allow yourself for one thing, by the day, the week, the month or the year. What is left, and until when, will be here.</string>
     <string name="new_cap">New cap</string>
     <string name="change_order">Change the order</string>
+    <string name="open_settings">Settings</string>
 
     <!-- The sentence on top (PLANNING.md §4.6): a cap over first, then one renewed today, then all under. -->
     <string name="sentence_one_under">%1$s: %2$s left %3$s.</string>
@@ -111,7 +112,6 @@
     <string name="editor_icon">Icon</string>
     <string name="editor_save">Save</string>
     <string name="editor_kind_note">This period’s spends move into the new period; the reserve stays.</string>
-    <string name="action_back">Back</string>
 
     <!-- The order. -->
     <string name="arrange_hint">Drag a cap by its handle.</string>

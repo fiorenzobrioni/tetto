@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Il benvenuto: il nome, la sua frase, tre promesse. -->
+    <string name="onboarding_tagline">Quanto puoi ancora spendere, e fino a quando.</string>
+    <string name="onboarding_left_title">Quanto resta, a colpo d’occhio</string>
+    <string name="onboarding_left_body">Ogni tetto dice quanto puoi ancora spendere per una cosa, e fino a quando. Una spesa sono due tocchi e l’importo.</string>
+    <string name="onboarding_kind_title">Gentile con le settimane storte</string>
+    <string name="onboarding_kind_body">Quello che un periodo avanza va in una riserva. Lo sforamento che la riserva non copre è condonato quando il periodo finisce.</string>
+    <string name="onboarding_private_title">Privato, sul tuo telefono</string>
+    <string name="onboarding_private_body">Niente account, niente pubblicità, nessun permesso di accesso a internet: Tetto non invia nulla.</string>
+    <string name="onboarding_start">Inizia</string>
+    <string name="onboarding_progress">Passaggio %1$d di %2$d</string>
+
+    <!-- Gli ambiti. -->
+    <string name="onboarding_areas_title">Su cosa vuoi mettere un tetto?</string>
+    <string name="onboarding_areas_body">Scegli i tuoi. Gli altri si aggiungono quando vuoi, dalla schermata dei tetti.</string>
+    <string name="onboarding_next">Avanti</string>
+    <string name="onboarding_nothing">Parti da zero</string>
+
+    <!-- Gli importi. -->
+    <string name="onboarding_amounts_title">Quanto per ciascuno?</string>
+    <string name="onboarding_amounts_body">Quanto ti concedi, e per quanto tempo: un tetto riparte quando finisce il suo periodo. Potrai cambiarli quando vuoi.</string>
+    <string name="onboarding_amount">Importo</string>
+    <string name="onboarding_amounts_needed">Ogni tetto ha bisogno di un importo.</string>
+    <string name="onboarding_done">Fatto</string>
+</resources>

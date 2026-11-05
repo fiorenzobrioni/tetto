@@ -17,6 +17,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.callbackdev.tetto.core.designsystem.theme.TettoTheme
+import com.callbackdev.tetto.core.model.CapDraft
 import com.callbackdev.tetto.core.model.CapIcon
 import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.PeriodKind

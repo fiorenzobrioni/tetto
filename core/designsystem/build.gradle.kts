@@ -12,6 +12,9 @@ android {
 dependencies {
     // The settings the theme reads (the dress, the face).
     api(project(":core:model"))
+    // The numpad's buffer, which the amount field types through too (MoneyField): one rule for
+    // what an amount may be, wherever it is typed. Pure Kotlin, no Android.
+    implementation(project(":core:domain"))
 
     // The BOM is exported with the libraries, so a module that reaches Compose through this one
     // (the widget, for GlanceTheme's colors) resolves the same versions.

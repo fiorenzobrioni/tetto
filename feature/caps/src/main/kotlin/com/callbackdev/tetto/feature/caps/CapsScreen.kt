@@ -13,12 +13,15 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -57,6 +60,7 @@ fun CapsScreen(
     onOpenCap: (Long) -> Unit,
     onNewCap: () -> Unit,
     onChangeOrder: () -> Unit,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
 ) {
@@ -71,12 +75,23 @@ fun CapsScreen(
             .padding(pageGutter())
             .padding(horizontal = ScreenMargin, vertical = 24.dp),
     ) {
-        Text(
-            headingDate(state.today),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(12.dp))
+        // Today, and the gear at the row's end: the family's first row. The gear's 48dp touch
+        // overhangs the margin, so its drawing lines up with the tiles' edge.
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Text(
+                headingDate(state.today),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            IconButton(
+                onClick = onOpenSettings,
+                modifier = Modifier.offset(x = 12.dp).testTag(CapsTags.SETTINGS),
+            ) {
+                Icon(TettoIcons.Settings, contentDescription = stringResource(R.string.open_settings))
+            }
+        }
+        Spacer(Modifier.height(4.dp))
         val sentence = sentenceWords(state.sentence, format, state.today)
         Text(
             sentence ?: stringResource(R.string.caps_empty_title),
@@ -185,6 +200,7 @@ private const val NARROW_DP = 300f
 /** What the tests find the page and its tiles by. */
 object CapsTags {
     const val PAGE = "caps_page"
+    const val SETTINGS = "caps_settings"
     const val NUMPAD = "numpad"
     const val AMOUNT = "numpad_amount"
     const val PREVIEW = "numpad_preview"

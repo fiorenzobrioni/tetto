@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">Impostazioni</string>
+
+    <!-- Il denaro. -->
+    <string name="settings_group_money">Denaro</string>
+    <string name="settings_currency_explanation">Tetto conta in una sola valuta. Cambiarla cambia il simbolo dei tuoi importi; non li converte mai.</string>
+    <string name="settings_currency_confirm_title">Contare in %s?</string>
+    <string name="settings_currency_confirm_body">I tuoi tetti, le loro riserve e le tue spese tengono le loro cifre, nella nuova valuta: Tetto non converte mai da una valuta all’altra.</string>
+    <string name="settings_currency_confirm_rounded">Ha meno decimali, quindi gli importi si arrotondano: %1$s diventa %2$s.</string>
+    <string name="settings_currency_confirm">Cambia</string>
+    <string name="settings_month_start">Inizio del mese</string>
+    <!-- "Giorno 27 · questo mese: 27 ott – 26 nov". -->
+    <string name="settings_month_start_value">Giorno %1$s · questo mese: %2$s</string>
+    <string name="settings_month_start_explanation">I tetti mensili ripartono in questo giorno, quelli annuali in questo giorno di gennaio. Un mese troppo corto parte dal suo ultimo giorno. I periodi in corso dei tetti mensili e annuali si spostano sulle nuove date, con le loro spese.</string>
+    <string name="settings_week_start">Inizio della settimana</string>
+    <string name="settings_week_start_phone">%s, come il telefono</string>
+    <string name="settings_week_start_explanation">I tetti settimanali ripartono in questo giorno. Il loro periodo in corso si sposta sulle nuove date, con le sue spese.</string>
+
+    <!-- L'aspetto, quello della famiglia. -->
+    <string name="settings_group_appearance">Aspetto</string>
+    <string name="settings_theme">Tema</string>
+    <string name="settings_theme_system">Come il telefono</string>
+    <string name="settings_theme_light">Chiaro</string>
+    <string name="settings_theme_dark">Scuro</string>
+    <string name="settings_palette">Palette</string>
+    <string name="settings_palette_paper">Carta</string>
+    <string name="settings_palette_vivid">Brillante</string>
+    <string name="settings_palette_note">Carta è bianco caldo e ambra. Brillante è bianco freddo e azzurro.</string>
+    <string name="settings_font">Carattere</string>
+    <string name="settings_font_google_sans">Google Sans</string>
+    <string name="settings_font_inter">Inter</string>
+    <string name="settings_font_system">Di sistema</string>
+    <string name="settings_font_note">Google Sans e Inter vengono con l’app, quindi si vedono uguali su ogni telefono. Di sistema prende il carattere impostato sul telefono.</string>
+    <string name="settings_dynamic_color">Colori dallo sfondo</string>
+    <string name="settings_dynamic_color_note">I colori arrivano dallo sfondo del telefono invece che dalla palette qui sopra.</string>
+    <!-- L'anteprima dell'aspetto: due schede di esempio, dette tali. -->
+    <string name="settings_preview_caption">Esempio</string>
+    <string name="settings_preview_under_name">Caffè</string>
+    <string name="settings_preview_over_name">Shopping</string>
+    <string name="settings_preview_left">ancora %s</string>
+    <string name="settings_preview_over">sotto di %s</string>
+    <string name="settings_preview_detail">su %s · fino a domenica</string>
+    <string name="settings_preview_detail_over">su %s · riparte lunedì</string>
+
+    <string name="settings_group_language">Lingua</string>
+    <string name="settings_language">Lingua dell’app</string>
+    <string name="settings_language_system">Come il telefono</string>
+
+    <!-- La privacy: "Tetto non invia nulla", e che cosa fa il backup di Android. -->
+    <string name="settings_privacy">Privacy</string>
+    <string name="settings_privacy_headline">Niente account, niente pubblicità, niente tracciamento.</string>
+    <string name="settings_privacy_body">Tetto non ha alcun permesso di accesso a internet, quindi non può mandare i tuoi tetti e le tue spese da nessuna parte: Tetto non invia nulla. Restano su questo telefono. Il backup di Android, se l’hai attivato, ne tiene una copia, con le tue impostazioni, nel tuo account Google, cifrata con il blocco schermo.</string>
+
+    <string name="settings_group_about">Informazioni</string>
+    <string name="settings_version">Versione</string>
+    <string name="settings_developer">Sviluppo</string>
+    <string name="settings_copyright">Copyright</string>
+    <string name="settings_license">Licenza</string>
+    <string name="settings_license_note">GPL-3.0: libera di usare, studiare, modificare e condividere, senza garanzia</string>
+    <string name="settings_source_code">Codice sorgente</string>
+    <string name="settings_source_code_note">Software libero, GPL-3.0, su GitHub</string>
+
+    <string name="settings_group_credits">Riconoscimenti</string>
+    <string name="settings_credit_font">Caratteri</string>
+    <string name="settings_credit_font_note">Inter di Rasmus Andersson e Google Sans di Google, entrambi SIL Open Font License 1.1</string>
+    <string name="settings_credit_font_inuse">in uso: %1$s</string>
+    <string name="settings_credit_font_inuse_system">in uso: il carattere impostato sul telefono</string>
+    <string name="settings_credit_icons">Icone</string>
+    <string name="settings_credit_icons_note">Material Symbols di Google, Apache License 2.0</string>
+</resources>

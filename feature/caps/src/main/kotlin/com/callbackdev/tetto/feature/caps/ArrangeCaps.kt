@@ -54,6 +54,7 @@ import com.callbackdev.tetto.core.designsystem.icons.symbol
 import com.callbackdev.tetto.core.designsystem.theme.GroupShape
 import com.callbackdev.tetto.core.designsystem.theme.ScreenMargin
 import com.callbackdev.tetto.core.designsystem.theme.pageGutter
+import com.callbackdev.tetto.core.designsystem.R as DesignR
 
 /** A cap as the order shows it: its icon and its name. */
 data class ArrangeItem(val id: Long, val name: String, val icon: ImageVector)
@@ -105,7 +106,7 @@ fun ArrangeCapsScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = onDone) {
-                Icon(TettoIcons.Back, contentDescription = stringResource(R.string.action_back))
+                Icon(TettoIcons.Back, contentDescription = stringResource(DesignR.string.action_back))
             }
             Spacer(Modifier.size(8.dp))
             Text(

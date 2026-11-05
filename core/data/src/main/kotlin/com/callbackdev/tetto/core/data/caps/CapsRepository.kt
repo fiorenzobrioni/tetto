@@ -14,7 +14,10 @@ import com.callbackdev.tetto.core.data.time.TodaySource
 import com.callbackdev.tetto.core.domain.cap.CapChanges
 import com.callbackdev.tetto.core.domain.cap.CapStates
 import com.callbackdev.tetto.core.domain.cap.CatchUp
+import com.callbackdev.tetto.core.domain.money.Rescale
 import com.callbackdev.tetto.core.domain.period.Days
+import com.callbackdev.tetto.core.model.AppCurrency
+import com.callbackdev.tetto.core.model.CapDraft
 import com.callbackdev.tetto.core.model.CapIcon
 import com.callbackdev.tetto.core.model.CapState
 import com.callbackdev.tetto.core.model.ClosedPeriod
@@ -22,6 +25,7 @@ import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.PeriodKind
 import com.callbackdev.tetto.core.model.Spend
 import com.callbackdev.tetto.core.model.UserSettings
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.conflate
@@ -29,6 +33,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.time.DayOfWeek
 import java.time.LocalDate
 import javax.inject.Inject
@@ -108,22 +113,36 @@ constructor(
     }
 
     /** A new cap, its open period the one that holds today, last in the reader's order; its id. */
-    suspend fun addCap(name: String, icon: CapIcon, amount: Money, kind: PeriodKind): Long {
-        require(name.isNotBlank()) { "A cap needs a name" }
-        require(amount.isPositive) { "A cap needs an amount above zero" }
+    suspend fun addCap(name: String, icon: CapIcon, amount: Money, kind: PeriodKind): Long =
+        addCaps(listOf(CapDraft(name, amount, kind, icon))).single()
+
+    /**
+     * New caps, in the order of [drafts], after the reader's last, in one transaction: the first
+     * run's areas become caps together or not at all. Their ids, in that order.
+     */
+    suspend fun addCaps(drafts: List<CapDraft>): List<Long> {
+        drafts.forEach { draft ->
+            require(draft.name.isNotBlank()) { "A cap needs a name" }
+            require(draft.amount.isPositive) { "A cap needs an amount above zero" }
+        }
         return afterCatchUp { settings ->
-            dao.insertCap(
-                CapEntity(
-                    name = name.trim(),
-                    icon = icon.key,
-                    amount = amount.minor,
-                    kind = kind.name,
-                    reserve = 0,
-                    openStart = CapChanges.openStartForNew(settings.rule(kind, phone), clock.today()).toEpochDay(),
-                    position = dao.lastPosition() + 1,
-                    createdAt = clock.now().toEpochMilli(),
-                ),
-            )
+            val today = clock.today()
+            val createdAt = clock.now().toEpochMilli()
+            val first = dao.lastPosition() + 1
+            drafts.mapIndexed { index, draft ->
+                dao.insertCap(
+                    CapEntity(
+                        name = draft.name.trim(),
+                        icon = draft.icon.key,
+                        amount = draft.amount.minor,
+                        kind = draft.kind.name,
+                        reserve = 0,
+                        openStart = CapChanges.openStartForNew(settings.rule(draft.kind, phone), today).toEpochDay(),
+                        position = first + index,
+                        createdAt = createdAt,
+                    ),
+                )
+            }
         }
     }
 
@@ -252,6 +271,38 @@ constructor(
         return changeCalendar { it.copy(monthStartDay = day) }
     }
 
+    /**
+     * The app's currency becomes [code] (§4.1): the amounts are relabelled, never converted. Where
+     * the two currencies' decimals differ, every stored amount is rescaled to keep its figure
+     * ([Rescale]: €12.50 becomes ¥13, an amount above zero never zero), in one transaction: the
+     * caps and their reserves, the spends of every period, the closed periods' lines.
+     *
+     * The setting is written first, then the amounts, under [lock], so nothing reads in between;
+     * should the transaction fail, the setting is put back, and no figure is ever read in a
+     * currency it was not counted in. Only a process killed between the two writes could leave
+     * them apart, as with [changeWeekStart].
+     */
+    suspend fun changeCurrency(code: String): UserSettings {
+        val to = requireNotNull(AppCurrency.ofOrNull(code)) { "Not a currency a cap can count in: $code" }
+        return lock.withLock {
+            val before = preferences.current()
+            val from = before.resolvedCurrency(phone)
+            val after = preferences.update { it.copy(currency = to.code) }
+            if (from.fractionDigits != to.fractionDigits) {
+                try {
+                    database.withTransaction {
+                        catchUpLocked(after, clock.today())
+                        rescaleLocked(from.fractionDigits, to.fractionDigits)
+                    }
+                } catch (failure: Throwable) {
+                    withContext(NonCancellable) { preferences.update { it.copy(currency = before.currency) } }
+                    throw failure
+                }
+            }
+            after
+        }
+    }
+
     /** Whether a spend was added today, in the zone of the moment of asking (§4.3; the reminder). */
     suspend fun anySpendToday(): Boolean {
         val zone = clock.zone()
@@ -305,6 +356,24 @@ constructor(
         val spend = dao.spend(spendId) ?: return null
         val cap = dao.cap(spend.capId) ?: return null
         return spend.takeIf { it.periodStart == cap.openStart }
+    }
+
+    /** Runs inside a transaction: every stored amount from [fromDigits] decimals to [toDigits] (§4.1). */
+    private suspend fun rescaleLocked(fromDigits: Int, toDigits: Int) {
+        fun rescaled(minor: Long): Long = Rescale.amount(Money(minor), fromDigits, toDigits).minor
+        for (cap in dao.allCaps()) dao.setCapAmounts(cap.id, rescaled(cap.amount), rescaled(cap.reserve))
+        for (spend in dao.allSpends()) dao.setSpendAmount(spend.id, rescaled(spend.amount))
+        dao.updateClosedPeriods(
+            dao.allClosedPeriods().map {
+                it.copy(
+                    cap = rescaled(it.cap),
+                    spent = rescaled(it.spent),
+                    reserveBefore = rescaled(it.reserveBefore),
+                    reserveAfter = rescaled(it.reserveAfter),
+                    forgiven = rescaled(it.forgiven),
+                )
+            },
+        )
     }
 
     /** Runs inside a transaction: closes what ended for every cap (§4.4). */

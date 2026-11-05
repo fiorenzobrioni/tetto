@@ -4,6 +4,10 @@ import com.callbackdev.tetto.core.data.caps.CapsRepository
 import com.callbackdev.tetto.core.data.prefs.UserPreferencesDataSource
 import com.callbackdev.tetto.core.data.time.PhoneDefaults
 import com.callbackdev.tetto.core.model.AppCurrency
+import com.callbackdev.tetto.core.model.AppFont
+import com.callbackdev.tetto.core.model.AppPalette
+import com.callbackdev.tetto.core.model.CapDraft
+import com.callbackdev.tetto.core.model.ThemeMode
 import com.callbackdev.tetto.core.model.UserSettings
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -13,14 +17,16 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * The settings, as the screens read and change them (PLANNING.md §5). A change of week or month
- * start goes through [CapsRepository], which knows what it does to the caps' open periods (§4.5).
+ * The settings, as the screens read and change them (PLANNING.md §5). A change of currency, week
+ * or month start goes through [CapsRepository], which knows what it does to the caps (§4.1, §4.5);
+ * the appearance touches nothing else, and has a setter each, so no screen can write a money
+ * setting past the caps.
  */
 @Singleton
 class SettingsRepository
 @Inject
 constructor(
-    preferences: UserPreferencesDataSource,
+    private val preferences: UserPreferencesDataSource,
     private val caps: CapsRepository,
     private val phone: PhoneDefaults,
 ) {
@@ -32,7 +38,41 @@ constructor(
     /** The first day of the week in force: the reader's, else the locale's. */
     val weekStart: Flow<DayOfWeek> = settings.map { it.weekStart ?: phone.weekStart() }.distinctUntilChanged()
 
+    /** What the phone says where the reader has not chosen: its region's currency, its locale's week. */
+    fun phoneCurrency(): AppCurrency = phone.currency()
+
+    fun phoneWeekStart(): DayOfWeek = phone.weekStart()
+
+    suspend fun setCurrency(code: String): UserSettings = caps.changeCurrency(code)
+
     suspend fun setWeekStart(weekStart: DayOfWeek?): UserSettings = caps.changeWeekStart(weekStart)
 
     suspend fun setMonthStartDay(day: Int): UserSettings = caps.changeMonthStartDay(day)
+
+    suspend fun setTheme(theme: ThemeMode) {
+        preferences.update { it.copy(theme = theme) }
+    }
+
+    suspend fun setPalette(palette: AppPalette) {
+        preferences.update { it.copy(palette = palette) }
+    }
+
+    suspend fun setFont(font: AppFont) {
+        preferences.update { it.copy(font = font) }
+    }
+
+    suspend fun setDynamicColor(on: Boolean) {
+        preferences.update { it.copy(dynamicColor = on) }
+    }
+
+    /**
+     * The first run's end (PLANNING.md §11 Phase 3): the currency stored, so a later change of the
+     * phone's region relabels nothing by itself (§4.1); the reader's caps, together; then the flag,
+     * last, so the caps screen the shell turns to is already shaped by them, never empty first.
+     */
+    suspend fun finishFirstRun(currency: String, drafts: List<CapDraft>) {
+        caps.changeCurrency(currency)
+        if (drafts.isNotEmpty()) caps.addCaps(drafts)
+        preferences.update { it.copy(onboardingCompleted = true) }
+    }
 }

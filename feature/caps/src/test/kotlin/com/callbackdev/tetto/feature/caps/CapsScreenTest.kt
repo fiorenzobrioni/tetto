@@ -7,6 +7,7 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -39,6 +40,7 @@ class CapsScreenTest {
     private val opened = mutableListOf<Long>()
     private var newCap = 0
     private var order = 0
+    private var settings = 0
 
     private fun draw(state: CapsUiState, dark: Boolean = false) {
         compose.setContent {
@@ -49,6 +51,7 @@ class CapsScreenTest {
                     onOpenCap = { opened += it },
                     onNewCap = { newCap++ },
                     onChangeOrder = { order++ },
+                    onOpenSettings = { settings++ },
                 )
             }
         }
@@ -113,6 +116,13 @@ class CapsScreenTest {
         draw(CapsSample.ui(listOf(CapsSample.coffee, CapsSample.groceries)))
         compose.onNodeWithText("Change the order").performClick()
         assertThat(order).isEqualTo(1)
+    }
+
+    @Test
+    fun `the gear, beside today, opens Settings`() {
+        draw(CapsSample.ui(emptyList()))
+        compose.onNodeWithContentDescription("Settings").assertIsDisplayed().performClick()
+        assertThat(settings).isEqualTo(1)
     }
 
     @Test

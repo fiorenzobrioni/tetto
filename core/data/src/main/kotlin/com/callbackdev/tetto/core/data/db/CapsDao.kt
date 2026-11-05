@@ -3,6 +3,7 @@ package com.callbackdev.tetto.core.data.db
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 
 /**
  * The caps, their spends and their closed periods (PLANNING.md §5). Plain reads and writes: the
@@ -87,4 +88,21 @@ interface CapsDao {
 
     @Query("SELECT MAX(end_exclusive) FROM closed_periods WHERE cap_id = :capId")
     suspend fun lastClosedEnd(capId: Long): Long?
+
+    // A change of currency (§4.1): every stored amount, read and written back rescaled.
+
+    @Query("SELECT * FROM caps")
+    suspend fun allCaps(): List<CapEntity>
+
+    @Query("UPDATE caps SET amount = :amount, reserve = :reserve WHERE id = :id")
+    suspend fun setCapAmounts(id: Long, amount: Long, reserve: Long): Int
+
+    @Query("SELECT * FROM spends")
+    suspend fun allSpends(): List<SpendEntity>
+
+    @Query("SELECT * FROM closed_periods")
+    suspend fun allClosedPeriods(): List<ClosedPeriodEntity>
+
+    @Update
+    suspend fun updateClosedPeriods(periods: List<ClosedPeriodEntity>)
 }

@@ -21,3 +21,9 @@ All notable changes to Tetto are documented here. The format follows
 - The numpad: two touches and the amount, the preview of what will be left, Undo after every
   change; a cap's sheet with this period's spends, to correct or delete, and the last periods.
 - New caps and changes to them (name, amount, period, icon), and the caps' order.
+- The first run: pick the areas you want a cap on, give each an amount and a period, in your
+  currency, and the caps screen opens ready; or start from nothing.
+- Settings: the currency, any your phone knows (changing it relabels your amounts and never
+  converts them); the day a month starts and the first day of the week; the appearance (theme,
+  palette, typeface, wallpaper colours); the app's language; the privacy statement, the licence
+  and the credits.

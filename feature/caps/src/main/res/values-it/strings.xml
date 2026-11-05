@@ -5,6 +5,7 @@
     <string name="caps_empty_body">Un tetto è quanto ti concedi per una cosa, al giorno, alla settimana, al mese o all’anno. Qui troverai quanto ti resta, e fino a quando.</string>
     <string name="new_cap">Nuovo tetto</string>
     <string name="change_order">Cambia l’ordine</string>
+    <string name="open_settings">Impostazioni</string>
 
     <!-- La frase in cima: prima un tetto sforato, poi uno rinnovato oggi, poi tutti sotto. -->
     <string name="sentence_one_under">%1$s: ancora %2$s %3$s.</string>
@@ -117,7 +118,6 @@
     <string name="editor_icon">Icona</string>
     <string name="editor_save">Salva</string>
     <string name="editor_kind_note">Le spese di questo periodo passano al nuovo periodo; la riserva resta.</string>
-    <string name="action_back">Indietro</string>
 
     <!-- L'ordine. -->
     <string name="arrange_hint">Trascina un tetto dalla maniglia.</string>

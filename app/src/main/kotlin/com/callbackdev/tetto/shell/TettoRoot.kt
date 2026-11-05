@@ -19,9 +19,12 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.callbackdev.tetto.core.designsystem.theme.TettoMotion
 import com.callbackdev.tetto.core.designsystem.theme.reducedMotion
+import com.callbackdev.tetto.core.model.UserSettings
 import com.callbackdev.tetto.feature.caps.ArrangeCapsRoute
 import com.callbackdev.tetto.feature.caps.CapEditorRoute
 import com.callbackdev.tetto.feature.caps.CapsRoute
+import com.callbackdev.tetto.feature.onboarding.OnboardingRoute
+import com.callbackdev.tetto.feature.settings.SettingsRoute
 import kotlinx.serialization.Serializable
 
 /*
@@ -41,13 +44,29 @@ data class EditorKey(val capId: Long? = null) : NavKey
 @Serializable
 data object ArrangeKey : NavKey
 
+/** Settings, from the caps screen's gear. */
+@Serializable
+data object SettingsKey : NavKey
+
 /**
- * The shell (PLANNING.md §11 Phase 2). Settings' gear joins with Settings (Phase 3): no entry is
- * drawn before its page exists (owner, 5 Nov 2026). The transitions: a short slide with a fade,
- * the 300 ms predictive back seeks, a plain fade under reduced motion.
+ * The shell (PLANNING.md §11 Phases 2 and 3): the first run until it is done, then the pages. The
+ * first run stands before them, not on the back stack: it is not a page to go back to.
  */
 @Composable
-fun TettoRoot() {
+fun TettoRoot(settings: UserSettings) {
+    if (!settings.onboardingCompleted) {
+        OnboardingRoute()
+        return
+    }
+    MainPages()
+}
+
+/**
+ * The pages, from the caps screen. The transitions: a short slide with a fade, the 300 ms
+ * predictive back seeks, a plain fade under reduced motion.
+ */
+@Composable
+private fun MainPages() {
     val backStack = rememberNavBackStack(CapsKey)
     val reduced = reducedMotion()
     val goBack: () -> Unit = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) }
@@ -65,10 +84,12 @@ fun TettoRoot() {
                         onNewCap = { backStack.add(EditorKey()) },
                         onEditCap = { backStack.add(EditorKey(it)) },
                         onChangeOrder = { backStack.add(ArrangeKey) },
+                        onOpenSettings = { backStack.add(SettingsKey) },
                     )
                 }
                 entry<EditorKey> { key -> CapEditorRoute(capId = key.capId, onBack = goBack) }
                 entry<ArrangeKey> { ArrangeCapsRoute(onBack = goBack) }
+                entry<SettingsKey> { SettingsRoute(onBack = goBack) }
             },
         )
     }

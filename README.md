@@ -54,6 +54,9 @@ What 1.0 will do ([VISION.md](./VISION.md) has the full scope):
   undo after every change. Any spend of the current period can be corrected or deleted.
 - 🛟 **Kind by design**: what a period leaves over becomes a reserve (up to one period's cap); an
   overspend uses it; what it cannot cover is forgiven when the period ends.
+- 🚀 **Ready in a minute**: pick the areas you want a cap on, give each an amount and a period, and
+  the caps screen opens already shaped to you.
+- 💱 **One currency, any your phone knows**: changing it relabels your amounts and never converts them.
 - 🏠 **Two widgets that never scroll**: «At a glance», your caps as the card's size allows, and
   «In words», one cap on the family's ring card. A touch on a cap opens the numpad over the home
   screen: a spend added without opening the app.
@@ -104,7 +107,7 @@ The phased plan, with every decision and its reason, is in [PLANNING.md](./PLANN
 - **Phase 0**, foundations: the build, the design system, CI. *Done.*
 - **Phase 1**, the cap engine: periods, the reserve and forgiveness, every edge case tested. *Done.*
 - **Phase 2**, the caps screen, the numpad and a cap's sheet. *Done.*
-- **Phase 3**, the first run and settings.
+- **Phase 3**, the first run and settings. *Done.*
 - **Phase 4**, your data and the evening reminder.
 - **Phase 5**, the two widgets and the launcher's shortcuts.
 - **Phase 6**, the guide and the accessibility pass.

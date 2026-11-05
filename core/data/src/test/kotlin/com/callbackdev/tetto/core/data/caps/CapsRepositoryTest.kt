@@ -12,6 +12,7 @@ import com.callbackdev.tetto.core.data.db.ClosedPeriodEntity
 import com.callbackdev.tetto.core.data.db.TettoDatabase
 import com.callbackdev.tetto.core.data.euros
 import com.callbackdev.tetto.core.data.prefs.UserPreferencesDataSource
+import com.callbackdev.tetto.core.model.CapDraft
 import com.callbackdev.tetto.core.model.CapIcon.COFFEE
 import com.callbackdev.tetto.core.model.CapIcon.GROCERIES
 import com.callbackdev.tetto.core.model.CapIcon.TRAVEL
@@ -413,6 +414,75 @@ class CapsRepositoryTest {
         assertThat(repository.currentStates().map { it.cap.id }).containsExactly(c, a, b).inOrder()
         val d = repository.addCap("D", COFFEE, euros(1), DAY)
         assertThat(repository.currentStates().map { it.cap.id }).containsExactly(c, a, b, d).inOrder()
+    }
+
+    @Test
+    fun `the first run's caps arrive together, in its order, after the reader's`() = runTest {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        val ids = repository.addCaps(
+            listOf(
+                CapDraft("Groceries", euros(300), MONTH, GROCERIES),
+                CapDraft(" Travel ", euros(1_200), YEAR, TRAVEL),
+            ),
+        )
+        val states = repository.currentStates()
+        assertThat(states.map { it.cap.id }).containsExactly(coffee, ids[0], ids[1]).inOrder()
+        assertThat(states.map { it.cap.name }).containsExactly("Coffee", "Groceries", "Travel").inOrder()
+        assertThat(states[2].period.start).isEqualTo(date(2026, 1, 1))
+        assertThat(repository.addCaps(emptyList())).isEmpty()
+    }
+
+    @Test
+    fun `a change of currency with the same decimals relabels and changes no figure`() = runTest {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        spend(coffee, euros(3, 50))
+        val settings = repository.changeCurrency("CHF")
+        assertThat(settings.currency).isEqualTo("CHF")
+        val state = repository.currentStates().single()
+        assertThat(state.cap.amount).isEqualTo(euros(20))
+        assertThat(state.spent).isEqualTo(euros(3, 50))
+    }
+
+    @Test
+    fun `a change of currency to one without decimals rescales every amount, and none becomes zero`() = runTest {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(3), DAY)
+        spend(coffee, euros(1, 25))
+        clock.at("2026-11-06T10:00")
+        // The 5th closed: €3 spent €1.25, €1.75 to the reserve.
+        val small = spend(coffee, euros(0, 40))
+
+        repository.changeCurrency("JPY")
+
+        assertThat(preferences.current().currency).isEqualTo("JPY")
+        val cap = checkNotNull(dao.cap(coffee))
+        assertThat(cap.amount).isEqualTo(3)
+        assertThat(cap.reserve).isEqualTo(2)
+        assertThat(dao.spend(small.id)?.amount).isEqualTo(1)
+        val line = repository.closedPeriods(coffee).single()
+        assertThat(listOf(line.cap, line.spent, line.reserveBefore, line.reserveAfter, line.forgiven))
+            .containsExactly(Money(3), Money(1), Money.ZERO, Money(2), Money.ZERO)
+            .inOrder()
+
+        repository.changeCurrency("EUR")
+        assertThat(dao.cap(coffee)?.amount).isEqualTo(300)
+        assertThat(dao.spend(small.id)?.amount).isEqualTo(100)
+    }
+
+    @Test
+    fun `a change of currency that cannot rescale puts the setting back and changes no figure`() = runTest {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        val added = spend(coffee, euros(3, 50))
+        // A planted trigger refuses the rescale's writes to the spends.
+        database.openHelper.writableDatabase.execSQL(
+            "CREATE TRIGGER planted BEFORE UPDATE ON spends BEGIN SELECT RAISE(ABORT, 'planted'); END",
+        )
+
+        val failure = runCatching { repository.changeCurrency("JPY") }.exceptionOrNull()
+
+        assertThat(failure).isNotNull()
+        assertThat(preferences.current().currency).isNull()
+        assertThat(dao.cap(coffee)?.amount).isEqualTo(2_000)
+        assertThat(dao.spend(added.id)?.amount).isEqualTo(350)
     }
 
     @Test

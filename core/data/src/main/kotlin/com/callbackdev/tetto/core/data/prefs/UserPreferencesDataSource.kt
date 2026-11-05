@@ -3,11 +3,15 @@ package com.callbackdev.tetto.core.data.prefs
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.callbackdev.tetto.core.model.AppCurrency
+import com.callbackdev.tetto.core.model.AppFont
+import com.callbackdev.tetto.core.model.AppPalette
+import com.callbackdev.tetto.core.model.ThemeMode
 import com.callbackdev.tetto.core.model.UserSettings
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -24,7 +28,7 @@ import javax.inject.Singleton
  * is stored: a field at its default has no key. A value that cannot be read back (out of range, a
  * name from a newer build) reads as its default.
  *
- * Plain storage: what a new week or month start does to the caps' open periods is
+ * Plain storage: what a new week or month start, or a new currency, does to the caps is
  * `CapsRepository`'s, the only caller allowed to change them.
  */
 @Singleton
@@ -56,6 +60,11 @@ constructor(private val dataStore: DataStore<Preferences>) {
             currency = prefs[Keys.CURRENCY]?.takeIf { AppCurrency.ofOrNull(it) != null },
             monthStartDay = prefs[Keys.MONTH_START_DAY]?.takeIf { it in 1..31 } ?: defaults.monthStartDay,
             weekStart = prefs[Keys.WEEK_START]?.let { name -> DayOfWeek.entries.firstOrNull { it.name == name } },
+            theme = enumOr(prefs[Keys.THEME], defaults.theme),
+            palette = enumOr(prefs[Keys.PALETTE], defaults.palette),
+            font = enumOr(prefs[Keys.FONT], defaults.font),
+            dynamicColor = prefs[Keys.DYNAMIC_COLOR] ?: defaults.dynamicColor,
+            onboardingCompleted = prefs[Keys.ONBOARDING_COMPLETED] ?: defaults.onboardingCompleted,
         )
     }
 
@@ -64,6 +73,11 @@ constructor(private val dataStore: DataStore<Preferences>) {
         prefs.putOrRemove(Keys.CURRENCY, settings.currency, defaults.currency)
         prefs.putOrRemove(Keys.MONTH_START_DAY, settings.monthStartDay, defaults.monthStartDay)
         prefs.putOrRemove(Keys.WEEK_START, settings.weekStart?.name, defaults.weekStart?.name)
+        prefs.putOrRemove(Keys.THEME, settings.theme.name, defaults.theme.name)
+        prefs.putOrRemove(Keys.PALETTE, settings.palette.name, defaults.palette.name)
+        prefs.putOrRemove(Keys.FONT, settings.font.name, defaults.font.name)
+        prefs.putOrRemove(Keys.DYNAMIC_COLOR, settings.dynamicColor, defaults.dynamicColor)
+        prefs.putOrRemove(Keys.ONBOARDING_COMPLETED, settings.onboardingCompleted, defaults.onboardingCompleted)
     }
 
     private fun <T> MutablePreferences.putOrRemove(key: Preferences.Key<T>, value: T?, default: T?) {
@@ -75,10 +89,19 @@ constructor(private val dataStore: DataStore<Preferences>) {
         monthStartDay = monthStartDay.coerceIn(1, 31),
     )
 
+    /** An enum stored by its name; a name this build does not know (a newer one's) reads as [default]. */
+    private inline fun <reified E : Enum<E>> enumOr(name: String?, default: E): E =
+        enumValues<E>().firstOrNull { it.name == name } ?: default
+
     private object Keys {
         val CURRENCY = stringPreferencesKey("currency")
         val MONTH_START_DAY = intPreferencesKey("month_start_day")
         val WEEK_START = stringPreferencesKey("week_start")
+        val THEME = stringPreferencesKey("theme")
+        val PALETTE = stringPreferencesKey("palette")
+        val FONT = stringPreferencesKey("font")
+        val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
+        val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
     }
 
     companion object {

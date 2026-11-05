@@ -37,6 +37,7 @@ fun CapsRoute(
     onNewCap: () -> Unit,
     onEditCap: (Long) -> Unit,
     onChangeOrder: () -> Unit,
+    onOpenSettings: () -> Unit,
     viewModel: CapsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -71,6 +72,7 @@ fun CapsRoute(
             onOpenCap = viewModel::openSheet,
             onNewCap = onNewCap,
             onChangeOrder = onChangeOrder,
+            onOpenSettings = onOpenSettings,
             contentPadding = padding,
         )
     }

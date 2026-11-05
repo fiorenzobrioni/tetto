@@ -52,11 +52,10 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.callbackdev.tetto.core.designsystem.format.MoneyFormat
+import com.callbackdev.tetto.core.designsystem.components.MoneyField
 import com.callbackdev.tetto.core.designsystem.format.rememberMoneyFormat
 import com.callbackdev.tetto.core.designsystem.icons.TettoIcons
 import com.callbackdev.tetto.core.designsystem.icons.label
@@ -64,15 +63,13 @@ import com.callbackdev.tetto.core.designsystem.icons.symbol
 import com.callbackdev.tetto.core.designsystem.theme.ScreenMargin
 import com.callbackdev.tetto.core.designsystem.theme.padding
 import com.callbackdev.tetto.core.designsystem.theme.pageGutter
-import com.callbackdev.tetto.core.domain.money.MoneyInput
 import com.callbackdev.tetto.core.model.AppCurrency
+import com.callbackdev.tetto.core.model.CapDraft
 import com.callbackdev.tetto.core.model.CapIcon
 import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.PeriodKind
 import kotlinx.coroutines.launch
-
-/** A cap as the editor holds it: four fields (VISION, «New and edited caps»). */
-data class CapDraft(val name: String, val amount: Money, val kind: PeriodKind, val icon: CapIcon)
+import com.callbackdev.tetto.core.designsystem.R as DesignR
 
 /**
  * The cap editor (PLANNING.md §11 Phase 2): a new cap with [capId] null, else that cap. Its fields
@@ -139,7 +136,7 @@ fun CapEditorScreen(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) {
-                Icon(TettoIcons.Back, contentDescription = stringResource(R.string.action_back))
+                Icon(TettoIcons.Back, contentDescription = stringResource(DesignR.string.action_back))
             }
             Spacer(Modifier.size(8.dp))
             Text(
@@ -161,7 +158,13 @@ fun CapEditorScreen(
             modifier = Modifier.fillMaxWidth().testTag(CapsTags.EDITOR_NAME),
         )
         Spacer(Modifier.height(12.dp))
-        AmountField(draft.amount, format) { onChange(draft.copy(amount = it)) }
+        MoneyField(
+            amount = draft.amount,
+            format = format,
+            label = stringResource(R.string.editor_amount),
+            onAmount = { onChange(draft.copy(amount = it)) },
+            modifier = Modifier.fillMaxWidth().testTag(CapsTags.EDITOR_AMOUNT),
+        )
 
         Section(stringResource(R.string.editor_period))
         FlowRow(Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -200,52 +203,6 @@ fun CapEditorScreen(
         }
     }
 }
-
-/**
- * The cap's amount, typed through the numpad's own buffer: digits and the locale's separator only,
- * at most nine digits and the currency's decimals, parsed exactly. A change the buffer would refuse
- * is not taken.
- */
-@Composable
-private fun AmountField(amount: Money, format: MoneyFormat, onAmount: (Money) -> Unit) {
-    val currency = format.currency
-    var text by rememberSaveable {
-        mutableStateOf(if (amount.isPositive) bufferText(MoneyInput.of(amount, currency), format) else "")
-    }
-    LaunchedEffect(amount) {
-        val shown = typedInput(text, format)
-        if (shown?.amount !=
-            amount
-        ) {
-            text = if (amount.isPositive) bufferText(MoneyInput.of(amount, currency), format) else ""
-        }
-    }
-    OutlinedTextField(
-        value = text,
-        onValueChange = { new ->
-            val input = typedInput(new, format) ?: return@OutlinedTextField
-            text = bufferText(input, format)
-            onAmount(input.amount)
-        },
-        label = { Text(stringResource(R.string.editor_amount)) },
-        prefix = format.prefix.trim().takeIf { it.isNotEmpty() }?.let { { Text(it) } },
-        suffix = format.suffix.trim().takeIf { it.isNotEmpty() }?.let { { Text(it) } },
-        singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
-        modifier = Modifier.fillMaxWidth().testTag(CapsTags.EDITOR_AMOUNT),
-    )
-}
-
-/** [text] typed key by key into a fresh buffer; null when a character is not a key or is refused. */
-private fun typedInput(text: String, format: MoneyFormat): MoneyInput? =
-    text.fold(MoneyInput.empty(format.currency) as MoneyInput?) { input, char ->
-        val current = input ?: return null
-        val key = MoneyInput.keyFor(char, format.decimalSeparator) ?: return null
-        current.press(key).takeIf { it !== current }
-    }
-
-private fun bufferText(input: MoneyInput, format: MoneyFormat): String =
-    input.whole + (input.fraction?.let { format.decimalSeparator + it } ?: "")
 
 @Composable
 private fun Section(title: String) {

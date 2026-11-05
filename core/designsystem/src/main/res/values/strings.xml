@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="action_cancel">Cancel</string>
+    <string name="action_back">Back</string>
+
+    <!-- The currency picker (PLANNING.md §4.1): the first run's and Settings'. -->
+    <string name="currency_title">Currency</string>
+    <string name="currency_search">Search a currency</string>
+    <string name="currency_not_found">No currency matches “%s”</string>
+    <!-- A currency named with its code: "Euro (EUR)". -->
+    <string name="currency_named">%1$s (%2$s)</string>
 
     <!-- The numpad's keys, as TalkBack says them. -->
     <string name="numpad_delete">Delete</string>

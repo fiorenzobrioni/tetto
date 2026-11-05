@@ -17,8 +17,8 @@
 ## State
 
 - **Released**: nothing yet.
-- **Done**: Phase 0, the foundations (5 Nov 2026): green on GitHub, the release workflow rehearsed with the release key, the mark in the owner's colours. Phase 1, the cap engine (5 Nov 2026): `:core:domain` and `:core:data`, 117 tests, green on GitHub (`c762455`, 5 min 29 s). Phase 2, the caps screen and the numpad (5 Nov 2026): `:feature:caps` and the shell, CI's sequence green locally; on GitHub with the next push.
-- **Next**: Phase 3, the first run and Settings (Settings' gear joins the caps screen with it).
+- **Done**: Phase 0, the foundations (5 Nov 2026): green on GitHub, the release workflow rehearsed with the release key, the mark in the owner's colours. Phase 1, the cap engine (5 Nov 2026): `:core:domain` and `:core:data`, 117 tests, green on GitHub (`c762455`, 5 min 29 s). Phase 2, the caps screen and the numpad (5 Nov 2026): `:feature:caps` and the shell. Phase 3, the first run and Settings (5 Nov 2026): `:feature:onboarding` and `:feature:settings`, 224 tests in all. Phases 2 and 3 green locally with CI's sequence; on GitHub with the next push.
+- **Next**: Phase 4, your data and the reminder (`:core:reminder` joins with it).
 - **Later, and optional**: Phase 8, Google Play (§11).
 
 ---
@@ -63,7 +63,7 @@ tetto/
 │   ├── domain/             # Pure Kotlin: periods, the rollover and the catch-up, money input, a cap's state, the sentence, the preview, the widgets' fit, the backup and CSV formats
 │   ├── data/               # Room (caps, spends, closed periods), DataStore, repositories exposing Flow
 │   ├── reminder/           # The evening reminder's Android half: alarm, receivers, notification channel
-│   ├── designsystem/       # M3 theme, typography, shared components (the numpad, a cap's tile, the bar, the ring), icons
+│   ├── designsystem/       # M3 theme, typography, shared components (the numpad, the amount field, the currency picker, a cap's tile, the bar, the ring), icons
 │   └── testing/            # test-only: the accessibility checks and the page walk the UI tests share
 ├── feature/
 │   ├── caps/               # the caps screen, the numpad sheet, a cap's sheet, the cap editor
@@ -82,7 +82,8 @@ tetto/
 Rules:
 
 - `core:model` and `core:domain` are pure Kotlin/JVM modules. All business logic lives there and is unit-tested without Android.
-- Feature modules depend on `core:*`, never on each other.
+- Feature modules depend on `core:*`, never on each other. What two features share is `:core:designsystem`'s (the amount field, the currency picker).
+- `core:designsystem` uses `core:domain`'s money input (`MoneyInput`), so an amount is typed by one rule wherever it is typed; nothing else of the domain.
 - `app` wires everything together. `QuickAddActivity` (the numpad over the home screen) hosts `:feature:caps`'s numpad sheet.
 - A module joins the build in the phase that brings its first code, not before.
 
@@ -163,7 +164,7 @@ The riskiest part of the app: a wrong period, a cent of drift or a reserve that 
 - **One currency for the app**, an ISO 4217 code in the settings, chosen at the first run (the phone's region's by default) and stored then, so a later change of region relabels nothing by itself. Its decimals are `Currency.defaultFractionDigits` (0, 2 or 3). Where the region names none (a language set without a country), the euro stands in until the first run's choice (owner, 5 Nov 2026).
 - **Input** (`MoneyInput`, pure): the numpad's buffer, digits and at most one separator, at most the currency's decimals after it, at most nine digits before it; delete, clear; parsed to minor units exactly, never through a floating-point number. A zero amount cannot be added.
 - **Output**: formatted by the locale's currency format with the app's currency (`:core:designsystem`, from minor units through `BigDecimal.movePointLeft`), in tabular figures. The domain never formats.
-- **A change of currency** relabels the amounts; it never converts them, and Settings says so. Where the two currencies' decimals differ, the stored amounts are rescaled (euro to yen: 1250 cents become ¥13, rounded half up), in one transaction, with a test. An amount above zero never becomes zero: one that would becomes the new currency's smallest (a €0.40 spend, ¥1), so no spend and no cap disappears (owner, 5 Nov 2026; `Rescale`).
+- **A change of currency** relabels the amounts; it never converts them, and Settings says so. Where the two currencies' decimals differ, the stored amounts are rescaled (euro to yen: 1250 cents become ¥13, rounded half up), in one transaction, with a test. An amount above zero never becomes zero: one that would becomes the new currency's smallest (a €0.40 spend, ¥1), so no spend and no cap disappears (owner, 5 Nov 2026; `Rescale`). The setting is written first, then the amounts, under the repository's one lock; a rescale that fails puts the setting back (`CapsRepository.changeCurrency`, Phase 3).
 - Nine digits and three decimals stay far inside a `Long`, sums included.
 
 ### 4.2 Periods
@@ -258,7 +259,7 @@ From a cap, its open period's spends and today (`CapStates.of`):
 - `Cap(id, name, icon: CapIcon, amount: Money, kind: PeriodKind, reserve: Money, openStart: LocalDate, position)`
 - `Spend(id, capId, amount: Money, addedAt: Instant, periodStart: LocalDate)`
 - `ClosedPeriod(capId, range: DateRange, cap, spent, reserveBefore, reserveAfter, forgiven, periods)`
-- `CapState` (§4.6), `Share` (an exact ratio), `NearDay`, `CapIcon` (the curated set's keys: 24, the first run's twelve areas first, stored by key, an unknown key read as `OTHER`), `UserSettings` (the money's settings since Phase 1; each phase adds its own), `WidgetLook`
+- `CapState` (§4.6), `Share` (an exact ratio), `NearDay`, `CapIcon` (the curated set's keys: 24, the first run's twelve areas first, stored by key, an unknown key read as `OTHER`), `CapDraft` (a cap's four fields before it is one: the editor's and the first run's), `UserSettings` (the money's settings since Phase 1, the appearance and the first run's flag since Phase 3; each phase adds its own), `WidgetLook`
 
 ### Room (`TettoDatabase`, file `tetto.db`, version 1)
 
@@ -510,13 +511,18 @@ Each phase ends with a merged PR, green CI and its acceptance criteria met. Phas
 
 ### Phase 3 — First run and Settings
 
-- [ ] Onboarding: welcome in the family's frame (no icon, three promises, Start); "What do you want to put a cap on?" (the areas' grid); the amounts (one row per area, the period, the currency from the phone's region, changeable there); "Start from nothing"
-- [ ] Settings: money (the currency from a searchable list of the phone's currencies, the month start day, the week start), appearance (the family's, applied by `MainActivity`), language (the system's per-app picker), about (the privacy statement, credits, the licence); the guide's entry, waiting for Phase 6
-- [ ] A change of currency rescales where the decimals differ and says it does not convert (§4.1); a change of month start or week start replaces the open periods of the caps of that kind (§4.5)
+- [x] Onboarding: welcome in the family's frame (no icon, three promises, Start); "What do you want to put a cap on?" (the areas' grid); the amounts (one row per area, the period, the currency from the phone's region, changeable there); "Start from nothing"
+  - `:feature:onboarding`: three pages, no permission asked. The areas are `CapIcon`'s first twelve; "Next" waits for one, "Start from nothing" under it; "Done" waits for every amount. The run's end stores the currency, the caps together, then the flag (`SettingsRepository.finishFirstRun`).
+- [x] Settings: money (the currency from a searchable list of the phone's currencies, the month start day, the week start), appearance (the family's, applied by `MainActivity`), language (the system's per-app picker), about (the privacy statement, credits, the licence); the guide's entry, waiting for Phase 6
+  - `:feature:settings`, from the caps screen's gear. The guide's card joins with the guide (Phase 6), the reminder and your data with Phase 4: no entry before what it opens. The currency picker and the amount field are `:core:designsystem`'s, shared with the first run.
+- [x] A change of currency rescales where the decimals differ and says it does not convert (§4.1); a change of month start or week start replaces the open periods of the caps of that kind (§4.5)
+  - `CapsRepository.changeCurrency`, in one transaction, the setting put back if it fails; Settings asks first when there are caps to relabel, with an example where amounts round ("€12.55 becomes ¥13").
 
 **Acceptance:**
-- [ ] A first run ends on a caps screen shaped by the reader's picks.
-- [ ] Every setting changes what it says and survives a restart.
+- [x] A first run ends on a caps screen shaped by the reader's picks.
+  - `OnboardingViewModelTest`, on a real Room database: the currency stored, the caps in the grid's order with their amounts and periods, the flag last; a second touch on Done makes nothing twice. Not yet tried on a phone.
+- [x] Every setting changes what it says and survives a restart.
+  - `SettingsRepositoryTest`: every setting written, a new store over the same file reads each back; `SettingsScreenTest`: each row says the setting in force, and each dialog changes it.
 
 ### Phase 4 — Your data and the reminder
 
@@ -728,3 +734,15 @@ Phase 1 went green on GitHub first (`c762455`, 5 min 29 s). Built as §11 Phase 
 - **Live across midnight** (§4.4): `DayTicks` emits today, then at each local midnight and at each change of time, date or zone, registered only while a page collects; the caps screen reads its states again at each tick. Its wait is the coroutine's; a phone asleep at midnight is not a visible page, and a page shown again collects afresh.
 - **Snackbars** for every change with Undo (an add, a correction, a deletion, a cleared reserve), `SnackbarDuration.Long`, which Material stretches to the reader's accessibility timeout. A correction or a deletion that arrives after its period closed says so instead.
 - **README screenshots** stay with Phase 6, as §11 places them; the README's features and roadmap are updated.
+
+### 5 Nov 2026 — Phase 3: the first run and Settings (owner: "procedi con la fase 3")
+
+Built as §11 Phase 3 lists it: `:feature:onboarding` (the welcome, the areas, the amounts) and `:feature:settings` (the money, the appearance, the language, the privacy statement, about and the credits); `MainActivity` wears the reader's appearance, the shell shows the first run until it is done, and the caps screen's gear opens Settings. 224 tests in all (175 at Phase 2); CI's sequence green locally. No question was open: the phase follows VISION's «First run» and «Settings», §4.1 and §4.5 as written, and what follows are the choices of design made on the way, each with its reason. What is worth saying:
+
+- **The first run**: three pages in the family's frame, no permission asked. The areas are `CapIcon`'s first twelve, three to a row on a phone, two at large text sizes, four on an open foldable; a pick is a shape as well as a colour (a firmer edge and a tick), and TalkBack reads each area as a checkbox. "Next" waits for an area, and "Start from nothing" is the quiet way under it. The amounts' page: the currency first (the phone's region's, changed through the same picker as Settings'), then a group per area, its amount (typed through the numpad's buffer) and its period, a month by default. "Done" waits for every amount and says so under it ("Each cap needs an amount"): disabled, never relabelled. No amount is suggested: a figure for the reader's money is the reader's. Each cap is named after its area in the reader's language ("Coffee and bars"), theirs to rename, and the caps take the grid's order.
+- **The run's end** (`SettingsRepository.finishFirstRun`): the currency stored, so a later change of the phone's region relabels nothing by itself (§4.1); the caps together, in one transaction (`CapsRepository.addCaps`); the flag last, so the caps screen the shell turns to is already shaped by them, never empty first. A second touch on Done makes nothing twice. "Start from nothing" stores the currency too. A phone that ran a Phase 2 build meets the first run once, and keeps its caps (no reader has one).
+- **Settings**: the money first (the currency; the start of the month, "Day 27 · this month: 27 Oct – 26 Nov", picked from a month's days, no ordinals to agree in either language; the start of the week, "Monday, as the phone" or the reader's day), then the appearance under a preview (two sample tiles, one under its cap in the accent and one over it in the over ink, captioned "Example" so no sample reads as the reader's money, silent to TalkBack), the language (the system's per-app picker), the privacy statement ("Tetto sends nothing", and what Android's backup does: its allowlist is in force since Phase 0), about and the credits (the typefaces; Material Symbols, Apache-2.0). **No reminder, no «Your data», no guide's card**: Phase 4's and Phase 6's, drawn with what they open, as the gear waited for Settings.
+- **A change of currency** (`CapsRepository.changeCurrency`, §4.1): the setting first, then, in one transaction under the repository's lock, every stored amount rescaled where the decimals differ (`Rescale`: the caps and their reserves, every spend, the closed lines). A rescale that fails puts the setting back, so no figure is read in a currency it was not counted in; tested with a trigger planted to refuse the spends' writes. Only a process killed between the two writes could leave them apart, as with the week and month starts (Phase 1). With caps to relabel, Settings asks first ("Count in Japanese Yen?"), says the figures stay and nothing is converted, and, where the new currency has fewer decimals, rounds an example in both ("€12.55 becomes JP¥13", the locale's own symbol). The picker says "it never converts them" under its search, not in its list: the list opens on the reader's currency and would scroll it away (found by the screen's test).
+- **The currencies listed** (`Currencies`, `:core:designsystem`): those some region uses today (`Currency.getInstance` of each country), so no lira, no funds' accounting codes, no gold; the reader's own is kept even if no region uses it; named in the reader's language and in its alphabetical order; found by a part of the name, accents aside ("zloty" finds the złoty), the start of the code, or the symbol.
+- **What two features share is `:core:designsystem`'s**: the amount field (`MoneyField`, out of the editor) and the currency picker. So `:core:designsystem` uses `:core:domain`'s `MoneyInput` (pure Kotlin): one rule for what an amount may be, wherever it is typed (§2). `CapDraft`, the editor's four fields, moved to `:core:model`, where the first run and the repository take it too.
+- **The appearance** (`MainActivity`): theme, dress, typeface and wallpaper colours from the settings, the bars' ink following the applied theme, and one bare frame until the settings are read, so neither the wrong dress nor the first run flashes before the caps. The rows and their words are the family's, as the sisters' Settings write them.

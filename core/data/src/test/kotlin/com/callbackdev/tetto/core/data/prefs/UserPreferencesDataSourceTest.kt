@@ -4,6 +4,9 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.callbackdev.tetto.core.data.TestDataStore
+import com.callbackdev.tetto.core.model.AppFont
+import com.callbackdev.tetto.core.model.AppPalette
+import com.callbackdev.tetto.core.model.ThemeMode
 import com.callbackdev.tetto.core.model.UserSettings
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.cancel
@@ -54,6 +57,35 @@ class UserPreferencesDataSourceTest {
             it[stringPreferencesKey("currency")] = "ZZZ"
             it[intPreferencesKey("month_start_day")] = 40
             it[stringPreferencesKey("week_start")] = "SOMEDAY"
+        }
+        assertThat(source.current()).isEqualTo(UserSettings())
+    }
+
+    @Test
+    fun `the appearance and the first run's flag survive, and their defaults leave no key`() = runTest {
+        val chosen = UserSettings(
+            theme = ThemeMode.DARK,
+            palette = AppPalette.PAPER,
+            font = AppFont.INTER,
+            dynamicColor = true,
+            onboardingCompleted = true,
+        )
+        source.update { chosen }
+        assertThat(source.current()).isEqualTo(chosen)
+        assertThat(store.dataStore.data.first().asMap().keys.map { it.name })
+            .containsExactly("theme", "palette", "font", "dynamic_color", "onboarding_completed")
+
+        source.update { it.copy(theme = ThemeMode.SYSTEM, palette = AppPalette.VIVID, font = AppFont.GOOGLE_SANS) }
+        assertThat(store.dataStore.data.first().asMap().keys.map { it.name })
+            .containsExactly("dynamic_color", "onboarding_completed")
+    }
+
+    @Test
+    fun `an appearance from a newer build reads as the default`() = runTest {
+        store.dataStore.edit {
+            it[stringPreferencesKey("theme")] = "SEPIA"
+            it[stringPreferencesKey("palette")] = "NEON"
+            it[stringPreferencesKey("font")] = "COMIC"
         }
         assertThat(source.current()).isEqualTo(UserSettings())
     }

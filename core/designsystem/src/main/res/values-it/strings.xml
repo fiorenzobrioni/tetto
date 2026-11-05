@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="action_cancel">Annulla</string>
+    <string name="action_back">Indietro</string>
+
+    <!-- La scelta della valuta: quella del primo avvio e quella delle Impostazioni. -->
+    <string name="currency_title">Valuta</string>
+    <string name="currency_search">Cerca una valuta</string>
+    <string name="currency_not_found">Nessuna valuta corrisponde a “%s”</string>
+    <!-- Una valuta con il suo codice: "Euro (EUR)". -->
+    <string name="currency_named">%1$s (%2$s)</string>
 
     <!-- I tasti del tastierino, come li dice TalkBack. -->
     <string name="numpad_delete">Cancella</string>
