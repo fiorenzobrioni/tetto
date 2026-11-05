@@ -16,8 +16,9 @@ single-purpose apps by callbackdev, with **Chiaro** (weather), **Passo** (step c
 release setup, and the same visual language. Its build and structure are Tempo's (itself
 Passo's), with Passo's Room back.
 
-**State (5 Nov 2026): Phase 0 is built.** The build, the design system, the empty caps
-screen, CI and the keystores exist; the modules in the build are `:app`, `:core:model`,
+**State (5 Nov 2026): Phases 0 and 1 are built.** The build, the design system, the empty caps
+screen, CI, the keystores, and the cap engine with its storage (no screen reads it yet); the
+modules in the build are `:app`, `:core:model`, `:core:domain`, `:core:data`,
 `:core:designsystem` and `:core:testing`. The rest of the table below is the target: each
 module joins with the phase that brings its first code (PLANNING.md §11), so check before
 citing a file.
@@ -74,6 +75,10 @@ owner, 5 Nov 2026). Java 21.
 - Installable minified build: `./gradlew :app:assembleRelease -PsignReleaseWithDebugKey`
 - Launcher icon: `python3 tools/draw_launcher_icon.py`
 - On a machine with no system JDK, prepend `JAVA_HOME="/c/Program Files/Android/Android Studio/jbr"`.
+- **On Windows, Room's `MigrationTestHelper` cannot open its database** under Robolectric: its
+  driver looks for the file name after a `/`, and the path there has `\` (Room 2.8.5). It works on
+  CI (Linux). `SchemaTest` builds version 1 from the exported JSON instead; a migration test that
+  takes the helper runs on CI only, and says so.
 - **Maven Central answers HTTP 429** (Too Many Requests; it happens in the Claude Code cloud
   sandbox): add `--init-script gradle/google-maven-mirror.init.gradle.kts` to any command. It
   puts Google's mirror of Maven Central first, and points Robolectric's own `android-all`
@@ -95,8 +100,8 @@ that does not match it.
 | Module | Kind | Holds |
 |---|---|---|
 | `:core:model` | pure Kotlin/JVM | data classes shared by everything: `Money` (`Long` minor units), `AppCurrency`, `PeriodKind`, `PeriodRule`, `DateRange`, `Cap`, `Spend`, `ClosedPeriod`, `CapState`, `CapIcon`, the settings enums and `UserSettings`, `WidgetLook` |
-| `:core:domain` | pure Kotlin/JVM | the cap engine: `PeriodCalendar` (a period from a date and a rule), `Rollover` and `CatchUp` (closing periods, the reserve's limit, forgiveness, a run of empty periods folded), `CapState` (left, over, the bar, the mark for today, ahead of the days, the pace, the renewal), `MoneyInput` (the numpad's buffer), `SpendPreview`, `CapsSentence`; `ReminderSchedule`; `BackupCodec`, `CsvExport`; the widgets' arithmetic (`GlanceFit`) |
-| `:core:data` | Android library | Room (`TettoDatabase`: `caps`, `spends`, `closed_periods`; schema exported to `core/data/schemas/`), DataStore (`settings`; `widgets`, not backed up); `CapsRepository` (the catch-up before every read, in one transaction), `SettingsRepository`, `TodaySource`, the backup's file I/O |
+| `:core:domain` | pure Kotlin/JVM | the cap engine: `PeriodCalendar` (a period from a date and a rule), `Days` (where dates meet instants: midnights, a day's instants, how near a day is), `Rollover` and `CatchUp` (closing periods, the reserve's limit, forgiveness, a run of empty periods folded), `CapChanges` (the open period a new cap or a new rule gets), `CapStates` (left, over, the bar, the mark for today, ahead of the days, the pace, the renewal), `MoneyInput` (the numpad's buffer), `Rescale` (a change of currency's decimals), `SpendPreview`, `CapsSentence`; `ReminderSchedule`; `BackupCodec`, `CsvExport`; the widgets' arithmetic (`GlanceFit`) |
+| `:core:data` | Android library | Room (`TettoDatabase`: `caps`, `spends`, `closed_periods`; schema exported to `core/data/schemas/`), DataStore (`settings`; `widgets`, not backed up); `CapsRepository` (the catch-up before every read and write, in one transaction, one at a time), `SettingsRepository`, `TodaySource`, `PhoneDefaults` (the region's currency, the locale's week), the backup's file I/O |
 | `:core:reminder` | Android library | the evening reminder's Android half: the inexact alarm and its re-arming, the receivers (alarm, boot, package replaced, time and zone), the `reminder` channel and its notification |
 | `:core:designsystem` | Android library | M3 theme (Chiaro's dresses through Passo and Tempo), typography, shapes, motion, page gutter (`PageWidth.kt`), the widget card colours, `TettoIcons` (the curated cap icons, Material Symbols drawn in code); the settings rows and `StatusCard`; the numpad's keys, a cap's tile, the bar with its mark, the ring; money formatting (`MoneyText`, from minor units and the locale) |
 | `:core:testing` | Android library, test-only | `assertAccessible()` (labels, 48dp touch targets) and `walkPage()`, shared by the UI tests as `testImplementation` |

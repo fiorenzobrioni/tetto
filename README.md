@@ -102,7 +102,7 @@ in [CHANGELOG.md](./CHANGELOG.md).
 The phased plan, with every decision and its reason, is in [PLANNING.md](./PLANNING.md) (the closed periods in [docs/planning](./docs/planning/README.md)):
 
 - **Phase 0**, foundations: the build, the design system, CI. *Done.*
-- **Phase 1**, the cap engine: periods, the reserve and forgiveness, every edge case tested.
+- **Phase 1**, the cap engine: periods, the reserve and forgiveness, every edge case tested. *Done.*
 - **Phase 2**, the caps screen, the numpad and a cap's sheet.
 - **Phase 3**, the first run and settings.
 - **Phase 4**, your data and the evening reminder.

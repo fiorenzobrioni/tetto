@@ -10,8 +10,13 @@
   Backup: explicit, with an allowlist (res/xml/data_extraction_rules.xml, PLANNING.md §5). It is
   Android that sends the copy, if the reader turned backup on; Tetto has no network permission
   and gains none from this.
+
+  No service of any kind (PLANNING.md §9): Room declares one, for databases shared between
+  processes (`enableMultiInstanceInvalidation`), which Tetto never asks for: one process, one
+  database. Removed, so the merged manifest holds none.
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <application
         android:name=".TettoApplication"
@@ -34,6 +39,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Room is :core:data's, not on :app's compile classpath: lint cannot see the class this removes. -->
+        <service
+            android:name="androidx.room.MultiInstanceInvalidationService"
+            tools:ignore="MissingClass"
+            tools:node="remove" />
     </application>
 
 </manifest>

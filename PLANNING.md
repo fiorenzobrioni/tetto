@@ -17,8 +17,8 @@
 ## State
 
 - **Released**: nothing yet.
-- **Done**: Phase 0, the foundations (5 Nov 2026): green on GitHub, the release workflow rehearsed with the release key, the mark in the owner's colours.
-- **Next**: Phase 1, the cap engine.
+- **Done**: Phase 0, the foundations (5 Nov 2026): green on GitHub, the release workflow rehearsed with the release key, the mark in the owner's colours. Phase 1, the cap engine (5 Nov 2026): `:core:domain` and `:core:data`, 117 tests, CI's sequence green locally; on GitHub with the next push.
+- **Next**: Phase 2, the caps screen and the numpad.
 - **Later, and optional**: Phase 8, Google Play (§11).
 
 ---
@@ -160,10 +160,10 @@ The riskiest part of the app: a wrong period, a cent of drift or a reserve that 
 ### 4.1 Money
 
 - **Whole minor units, `Long`** (`Money`, a value class): cents of the euro, pence, none for the yen. Never `Double` or `Float`, anywhere in `:core:model`, `:core:domain` or `:core:data`. Sums are exact.
-- **One currency for the app**, an ISO 4217 code in the settings, chosen at the first run (the phone's region's by default) and stored then, so a later change of region relabels nothing by itself. Its decimals are `Currency.defaultFractionDigits` (0, 2 or 3).
+- **One currency for the app**, an ISO 4217 code in the settings, chosen at the first run (the phone's region's by default) and stored then, so a later change of region relabels nothing by itself. Its decimals are `Currency.defaultFractionDigits` (0, 2 or 3). Where the region names none (a language set without a country), the euro stands in until the first run's choice (owner, 5 Nov 2026).
 - **Input** (`MoneyInput`, pure): the numpad's buffer, digits and at most one separator, at most the currency's decimals after it, at most nine digits before it; delete, clear; parsed to minor units exactly, never through a floating-point number. A zero amount cannot be added.
 - **Output**: formatted by the locale's currency format with the app's currency (`:core:designsystem`, from minor units through `BigDecimal.movePointLeft`), in tabular figures. The domain never formats.
-- **A change of currency** relabels the amounts; it never converts them, and Settings says so. Where the two currencies' decimals differ, the stored amounts are rescaled (euro to yen: 1250 cents become ¥13, rounded half up), in one transaction, with a test.
+- **A change of currency** relabels the amounts; it never converts them, and Settings says so. Where the two currencies' decimals differ, the stored amounts are rescaled (euro to yen: 1250 cents become ¥13, rounded half up), in one transaction, with a test. An amount above zero never becomes zero: one that would becomes the new currency's smallest (a €0.40 spend, ¥1), so no spend and no cap disappears (owner, 5 Nov 2026; `Rescale`).
 - Nine digits and three decimals stay far inside a `Long`, sums included.
 
 ### 4.2 Periods
@@ -174,6 +174,7 @@ The riskiest part of the app: a wrong period, a cent of drift or a reserve that 
   - **Week**: from the week's first day on or before the date (the setting; the locale's `WeekFields.firstDayOfWeek` by default), seven days.
   - **Month**: from the month start day `d` (the setting, 1 to 31; 1 by default): each month starts on `min(d, its length)`, and a period runs to the next month's start. With `d = 31`: 31 Jan, 28 (or 29) Feb, 31 Mar, 30 Apr.
   - **Year**: from January's month start (`d` January) to the next.
+- **A cap's open period** runs from its `openStart` to the end of the rule's period that holds it (`PeriodCalendar.openPeriod`): `openStart` is that period's own start, except where a change of rule could not reach back into a closed period (§4.5), and there the open period is the rest of the rule's one, the next whole. A cap stores no end, so no setting can contradict one.
 - **Today** is `LocalDate.now(zone)` from an injected clock and zone (`TodaySource`, as Passo's), and the zone is the phone's current one.
 - Periods never come from timestamps compared with a stored end: a daylight-saving night, a flight across time zones and a clock set back move instants, not dates.
 
@@ -212,25 +213,28 @@ For each cap whose open period ended on or before today (`openEnd <= today`), in
 - **Name, icon**: nothing else changes.
 - **Amount**: applies to the open period at once (what is left is computed again); the reserve stays, and the new limit applies at the next close.
 - **Period kind**, or the settings' week start or month start day for the caps of that kind: the open period is **replaced** by the new rule's period that contains today. This period's spends move to it (their `periodStart` updated); the reserve stays. No `ClosedPeriod` row is written: nothing closed, the period was replaced. Spends of periods already closed stay in them.
+  - **Never before the last closed period's end** (`CapChanges.replacedOpenStart`): a closed period is never changed, so a new period that would reach back into one starts where it ended. A daily cap turned weekly on a Thursday, after Monday to Wednesday closed as days, counts Thursday to Sunday; the next week is whole. With nothing closed yet, the new period is whole.
+  - A change of week or month start writes the setting, then closes what ended under the old rule and moves the open periods, in one transaction; `CapsRepository` lets nothing read in between (one lock for every read and write), since an open period judged by a rule it was not made for can look ended.
 - **Clear the reserve**: the reserve becomes zero, with undo.
 - **Delete**: the cap, its spends and its closed periods (`ON DELETE CASCADE`), after a confirmation.
 - **Order**: the caps' `position`, written for every moved cap in one transaction.
 
 ### 4.6 What a cap says (`CapState`, pure)
 
-From a cap, its open period's spends and today:
+From a cap, its open period's spends and today (`CapStates.of`):
 
 - `left = cap + reserve − spent`; **over** when `left < 0` (said "€30 over", never "−€30" alone).
-- `daysLeft = openEnd − today`, at least 1.
+- `daysLeft = openEnd − today`, today counted, at least 1.
 - **The bar**: `spentShare = spent / (cap + reserve)`, held to `[0, 1]`, with an over state beyond.
 - **The mark for today**, for a week, a month or a year: `daysShare = (today − openStart + 1) / length`, today counted.
-- **Ahead of the days**: not over, and `spentShare > daysShare`: spending runs ahead of the period (the bar takes the *attention* ink). No fixed threshold.
+- **Ahead of the days**: not over, and `spentShare > daysShare`: spending runs ahead of the period (the bar takes the *attention* ink). No fixed threshold. The two shares are kept as whole numbers (`Share`) and compared exactly; the screen turns them into lengths.
 - **The pace**, for a week, a month or a year, while not over and `daysLeft ≥ 2`: `left / daysLeft`, rounded down to a whole unit of the currency; not shown under one unit.
-- **The renewal**: the open period's end, said as a weekday within the week ("until Monday"), else as a date ("until 1 Dec").
+- **The renewal** (owner, 5 Nov 2026): "until" names the open period's **last day**, included ("€12 until Sunday", "until 30 Nov"); a cap over says when it **starts again**, the next period's first day ("it starts again on Monday"). Each date is said by how near it is (`Days.near`): today, tomorrow, a weekday from two to six days ahead, else a date (a week ahead would be today's own weekday). The words are Phase 2's.
+- **Renewed today**: a period closed today and the open one began with it.
 
 `SpendPreview(state, typed)`, pure: `after = left − typed`; **fits** (`after ≥ 0`, "€15 left"), **goes over** (`left ≥ 0 > after`, "€30 over"), **still over** (`left < 0`, "still €45 over").
 
-`CapsSentence(states, today)`, pure, returns a structure (a kind and its values), never a string: no caps; all under their caps, with the one closest (the lowest `left / (cap + reserve)`), its left and its renewal; one or more over, with the first and when it starts again; a cap renewed today. The words are resources, in both languages, with plurals.
+`CapsSentence(states)`, pure, returns a structure (a kind and its values), never a string, and how many caps there are: no caps; one or more over, with the first in the reader's order, when it starts again, and how many others; a week's, a month's or a year's cap renewed today (a day's renews every day: not news), the first and how many others; all under their caps, with the one closest (the lowest `left / (cap + reserve)`; a tie goes to the first in the reader's order), its left and its last day. **When more than one holds, over first, then renewed, then all under** (owner, 5 Nov 2026). The words are resources, in both languages, with plurals.
 
 ### 4.7 Edge cases (all need unit tests)
 
@@ -254,7 +258,7 @@ From a cap, its open period's spends and today:
 - `Cap(id, name, icon: CapIcon, amount: Money, kind: PeriodKind, reserve: Money, openStart: LocalDate, position)`
 - `Spend(id, capId, amount: Money, addedAt: Instant, periodStart: LocalDate)`
 - `ClosedPeriod(capId, range: DateRange, cap, spent, reserveBefore, reserveAfter, forgiven, periods)`
-- `CapState` (§4.6), `CapIcon` (the curated set's keys), `UserSettings`, `WidgetLook`
+- `CapState` (§4.6), `Share` (an exact ratio), `NearDay`, `CapIcon` (the curated set's keys: 24, the first run's twelve areas first, stored by key, an unknown key read as `OTHER`), `UserSettings` (the money's settings since Phase 1; each phase adds its own), `WidgetLook`
 
 ### Room (`TettoDatabase`, file `tetto.db`, version 1)
 
@@ -262,9 +266,10 @@ From a cap, its open period's spends and today:
 |---|---|---|
 | `caps` | `id` (PK), `name`, `icon` (key), `amount` (minor units), `kind`, `reserve` (minor units), `open_start` (epoch day), `position`, `created_at` (epoch ms) | |
 | `spends` | `id` (PK), `cap_id` (FK → `caps`, `ON DELETE CASCADE`), `amount` (minor units, > 0), `added_at` (epoch ms), `period_start` (epoch day) | Index on (`cap_id`, `period_start`); index on `added_at` (the reminder's "today") |
-| `closed_periods` | `cap_id` (FK, cascade), `start`, `end` (epoch days), `cap`, `spent`, `reserve_before`, `reserve_after`, `forgiven` (minor units), `periods` (≥ 1) | PK (`cap_id`, `start`) |
+| `closed_periods` | `cap_id` (FK, cascade), `start`, `end_exclusive` (epoch days; not `end`, a keyword of SQLite's), `cap`, `spent`, `reserve_before`, `reserve_after`, `forgiven` (minor units), `periods` (≥ 1) | PK (`cap_id`, `start`) |
 
-- The schema is exported (`core/data/schemas/`) and committed; every migration from version 1 on has a `MigrationTestHelper` test and an upgrade test from the first release's schema, as Passo's. Never `fallbackToDestructiveMigration`.
+- The schema is exported (`core/data/schemas/`) and committed; every migration from version 1 on has a `MigrationTestHelper` test and an upgrade test from the first release's schema, as Passo's. Never `fallbackToDestructiveMigration`. Version 1 itself is pinned by `SchemaTest`, which builds a database from the exported JSON and opens it with the code (the helper cannot open its database on Windows: CLAUDE.md).
+- Ids are `AUTOINCREMENT`: an id is never reused, so a spend put back by Undo keeps its own.
 - Size: a few thousand spends a year, a few hundred closed periods. Spends of closed periods are kept for the CSV and the backup and never listed (owner, 5 Nov 2026).
 
 ### DataStore (Preferences), file `settings`
@@ -416,6 +421,8 @@ The export, the restore and the CSV go through the Storage Access Framework (`AC
 
 `checkForbiddenPermissions` (build-logic, `ForbiddenPermissionPatterns`) checks every variant's merged manifest, is wired to `check`, and runs in CI and in the release workflow. A library that adds one is removed or patched with `tools:node="remove"`.
 
+No service in the merged manifest (§9): Room declares `MultiInstanceInvalidationService`, for a database shared between processes, which Tetto never asks for; the app's manifest removes it (Phase 1).
+
 ---
 
 ## 11. Delivery phases
@@ -462,14 +469,20 @@ Each phase ends with a merged PR, green CI and its acceptance criteria met. Phas
 
 ### Phase 1 — The cap engine (highest risk)
 
-- [ ] `core:model`: `Money`, `AppCurrency`, `PeriodKind`, `PeriodRule`, `DateRange`, `Cap`, `Spend`, `ClosedPeriod`, `CapState`, `CapIcon`
-- [ ] `core:domain`, test first, every case of §4.7: `MoneyInput`, `PeriodCalendar`, `Rollover`, `CatchUp`, `CapState` (left, over, the bar, the mark for today, ahead of the days, the pace, the renewal), `SpendPreview`, `CapsSentence`
-- [ ] `core:data`: `TettoDatabase` version 1 (§5), DAOs, the schema exported; `CapsRepository` (the caps with their states as a `Flow`, the catch-up in one transaction before every read, add, edit, delete and undo of a spend, the changes of §4.5); `SettingsRepository`; `TodaySource` (today, its next midnight)
-- [ ] Repository tests under Robolectric on an in-memory database: the catch-up idempotent, a run of empty periods folded, a change of period moving the open spends and leaving the closed ones, the cascade on delete, undo by id
+- [x] `core:model`: `Money`, `AppCurrency`, `PeriodKind`, `PeriodRule`, `DateRange`, `Cap`, `Spend`, `ClosedPeriod`, `CapState`, `CapIcon`
+  - With `Share` (the bar and the mark as exact ratios), `NearDay` and `UserSettings` (the money's three settings).
+- [x] `core:domain`, test first, every case of §4.7: `MoneyInput`, `PeriodCalendar`, `Rollover`, `CatchUp`, `CapState` (left, over, the bar, the mark for today, ahead of the days, the pace, the renewal), `SpendPreview`, `CapsSentence`
+  - With `Days` (midnights, a day's instants, how near a day is), `CapChanges` (§4.5's dates) and `Rescale` (§4.1). 90 tests.
+- [x] `core:data`: `TettoDatabase` version 1 (§5), DAOs, the schema exported; `CapsRepository` (the caps with their states as a `Flow`, the catch-up in one transaction before every read, add, edit, delete and undo of a spend, the changes of §4.5); `SettingsRepository`; `TodaySource` (today, its next midnight)
+  - With `PhoneDefaults` (the region's currency, the locale's first day). The midnight ticker of a visible page is Phase 2's (§11, "live across midnight"): the flow recomputes on every write and setting, and `catchUp()` is the tick's call. `:app` depends on `:core:data` from now, so lint and R8 see the engine.
+- [x] Repository tests under Robolectric on an in-memory database: the catch-up idempotent, a run of empty periods folded, a change of period moving the open spends and leaving the closed ones, the cascade on delete, undo by id
+  - 27 tests in `:core:data`, `SchemaTest` among them (§5).
 
 **Acceptance:**
-- [ ] All engine tests pass, every §4.7 case named in a test.
-- [ ] A catch-up after 400 days without a read, on a daily cap, runs in one transaction, writes two rows and leaves the reserve at its limit.
+- [x] All engine tests pass, every §4.7 case named in a test.
+  - 5 Nov 2026: CI's sequence green on this machine (`spotlessCheck`, `checkForbiddenPermissions`, `test`, `lintDebug`, both APKs), 130 tests in all; each case of §4.7 is a test's name in `MoneyInputTest`, `RescaleTest`, `PeriodCalendarTest`, `DaysTest`, `CatchUpTest`, `RolloverTest`, `CapChangesTest`, `CapStatesTest`, `CapsSentenceTest` and `CapsRepositoryTest`.
+- [x] A catch-up after 400 days without a read, on a daily cap, runs in one transaction, writes two rows and leaves the reserve at its limit.
+  - `CapsRepositoryTest`: two rows, 401 periods, the reserve at €3 of a €3 cap; and one transaction, shown by a planted line in the second row's way: the catch-up fails and leaves nothing written.
 
 ### Phase 2 — The caps screen and the numpad
 
@@ -590,7 +603,7 @@ Each phase ends with a merged PR, green CI and its acceptance criteria met. Phas
 
 What is still to decide or to do, in one place, besides the steps of the phases in §11 (which keep their boxes there): a box opens here, with the reference to the log entry it comes from, and closes here, with the one that closes it. A new question is written here and asked before it is built.
 
-Nothing is open (5 Nov 2026): the three questions of Phase 0 were answered the same day (the log, «the owner's three answers»).
+Nothing is open (5 Nov 2026): the three questions of Phase 0 were answered the same day (the log, «the owner's three answers»), and the two of Phase 1 too (the log, «the currency's two answers»).
 
 ---
 
@@ -665,3 +678,29 @@ The owner answered the three questions Phase 0 left open, which close in §15's 
 - **«The sentence» on «In words»: yes** (§7, as written there): on by default; off, a tall card says the amount and its cap, and its circle takes the band without the sentence, as the sisters' cards do. Built in Phase 5.
 - **The versions stay** Passo's and Tempo's of 2 Nov 2026. Asked whether they should be raised, and what is lost if not: the apps build as they are, pinned versions do not drift, and nothing breaks by waiting; what waiting forgoes is the fixes in the newer releases, which were not read here, and a gap that is cheaper to close a step at a time than all at once later. The advice given: no bump inside a phase, nor for one app alone; one session for the apps that share this build (Passo, Tempo, Tetto) between two releases, patch versions first, each app through its full CI and a look on the phone, WorkManager left pinned. Said with it, correcting ADR 0001 as first written: Chiaro and Saldo are on an older build (AGP 8.13), so the family is not one build today.
 
+### 5 Nov 2026 — Phase 1: the cap engine (owner: "parti con la fase 1")
+
+Built as §11 Phase 1 lists it: `:core:model`'s types, `:core:domain`'s engine test first (89 tests, every case of §4.7 a test's name), `:core:data`'s Room and DataStore behind `CapsRepository` and `SettingsRepository` (27 tests under Robolectric). CI's sequence green on this machine; on GitHub with the next push. §4.2, §4.5, §4.6, §5 and §10 are updated in place; what is worth saying here:
+
+- **The owner's two answers**, asked before `CapsSentence` and the renewal were built, since §4.6 left them open:
+  - **The sentence**: when more than one kind holds, **a cap over first, then a cap renewed today, then all under** with the closest; a day's cap renews every day and is never "renewed today" news (the recommended order of three).
+  - **"Until" names the last day, included**: "€12 until Sunday", "until 30 Nov"; a cap over says when it **starts again**, the next period's first day. §4.6 had said the period's end, the day it starts again; rewritten. The examples elsewhere that say "until Monday" (§7, VISION, CLAUDE.md) stand, read as a last day. The domain gives both dates, and how near each is (`NearDay`: today, tomorrow, a weekday two to six days ahead, else a date); the words are Phase 2's.
+- **A replaced period never reaches back into a closed one** (§4.5, `CapChanges.replacedOpenStart`): §4.5 said "the new rule's period that contains today", which, for a daily cap turned weekly on a Thursday, would start on the Monday whose days already closed as days, and collide with the first of them in `closed_periods`' key. It starts where the last closed period ended instead; the next period is whole. So a cap's open period is "from `openStart` to the rule's end" (`PeriodCalendar.openPeriod`), which also keeps the engine sound when the locale's first day of the week changes under a reader who never chose one.
+- **One at a time** (`CapsRepository`): a change of week or month start writes DataStore and then Room, and no transaction spans the two. Realigning the caps first and the setting after, as first written, was wrong: a weekly cap made this week moves back to Sunday the 1st, and a read in between, under the old Monday rule, saw [1 Nov, 2 Nov) as ended and closed it (found writing the flow's test). Every read and write now takes one lock and reads the settings inside it; the setting is written first, then, in one transaction, the catch-up under the old rule and the move. Were the process to die between the two writes, the next read judges the old open periods by the new rule: one the new rule has already ended closes at its boundary, the rest carry on.
+- **Every read and every write runs the catch-up first**, in the same transaction, the writes too: a spend added after midnight goes to the new period, and a correction of a spend whose period has just closed is refused rather than written into a closed one. Undo follows the same rule: an add undone, a delete put back (with its id: ids are `AUTOINCREMENT`, never reused), an edit written back, a reserve cleared and restored, each only while its period is open.
+- **`closed_periods.end_exclusive`**, not `end` (§5): `END` is a keyword of SQLite's.
+- **No floating point in the engine at all**, not only in the money: the bar and the mark for today are `Share`s, two whole numbers compared exactly, so "ahead of the days" cannot flip on a rounding; the screen makes lengths of them.
+- **The numpad's buffer** takes the locale's decimal separator, and a dot or a comma from a hardware keyboard as well: it never holds a grouping separator, so neither can mean anything else. A leading zero is replaced ("05" is 5). `MoneyInput.of` types a spend's amount back for a correction.
+- **`CapIcon`**: 24 keys, the first run's twelve areas first, then bills, health, kids, clothes, books, sport, car, tech, subscriptions, hobbies, education, other. Stored by key; an unknown key (a newer backup's) reads as `OTHER`. The set may still change with Phase 2's drawings: no reader has data yet.
+- **The settings** carry the money's three (currency, month start day, week start) for now; each later phase adds its own keys (§5's table is the target). The currency where the region names none is the euro, to be confirmed (Open).
+- **The schema test** builds version 1 from the exported JSON and opens it with the code (Room checks its identity; a wrong hash fails it, tried). Room's `MigrationTestHelper` cannot open its database on Windows under Robolectric (its driver looks for the file name after a `/`); it works on CI. Noted in CLAUDE.md for the migrations to come.
+- **No service in the manifest**: Room declares `MultiInstanceInvalidationService`, for a database shared between processes; Tetto has one process, and the app's manifest removes it (§9, §10). The merged manifests now hold no service, and no permission but AndroidX's own.
+- **`:app` depends on `:core:data`** from this phase, though nothing reads it yet: `:app:lintDebug` (`checkDependencies`) and R8 see the engine from the phase it joins.
+- **Left for Phase 2**, as §11 places them: the midnight ticker of a visible page (the flow recomputes on every write and setting; `catchUp()` is the tick's call), the open spends as a flow for the cap's sheet. **Left for Phase 3**: the change of currency in the repository (the rescale itself is `Rescale`, tested), after the Open question on amounts that round to zero.
+
+### 5 Nov 2026 — The currency's two answers (owner)
+
+The owner accepted both proposals of Phase 1's Open list ("per le due domande va bene le proposte che mi fai"), which close there:
+
+- **A phone whose region names no currency** takes the euro until the first run's choice (`PhoneDefaults.FALLBACK_CURRENCY`, §4.1).
+- **A change of currency never rounds an amount above zero to zero**: one that would becomes the new currency's smallest (a €0.40 spend, ¥1), so no spend and no cap disappears and none reads as nothing (§4.1). Built now in `Rescale`, with its test, for every amount above zero (the reserve and a closed line's figures too: one rule, and a figure that was something stays something); zero stays zero. Phase 3 applies it in the repository's change of currency.

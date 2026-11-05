@@ -99,6 +99,9 @@ android {
 
 dependencies {
     implementation(project(":core:model"))
+    // The engine and its storage (Phase 1): nothing reads them yet, but the app is built from them,
+    // so `:app:lintDebug` (checkDependencies) and R8 see them from the phase they join.
+    implementation(project(":core:data"))
     implementation(project(":core:designsystem"))
 
     implementation(libs.androidx.core.ktx)

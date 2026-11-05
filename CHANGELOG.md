@@ -9,3 +9,10 @@ All notable changes to Tetto are documented here. The format follows
 **before** its tag, and kept to what somebody arriving at that page wants to read.
 
 ## [Unreleased]
+
+### Added
+
+- The rules behind every cap, not yet on screen: a cap's own period (a day, a week, a month from
+  the day you choose, or a year); what a period leaves over set aside as a reserve, up to one
+  period's cap; an overspend the reserve cannot cover forgiven when the period ends; amounts
+  counted in whole cents, and a spend correctable while its period is open.

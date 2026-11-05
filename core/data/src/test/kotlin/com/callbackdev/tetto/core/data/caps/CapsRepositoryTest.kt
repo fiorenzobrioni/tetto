@@ -1,0 +1,433 @@
+package com.callbackdev.tetto.core.data.caps
+
+import androidx.room.Room
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.cash.turbine.test
+import com.callbackdev.tetto.core.data.FakePhone
+import com.callbackdev.tetto.core.data.FakeToday
+import com.callbackdev.tetto.core.data.TestDataStore
+import com.callbackdev.tetto.core.data.date
+import com.callbackdev.tetto.core.data.db.ClosedPeriodEntity
+import com.callbackdev.tetto.core.data.db.TettoDatabase
+import com.callbackdev.tetto.core.data.euros
+import com.callbackdev.tetto.core.data.prefs.UserPreferencesDataSource
+import com.callbackdev.tetto.core.model.CapIcon.COFFEE
+import com.callbackdev.tetto.core.model.CapIcon.GROCERIES
+import com.callbackdev.tetto.core.model.CapIcon.TRAVEL
+import com.callbackdev.tetto.core.model.DateRange
+import com.callbackdev.tetto.core.model.Money
+import com.callbackdev.tetto.core.model.PeriodKind.DAY
+import com.callbackdev.tetto.core.model.PeriodKind.MONTH
+import com.callbackdev.tetto.core.model.PeriodKind.WEEK
+import com.callbackdev.tetto.core.model.PeriodKind.YEAR
+import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.test.runTest
+import org.junit.After
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.junit.rules.TemporaryFolder
+import org.junit.runner.RunWith
+import java.time.DayOfWeek.SUNDAY
+import java.time.Duration
+import java.time.ZoneId
+
+/**
+ * The caps' storage on a real Room database (PLANNING.md §11 Phase 1; §4.4, §4.5, §4.7). Unless a
+ * test moves it, the clock stands at Thursday 5 Nov 2026, 10:00 in Rome.
+ */
+@RunWith(AndroidJUnit4::class)
+class CapsRepositoryTest {
+    @get:Rule val folder = TemporaryFolder()
+
+    private lateinit var database: TettoDatabase
+    private lateinit var store: TestDataStore
+    private lateinit var preferences: UserPreferencesDataSource
+    private lateinit var repository: CapsRepository
+
+    private val clock = FakeToday(ZoneId.of("Europe/Rome"))
+    private val dao get() = database.capsDao()
+
+    @Before
+    fun setUp() {
+        database = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext(), TettoDatabase::class.java)
+            .allowMainThreadQueries()
+            .build()
+        store = TestDataStore(folder.root)
+        preferences = UserPreferencesDataSource(store.dataStore)
+        repository = CapsRepository(database, preferences, clock, FakePhone())
+        clock.at("2026-11-05T10:00")
+    }
+
+    @After
+    fun tearDown() {
+        database.close()
+        store.scope.cancel()
+    }
+
+    private suspend fun spend(capId: Long, amount: Money) = checkNotNull(repository.addSpend(capId, amount))
+
+    @Test
+    fun `a new cap counts the period that holds today, last in the reader's order`() = runTest {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        val groceries = repository.addCap(" Groceries ", GROCERIES, euros(300), MONTH)
+        val states = repository.currentStates()
+        assertThat(states.map { it.cap.id }).containsExactly(coffee, groceries).inOrder()
+        assertThat(states[0].period).isEqualTo(DateRange(date(2026, 11, 2), date(2026, 11, 9)))
+        assertThat(states[0].left).isEqualTo(euros(20))
+        assertThat(states[1].cap.name).isEqualTo("Groceries")
+        assertThat(states[1].period.start).isEqualTo(date(2026, 11, 1))
+    }
+
+    @Test
+    fun `a spend counts now, in the open period`() = runTest {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        val added = spend(coffee, euros(3, 50))
+        assertThat(added.periodStart).isEqualTo(date(2026, 11, 2))
+        assertThat(added.addedAt).isEqualTo(clock.now())
+        assertThat(repository.currentStates().single().left).isEqualTo(euros(16, 50))
+        assertThat(repository.addSpend(capId = 999, euros(1))).isNull()
+    }
+
+    @Test
+    fun `the catch-up is idempotent`() = runTest {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(3), DAY)
+        spend(coffee, euros(2))
+        clock.at("2026-11-08T09:00")
+        repository.catchUp()
+        val once = repository.closedPeriods(coffee)
+        repository.catchUp()
+        repository.currentStates()
+        repository.catchUp()
+        assertThat(repository.closedPeriods(coffee)).isEqualTo(once)
+        // The latest first: the 6th and 7th folded, then the 5th with its spend.
+        assertThat(once.map { it.periods }).containsExactly(2, 1).inOrder()
+        val state = repository.currentStates().single()
+        assertThat(state.period.start).isEqualTo(date(2026, 11, 8))
+        assertThat(state.cap.reserve).isEqualTo(euros(3))
+    }
+
+    /** Phase 1's acceptance: one transaction (the next test), two rows, the reserve at its limit. */
+    @Test
+    fun `400 days without a read, on a daily cap, write two rows and leave the reserve at its limit`() = runTest {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(3), DAY)
+        spend(coffee, euros(1))
+        clock.instant = clock.instant.plus(Duration.ofDays(401))
+
+        val state = repository.currentStates().single()
+
+        val closed = repository.closedPeriods(coffee)
+        assertThat(closed).hasSize(2)
+        assertThat(closed.sumOf { it.periods }).isEqualTo(401)
+        assertThat(closed.first().range.endExclusive).isEqualTo(clock.today())
+        assertThat(state.period.start).isEqualTo(clock.today())
+        assertThat(state.cap.reserve).isEqualTo(euros(3))
+        assertThat(state.left).isEqualTo(euros(6))
+    }
+
+    @Test
+    fun `the catch-up runs in one transaction, so a failure leaves nothing half written`() = runTest {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(3), DAY)
+        val created = clock.today()
+        // A line in the way of the second one the catch-up writes.
+        val planted = ClosedPeriodEntity(
+            capId = coffee,
+            start = created.plusDays(1).toEpochDay(),
+            endExclusive = created.plusDays(2).toEpochDay(),
+            cap = 300,
+            spent = 0,
+            reserveBefore = 0,
+            reserveAfter = 0,
+            forgiven = 0,
+            periods = 1,
+        )
+        dao.insertClosedPeriods(listOf(planted))
+        clock.instant = clock.instant.plus(Duration.ofDays(401))
+
+        val failure = runCatching { repository.catchUp() }.exceptionOrNull()
+
+        assertThat(failure).isNotNull()
+        assertThat(dao.closedPeriods(coffee)).containsExactly(planted)
+        assertThat(dao.cap(coffee)?.openStart).isEqualTo(created.toEpochDay())
+    }
+
+    @Test
+    fun `the kind mid-period, month to week, moves the open spends and leaves the closed ones`() = runTest {
+        clock.at("2026-10-20T12:00")
+        val groceries = repository.addCap("Groceries", GROCERIES, euros(300), MONTH)
+        val october = spend(groceries, euros(40))
+        clock.at("2026-11-03T12:00")
+        val first = spend(groceries, euros(15))
+        clock.at("2026-11-05T12:00")
+        val second = spend(groceries, euros(10))
+        val closedBefore = repository.closedPeriods(groceries)
+        assertThat(closedBefore.single().reserveAfter).isEqualTo(euros(260))
+
+        assertThat(repository.changeCap(groceries, "Groceries", GROCERIES, euros(80), WEEK)).isTrue()
+
+        val state = repository.currentStates().single()
+        assertThat(state.period).isEqualTo(DateRange(date(2026, 11, 2), date(2026, 11, 9)))
+        assertThat(state.spent).isEqualTo(euros(25))
+        // The reserve stays; the new cap is its limit at the next close.
+        assertThat(state.cap.reserve).isEqualTo(euros(260))
+        assertThat(repository.openSpends(groceries).map { it.id }).containsExactly(second.id, first.id).inOrder()
+        assertThat(repository.closedPeriods(groceries)).isEqualTo(closedBefore)
+        assertThat(dao.spend(october.id)?.periodStart).isEqualTo(date(2026, 10, 1).toEpochDay())
+    }
+
+    @Test
+    fun `the kind mid-period, week to month, with nothing closed takes the whole month`() = runTest {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        val added = spend(coffee, euros(4))
+        repository.changeCap(coffee, "Coffee", COFFEE, euros(80), MONTH)
+        val state = repository.currentStates().single()
+        assertThat(state.period).isEqualTo(DateRange(date(2026, 11, 1), date(2026, 12, 1)))
+        assertThat(repository.openSpends(coffee).single().id).isEqualTo(added.id)
+        assertThat(state.spent).isEqualTo(euros(4))
+    }
+
+    @Test
+    fun `the kind mid-period, to a day, moves the week's spends into today`() = runTest {
+        clock.at("2026-11-03T12:00")
+        val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        spend(coffee, euros(4))
+        clock.at("2026-11-05T12:00")
+        spend(coffee, euros(2))
+        repository.changeCap(coffee, "Coffee", COFFEE, euros(3), DAY)
+        val state = repository.currentStates().single()
+        assertThat(state.period).isEqualTo(DateRange(date(2026, 11, 5), date(2026, 11, 6)))
+        assertThat(state.spent).isEqualTo(euros(6))
+        assertThat(state.over).isTrue()
+    }
+
+    @Test
+    fun `a day turned week after closed days starts where they ended`() = runTest {
+        clock.at("2026-11-02T09:00")
+        val coffee = repository.addCap("Coffee", COFFEE, euros(3), DAY)
+        spend(coffee, euros(2))
+        clock.at("2026-11-05T09:00")
+        val today = spend(coffee, euros(1))
+
+        repository.changeCap(coffee, "Coffee", COFFEE, euros(15), WEEK)
+
+        val state = repository.currentStates().single()
+        assertThat(state.period).isEqualTo(DateRange(date(2026, 11, 5), date(2026, 11, 9)))
+        assertThat(repository.openSpends(coffee).map { it.id }).containsExactly(today.id)
+        assertThat(repository.closedPeriods(coffee).first().range.endExclusive).isEqualTo(date(2026, 11, 5))
+        // It closes on the rule's boundary, and the next week is whole.
+        clock.at("2026-11-09T09:00")
+        val next = repository.currentStates().single()
+        assertThat(next.period).isEqualTo(DateRange(date(2026, 11, 9), date(2026, 11, 16)))
+        assertThat(repository.closedPeriods(coffee).first().range)
+            .isEqualTo(DateRange(date(2026, 11, 5), date(2026, 11, 9)))
+    }
+
+    @Test
+    fun `the amount mid-period applies at once, and the reserve stays`() = runTest {
+        clock.at("2026-10-28T09:00")
+        val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        spend(coffee, euros(12))
+        clock.at("2026-11-05T09:00")
+        spend(coffee, euros(5))
+        assertThat(repository.currentStates().single().cap.reserve).isEqualTo(euros(8))
+
+        repository.changeCap(coffee, "Coffee and tea", COFFEE, euros(30), WEEK)
+
+        val state = repository.currentStates().single()
+        assertThat(state.cap.name).isEqualTo("Coffee and tea")
+        assertThat(state.cap.reserve).isEqualTo(euros(8))
+        assertThat(state.left).isEqualTo(euros(33))
+        assertThat(state.period.start).isEqualTo(date(2026, 11, 2))
+    }
+
+    @Test
+    fun `the week start changed replaces the weekly caps' open periods, and only theirs`() = runTest {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        repository.addCap("Groceries", GROCERIES, euros(300), MONTH)
+        val added = spend(coffee, euros(4))
+
+        repository.changeWeekStart(SUNDAY)
+
+        val (coffeeState, groceriesState) = repository.currentStates()
+        assertThat(coffeeState.period).isEqualTo(DateRange(date(2026, 11, 1), date(2026, 11, 8)))
+        assertThat(coffeeState.spent).isEqualTo(euros(4))
+        assertThat(repository.openSpends(coffee).single().id).isEqualTo(added.id)
+        assertThat(repository.closedPeriods(coffee)).isEmpty()
+        assertThat(groceriesState.period.start).isEqualTo(date(2026, 11, 1))
+        assertThat(preferences.current().weekStart).isEqualTo(SUNDAY)
+    }
+
+    @Test
+    fun `the month start day changed replaces the monthly and yearly caps' open periods`() = runTest {
+        val groceries = repository.addCap("Groceries", GROCERIES, euros(300), MONTH)
+        repository.addCap("Travel", TRAVEL, euros(2_000), YEAR)
+        repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        spend(groceries, euros(30))
+
+        repository.changeMonthStartDay(27)
+
+        val (month, year, week) = repository.currentStates()
+        assertThat(month.period).isEqualTo(DateRange(date(2026, 10, 27), date(2026, 11, 27)))
+        assertThat(month.spent).isEqualTo(euros(30))
+        assertThat(year.period).isEqualTo(DateRange(date(2026, 1, 27), date(2027, 1, 27)))
+        assertThat(week.period.start).isEqualTo(date(2026, 11, 2))
+        assertThat(repository.closedPeriods(groceries)).isEmpty()
+        assertThat(preferences.current().monthStartDay).isEqualTo(27)
+    }
+
+    @Test
+    fun `clearing the reserve, and its undo while the period is open`() = runTest {
+        clock.at("2026-10-28T09:00")
+        val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        spend(coffee, euros(12))
+        clock.at("2026-11-05T09:00")
+
+        val cleared = checkNotNull(repository.clearReserve(coffee))
+        assertThat(cleared.reserve).isEqualTo(euros(8))
+        assertThat(repository.currentStates().single().cap.reserve).isEqualTo(Money.ZERO)
+        assertThat(repository.clearReserve(coffee)).isNull()
+
+        assertThat(repository.undoClearReserve(cleared)).isTrue()
+        assertThat(repository.currentStates().single().cap.reserve).isEqualTo(euros(8))
+
+        // Once the period has closed, the old reserve means nothing any more.
+        val again = checkNotNull(repository.clearReserve(coffee))
+        clock.at("2026-11-09T09:00")
+        assertThat(repository.undoClearReserve(again)).isFalse()
+        assertThat(repository.currentStates().single().cap.reserve).isEqualTo(euros(20))
+    }
+
+    @Test
+    fun `deleting a cap with closed periods takes its spends and lines with it`() = runTest {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(3), DAY)
+        val tea = repository.addCap("Tea", COFFEE, euros(3), DAY)
+        val added = spend(coffee, euros(2))
+        spend(tea, euros(1))
+        clock.at("2026-11-07T09:00")
+        repository.catchUp()
+        assertThat(dao.closedPeriods(coffee)).isNotEmpty()
+
+        assertThat(repository.deleteCap(coffee)).isTrue()
+
+        assertThat(dao.spend(added.id)).isNull()
+        assertThat(dao.closedPeriods(coffee)).isEmpty()
+        assertThat(repository.currentStates().map { it.cap.id }).containsExactly(tea)
+        assertThat(dao.closedPeriods(tea)).isNotEmpty()
+        assertThat(repository.deleteCap(coffee)).isFalse()
+    }
+
+    @Test
+    fun `undo of an add deletes that spend, by its id`() = runTest {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        val kept = spend(coffee, euros(1))
+        val added = spend(coffee, euros(5))
+        assertThat(repository.undoAdd(added)).isTrue()
+        assertThat(repository.openSpends(coffee)).containsExactly(kept)
+        assertThat(repository.undoAdd(added)).isFalse()
+    }
+
+    @Test
+    fun `undo of a delete puts the spend back with its id and fields`() = runTest {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        val added = spend(coffee, euros(5))
+        val deleted = checkNotNull(repository.deleteSpend(added.id))
+        assertThat(deleted).isEqualTo(added)
+        assertThat(repository.openSpends(coffee)).isEmpty()
+
+        assertThat(repository.undoDelete(deleted)).isTrue()
+
+        assertThat(repository.openSpends(coffee)).containsExactly(added)
+        assertThat(repository.undoDelete(deleted)).isFalse()
+    }
+
+    @Test
+    fun `undo of an edit writes the old amount back`() = runTest {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        val added = spend(coffee, euros(5))
+        val previous = checkNotNull(repository.editSpend(added.id, euros(50)))
+        assertThat(previous).isEqualTo(euros(5))
+        assertThat(repository.currentStates().single().spent).isEqualTo(euros(50))
+
+        assertThat(repository.undoEdit(added.id, previous)).isTrue()
+
+        assertThat(repository.openSpends(coffee).single().amount).isEqualTo(euros(5))
+    }
+
+    @Test
+    fun `an edit refused in a closed period, and a delete, and their undos`() = runTest {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(3), DAY)
+        val added = spend(coffee, euros(2))
+        val other = spend(coffee, euros(1))
+        val deleted = checkNotNull(repository.deleteSpend(other.id))
+        clock.at("2026-11-06T09:00")
+
+        assertThat(repository.editSpend(added.id, euros(1))).isNull()
+        assertThat(repository.deleteSpend(added.id)).isNull()
+        assertThat(repository.undoAdd(added)).isFalse()
+        // Yesterday's deletion cannot be undone into a period that has closed.
+        assertThat(repository.undoDelete(deleted)).isFalse()
+
+        assertThat(dao.spend(added.id)?.amount).isEqualTo(200)
+        assertThat(dao.spend(other.id)).isNull()
+        assertThat(repository.closedPeriods(coffee).single().spent).isEqualTo(euros(2))
+    }
+
+    @Test
+    fun `today before the open period's start, a new spend still counts in the open period`() = runTest {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(3), DAY)
+        clock.at("2026-11-07T09:00")
+        repository.catchUp()
+        // A clock set back a day: nothing reopens.
+        clock.at("2026-11-06T09:00")
+        val added = spend(coffee, euros(1))
+        assertThat(added.periodStart).isEqualTo(date(2026, 11, 7))
+        assertThat(repository.closedPeriods(coffee)).hasSize(2)
+        assertThat(repository.currentStates().single().period.start).isEqualTo(date(2026, 11, 7))
+    }
+
+    @Test
+    fun `a spend today across midnight and after a change of zone`() = runTest {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(3), DAY)
+        assertThat(repository.anySpendToday()).isFalse()
+        clock.at("2026-11-05T23:30")
+        spend(coffee, euros(2))
+        assertThat(repository.anySpendToday()).isTrue()
+
+        clock.at("2026-11-06T00:10")
+        assertThat(repository.anySpendToday()).isFalse()
+
+        // Flown to New York: there it is still the 5th, and the spend was that day's (17:30).
+        clock.zone = ZoneId.of("America/New_York")
+        assertThat(clock.today()).isEqualTo(date(2026, 11, 5))
+        assertThat(repository.anySpendToday()).isTrue()
+    }
+
+    @Test
+    fun `the reader's order`() = runTest {
+        val a = repository.addCap("A", COFFEE, euros(1), DAY)
+        val b = repository.addCap("B", COFFEE, euros(1), DAY)
+        val c = repository.addCap("C", COFFEE, euros(1), DAY)
+        repository.reorder(listOf(c, a, b))
+        assertThat(repository.currentStates().map { it.cap.id }).containsExactly(c, a, b).inOrder()
+        val d = repository.addCap("D", COFFEE, euros(1), DAY)
+        assertThat(repository.currentStates().map { it.cap.id }).containsExactly(c, a, b, d).inOrder()
+    }
+
+    @Test
+    fun `the states follow every write and every setting`() = runTest {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        repository.states.test {
+            assertThat(awaitItem().single().spent).isEqualTo(Money.ZERO)
+            repository.addSpend(coffee, euros(4))
+            assertThat(awaitItem().single().spent).isEqualTo(euros(4))
+            repository.changeWeekStart(SUNDAY)
+            val moved = awaitItem().single()
+            assertThat(moved.period).isEqualTo(DateRange(date(2026, 11, 1), date(2026, 11, 8)))
+            assertThat(moved.spent).isEqualTo(euros(4))
+            assertThat(repository.closedPeriods(coffee)).isEmpty()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+}
