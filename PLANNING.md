@@ -282,7 +282,7 @@ From a cap, its open period's spends and today:
 
 ### DataStore, file `widgets` (not backed up)
 
-One `WidgetLook` per `appWidgetId`: the card's ground (light, dark, system, one of the six colours), its opacity, which caps («At a glance»: all, or a chosen set in the reader's order; «In words»: one cap, or the closest to its cap). Removed in `onDeleted`.
+One `WidgetLook` per `appWidgetId`: the card's ground (light, dark, system, one of the six colours), its opacity, which caps («At a glance»: all, or a chosen set in the reader's order; «In words»: one cap, or the closest to its cap, and «The sentence», on by default). Removed in `onDeleted`.
 
 ### Backup
 
@@ -313,7 +313,7 @@ The family's pair (owner, 5 Nov 2026), on the family's card (Passo's ADR 0005, f
 ### Configuration
 
 - `SizeMode.Exact`: every form is read off the size the launcher really granted.
-- Default placement 4×2 for «At a glance», 4×1 for «In words» (where Passo's ring card opens); minimum one cell; `resizeMode="horizontal|vertical"`; **no maximum** (Passo's ADR 0005).
+- Default placement 4×2 for «At a glance», 4×1 for «In words»; minimum one cell; `resizeMode="horizontal|vertical"`; **no maximum** (Passo's ADR 0005).
 - `updatePeriodMillis = 0`. `configure` is the per-widget settings screen, `reconfigurable|configuration_optional`: the card is placed at once with sensible defaults.
 - `widgetCategory="home_screen"`.
 - Reference grants the layout tests measure against (the family's): one row ≈ 85 dp tall, two ≈ 189; two cells ≈ 159 dp wide, three ≈ 250, four ≈ 340.
@@ -326,17 +326,33 @@ The family's pair (owner, 5 Nov 2026), on the family's card (Passo's ADR 0005, f
 
 ### «In words»: the family's ring card
 
-The owner asked (5 Nov 2026) that this card have **the ring of Passo's and Tempo's ring cards, at the same sizes for every size of card and every line of text**, so the three stand on a home screen as one set. So its geometry is not designed again: it is the family's, as Tempo's `WordsFit` writes it (Passo's row and tall card), **copied constant for constant** into Tetto's `GlanceFit`, and only the words are Tetto's. The type steps are the family's widget scale (`WidgetType`: title 22 sp, body 16 sp, label 13 sp), copied with it.
+The owner asked (5 Nov 2026) that this card have **the ring of Passo's and Tempo's ring cards, at the same sizes for every size of card and every line of text**, so the three stand on a home screen as one set. So its ring is not designed again: it is **the family's circle**, the three functions both sisters draw their circle with since 4 Nov 2026 (Tempo's `WordsFit.cellCircle`, `rowCircle`, `tallCircle`; Passo's `dotRingSize`, `rowRingSize`, `tallCircle`, the same arithmetic), **copied constant for constant** into Tetto's `GlanceFit`. Its rule, the sisters': a circle is the size the card's size gives, **whatever the day's words say**, so two cards of one size side by side show one circle, and a card's own does not grow when its words are short; it grows with the card, and yields only to the reader's text size. Only the words are Tetto's, set in the family's widget scale (`WidgetType`: hero 34 sp, title 22, body 16, label 13), copied with it.
+
+**The circle**, in dp, with the family's card insets (14 dp; 6 dp snug, on a row):
+
+- **One cell wide** (under 120 dp): the cell's shorter side less 8 dp on each side, between 36 and 104 dp.
+- **One row** (under 150 dp tall): the height inside the snug insets, but never so wide that the words beside it keep less than 84 dp (the width less 14 dp on each side, the 12 dp gap and those 84 dp), between 44 and 56 dp.
+- **Two rows and up**: the card's inner height less **a budgeted band of words**, never measured, at 1.32 em a line and the reader's text size: a 34 sp line and three 16 sp lines under 230 dp wide (108.24 dp at the default size), a 34 sp line and two from 230 dp (87.12 dp), where a sentence that takes two lines on two cells takes one; a 34 sp line and one (66 dp) where the reader hides the sentence. Between 44 dp and the smaller of the card's inner width and the ceiling (the larger of 104 dp and 45% of the card's inner height and width), rounded down to a quarter of a dp.
+
+At the family's reference grants (one cell 85 dp; rows 85, 189 and 293 dp tall; two, three and four cells 159, 250 and 340 dp wide), the numbers both sisters' tests pin and Tetto's pin too:
+
+| | 1×1, 1×2, 1×3 | 2×1 | 3×1, 4×1 | 2×2 | 3×2, 4×2 | 2×3, 3×3 | 4×3 |
+|---|---|---|---|---|---|---|---|
+| The circle | 69 | 44 | 56 | 52.75 | 73.75 | 104 | 119.25 |
+| Without the sentence | 69 | 44 | 56 | 95 | 95 | 104 | 119.25 |
+
+At 115% and 130% text the two-by-two's band grows and its circle stands at 44 dp. The owner's own two-by-two (188 × 218 dp, measured from the phone's screenshots in Tempo's entry of 5 Nov 2026) draws 81.75 dp, 104 without the sentence: it is one of the grants Tetto's tests measure too.
 
 | Form | When | The ring | The words |
 |---|---|---|---|
-| CELL | one cell wide | As large as the cell, up to 104 dp (56 dp at ease); the cap's icon inside | What is left under it where the cell is taller than wide (the label step, 18 to 28 dp of room) |
-| ROW | one row | At the leading edge, 44 to 56 dp, 12 dp from the words | What is left ("€12 left", 20 sp, Medium; 16 sp on a narrow row, down to 14) over the cap's name and its renewal ("Coffee · until Monday", 16 sp; 14, 13, 12 on a narrow row); the pace at the far edge where the words keep 120 dp |
-| TALL | two rows and up | In the top trailing corner, from 48 dp, 72 dp at ease, up to the larger of 104 dp and 45% of the card's inner height and width; the cap's name beside it where 56 dp are left | Hanging from the bottom leading corner: what is left (22 sp, down to 18 to stay on one line), "of €20 · until Monday" (16 sp), and the pace or the cap's sentence at the label step (13 sp, up to three lines) |
+| CELL | one cell wide | The cell's circle, centred; the cap's icon inside | What is left under it ("€12"), at the label step, only where it fits under the circle, which is never made smaller for it |
+| ROW | one row | The row's circle at the leading edge, 12 dp from the words | What is left ("€12 left", 20 sp, Medium; 16 sp on a narrow row, down to 14) over the cap's name and its renewal ("Coffee · until Monday", 16 sp; 14, 13, 12 on a narrow row); the pace at the far edge where the words keep 120 dp |
+| TALL | two rows and up | The tall circle in the top trailing corner | From the bottom leading corner, the band the circle budgets: what is left (34 sp, the hero, tabular figures; "€12 left", "€30 over"), the cap's sentence (16 sp, up to two lines under three cells wide, one from three: the pace, "about €4 a day until Monday", or "ahead of the days"), and "of €20 · until Monday" (16 sp); the cap's name beside the circle where 56 dp are left, else over the amount |
 
+- **«The sentence»** («La frase»), a switch on «In words»'s settings, on by default, as Passo's card hides its sentence and Tempo's its «day's note»: off, a tall card says the amount and "of €20 · until Monday" alone, and its circle takes the band they leave (95 dp two rows high), the size the sisters' circles take without theirs. One cell and one row are unchanged: they never show the sentence.
 - **The ring** is what was spent of the cap and its reserve: its track, and the arc in the accent; in the *attention* ink when spending runs ahead of the days; full past the cap, with "over" in the words ("€30 over"). It is a bitmap painted at the size shown, capped at 416 px a side, one per card (Passo's rule), with the cap's icon drawn in its middle.
 - Without a cap to show (the chosen one deleted, no caps at all) the card says so in the words' place and opens the app.
-- A gallery test draws «In words» beside the family's reference forms at the reference grants, and `WidgetFitTest` pins every size of the ring and every type step to the family's numbers: a change to them is a change to the family's, decided with the owner, never alone.
+- A gallery test draws «In words» at every reference grant, with the sentence and without, and `WidgetFitTest` pins the circle at each (the table above) and every type step to the family's scale, and finds nothing cut at 100, 115 and 130% text: a change to them is a change to the family's, decided with the owner, never alone.
 
 ### Rendering
 
@@ -486,7 +502,7 @@ Each phase ends with a merged PR, green CI and its acceptance criteria met. Phas
 
 ### Phase 5 — The widgets and the launcher's shortcuts
 
-- [ ] `GlanceFit` (pure, §6) with tests at the reference grants; the forms of §7; «In words»'s ring and type steps copied from the family's (`WordsFit`, `WidgetType`) and pinned by tests; `docs/adr/0003-widgets.md`
+- [ ] `GlanceFit` (pure, §6) with tests at the reference grants; the forms of §7; «In words»'s circle (the family's three functions) and type steps (`WidgetType`) copied from the sisters' and pinned at every reference grant, with the sentence and without; `docs/adr/0003-widgets.md`
 - [ ] «At a glance» and «In words» in Glance on the family's card; the ring painted as the family's (a bitmap, 416 px at most); the per-widget settings screen with its live preview; the previews (static and generated)
 - [ ] `QuickAddActivity`: the numpad over the home screen, its confirmation line with Undo; from a card's cap and from a shortcut
 - [ ] The refresh (§7): after every write, the midnight alarm, the exempt broadcasts; the catch-up in `provideGlance`
@@ -565,6 +581,7 @@ Each phase ends with a merged PR, green CI and its acceptance criteria met. Phas
 
 What is still to decide or to do, in one place, besides the steps of the phases in §11 (which keep their boxes there): a box opens here, with the reference to the log entry it comes from, and closes here, with the one that closes it. A new question is written here and asked before it is built.
 
+- [ ] **«In words»'s «The sentence» switch** (owner; Phase 5; §15, 5 Nov 2026, «the family's circle, recalibrated»): a switch on the card's settings, on by default, that keeps a tall card to the amount and its cap, its circle taking the band without the sentence (95 dp two rows high), as Passo's and Tempo's cards do. Proposed; confirmed by the owner before it is built.
 - [ ] **The ring's colours** (Phase 0, with the owner; §15, 5 Nov 2026). The emblem is decided: Tetto's roof at the lower right, Saldo's place. The ring must stay clearly apart from Saldo's (its halves of sea green and soft brick), and from the other sisters' (Chiaro's sky, Passo's greens, Tempo's azure to cobalt), under deuteranopia too, as Saldo's review of 18 Oct 2026 checked its own. Few hues are free: Chiaro's ring already passes through a violet (`#6B4FC8`) and a deep indigo, Saldo's through a brick, and the amber is every emblem's. Proposal, to draw and compare with the owner: raspberry to deep plum (blue-reds, away from Saldo's orange-red brick and darker than Chiaro's violet), checked side by side with the four sisters' icons.
 
 ---
@@ -603,3 +620,19 @@ The owner read the release key's certificate with `keytool -list -v` and handed 
 `28:A0:E8:60:45:9D:3C:24:06:BC:A7:6F:18:FA:1D:91:42:37:9F:A2:03:EA:85:1D:DE:4B:66:B2:55:19:9D:F1`
 
 It is public: Phase 0 writes it into `keystore/README.md` and the README's Install section, and pins it in `release.yml`, which refuses an APK signed by any other key (§11 Phase 0, its box ticked when those three files carry it).
+
+### 5 Nov 2026 — «In words»: the family's circle, recalibrated (owner)
+
+The owner had updated Tempo and Passo the evening before, on the very sizes of their circles, and pulled them after this plan was written: "read the two repositories again and recalibrate Tetto's widget". §7's first table came from Tempo's `WordsFit` as it stood on 2 Nov 2026 (the tall dial from 48 dp, 72 at ease, grown with the room its words left), and is replaced.
+
+Read again (Tempo's PLANNING §15, 4 and 5 Nov 2026, and `WordsFit`; Passo's PLANNING §15 and `GlanceLayout.kt`): both sisters now draw **the family's circle**, three functions with one arithmetic, sized by the card and never by the day's words, so two cards of one size show one circle (owner, 4 Nov 2026: "at the same size of card and the same content they are the same size", "at every size"). One cell, the shorter side less 8 dp each side, 36 to 104 dp; one row, the height inside the snug insets with 84 dp kept for the words, 44 to 56 dp; two rows and up, the inner height less a budgeted band of words (34 sp and three 16 sp lines under 230 dp wide, two from 230 dp, one where the reader hides the sentence or the note), between 44 dp and the ceiling or the inner width, rounded down to a quarter. Recomputed here before writing them: 69; 44, 56, 56; 52.75, 73.75, 73.75; 104, 104, 119.25; without the sentence 95 two rows high; the owner's two-by-two 81.75 and 104, as both sisters' tests pin.
+
+What changes in Tetto (§7, rewritten in place):
+
+1. **«In words»'s ring is the family's circle**, copied constant for constant, with the table of the reference grants its tests pin.
+2. **The tall card's words are the band the circle budgets**: what is left at the hero size (34 sp), the cap's sentence (16 sp, two lines under three cells wide, one from three), and "of €20 · until Monday" (16 sp); Passo's composition (a figure, its sentence, its goal), which the band was measured on. It was the 22 sp title of Tempo's earlier card; an amount is a figure, and reads at the figure's size.
+3. **«The sentence», a switch on the card's settings**, on by default: off, the circle takes the band without it (95 dp two rows high), as Passo's ring without its sentence and Tempo's dial without its «day's note» (5 Nov 2026), so a reader who keeps the three cards terse sees one circle there too. Proposed with this entry, from the owner's own words for the sisters ("a still greater uniformity a reader could choose"); the owner confirms it before Phase 5 builds it (Open).
+4. The owner's two-by-two (188 × 218 dp) joins the reference grants Tetto's widget tests measure.
+
+Nothing else in Tetto had been copied from what changed: the pulls touched the sisters' widgets and plans only (`git diff` of both), not the build, the design system or the catalog Phase 0 copies.
+

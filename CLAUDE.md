@@ -205,10 +205,14 @@ insets, grounds, Chiaro's six colours (`WidgetPalette.kt`), opacity and ink rule
 arithmetic is pure (`GlanceFit`) and pinned by tests at the family's reference grants; a gallery
 test draws every form to `widget/build/screenshots`: look at them after changing a card. A card
 says dates ("until Monday"), never hours from now: it is redrawn at midnight, not each minute.
-**«In words» is the family's ring card** (owner, 5 Nov 2026): its forms, ring sizes and type
-steps are Tempo's `WordsFit` and `WidgetType` (Passo's row and tall card), copied constant for
-constant, so it lines up with Passo's and Tempo's ring cards on a home screen. Never retune
-them for Tetto alone: a change to them is the family's, decided with the owner.
+**«In words» is the family's ring card** (owner, 5 Nov 2026): its ring is **the family's
+circle** (PLANNING.md §7), the three functions both sisters draw their circle with since
+4 Nov 2026 (Tempo's `WordsFit.cellCircle`, `rowCircle`, `tallCircle`; Passo's `dotRingSize`,
+`rowRingSize`, `tallCircle`), and its type steps the family's widget scale (`WidgetType`),
+copied constant for constant, so it lines up with Passo's and Tempo's ring cards on a home
+screen. The circle is sized by the card, never by the day's words. Never retune them for Tetto
+alone: a change to them is the family's, decided with the owner; when the sisters change
+theirs, Tetto's follows, recomputed and pinned at the reference grants.
 
 **README screenshots** (`docs/screenshots/`, shown in the root `README.md`): drawn by
 `ReadmeScreenshots` test classes from realistic sample caps, in English, and only on request:

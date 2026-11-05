@@ -193,11 +193,14 @@ sisters' «At a glance» and «In words»:
 - **«In words»** («In parole»), **the family's ring card**: one cap, chosen per widget (or "the
   one closest to its cap"). The ring is what was spent, the cap's icon inside it; beside or
   under it the words: "€12 left", "Coffee · until Monday", and on a taller card the pace. The
-  ring and the words take **the same sizes as Passo's and Tempo's ring cards at every size of
-  card** (owner, 5 Nov 2026): the ring as large as a one-cell card; at the leading edge of a
-  one-row card, beside the words, at the row's size; in the top corner of a card two rows high
-  and up, the words hanging from the bottom. The same type steps for the same kind of line, so
-  the three cards side by side on a home screen line up and read as one set.
+  ring is **the family's circle**, the one Passo's and Tempo's cards draw since 4 Nov 2026: the
+  same size at every size of card, set by the card and never by the day's words (owner, 5 Nov
+  2026): as large as a one-cell card; at the leading edge of a one-row card, beside the words,
+  at the row's size; in the top corner of a card two rows high and up, the words hanging from
+  the bottom. The same type steps for the same kind of line, so the three cards side by side on
+  a home screen line up and read as one set. As on the sisters' cards, the reader may keep a
+  tall card to the amount and its cap, without the sentence, and the circle then grows as
+  theirs do.
 - **A touch on a cap adds a spend from the home screen**: the numpad opens over the home screen,
   and the reader is back on it after Add. Two touches and the amount, without opening the app.
 - **Per widget**: the family's card (light, dark, following the phone, or one of the six colours,
