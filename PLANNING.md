@@ -17,8 +17,8 @@
 ## State
 
 - **Released**: nothing yet.
-- **Done**: Phase 0, the foundations (5 Nov 2026): green on GitHub, the release workflow rehearsed with the release key, the mark in the owner's colours. Phase 1, the cap engine (5 Nov 2026): `:core:domain` and `:core:data`, 117 tests, CI's sequence green locally; on GitHub with the next push.
-- **Next**: Phase 2, the caps screen and the numpad.
+- **Done**: Phase 0, the foundations (5 Nov 2026): green on GitHub, the release workflow rehearsed with the release key, the mark in the owner's colours. Phase 1, the cap engine (5 Nov 2026): `:core:domain` and `:core:data`, 117 tests, green on GitHub (`c762455`, 5 min 29 s). Phase 2, the caps screen and the numpad (5 Nov 2026): `:feature:caps` and the shell, CI's sequence green locally; on GitHub with the next push.
+- **Next**: Phase 3, the first run and Settings (Settings' gear joins the caps screen with it).
 - **Later, and optional**: Phase 8, Google Play (§11).
 
 ---
@@ -486,18 +486,27 @@ Each phase ends with a merged PR, green CI and its acceptance criteria met. Phas
 
 ### Phase 2 — The caps screen and the numpad
 
-- [ ] The shell (Navigation 3): the caps screen, the cap's sheet, the editor, Settings' entry
-- [ ] The caps screen: the sentence, the tiles (two columns on a phone, one at large text sizes), the bar with the mark for today, the reserve's chip, the pace, the renewal, the states; live across midnight (§4.4); the last tile "New cap"; the order by dragging in an edit mode
-- [ ] The numpad sheet (`:core:designsystem` draws the keys, `:feature:caps` holds the sheet and its ViewModel): the keys, the locale's separator, delete and clear, the hardware keyboard, the preview, Add disabled until an amount; the haptics through Compose's `LocalHapticFeedback` (a keyboard tap per key, a confirm on Add, a reject at the digits' limit), following the phone's setting
-- [ ] After Add: the figure rolls, the snackbar with Undo (Material's accessible timing)
-- [ ] The cap's sheet: this period, its spends (edit, delete, undo), the last periods' lines, clear the reserve, edit, delete
-- [ ] The cap editor: name, amount, period, icon from `TettoIcons` (about two dozen Material Symbols drawn in code, Apache-2.0, credited in `licenses/`)
-- [ ] UI tests from states, never from a database, with `assertAccessible()` and `walkPage()` at twice the text size and on an open foldable; the screenshots looked at
+- [x] The shell (Navigation 3): the caps screen, the cap's sheet, the editor, Settings' entry
+  - Pages: the caps screen, the editor, the order. The numpad and the cap's sheet are the caps screen's bottom sheets, closed by the system's gestures. Settings' gear joins with Settings, Phase 3 (owner, 5 Nov 2026: no entry before its page).
+- [x] The caps screen: the sentence, the tiles (two columns on a phone, one at large text sizes), the bar with the mark for today, the reserve's chip, the pace, the renewal, the states; live across midnight (§4.4); the last tile "New cap"; the order by dragging in an edit mode
+  - Today's date on top, the family's first row. The edit mode is a page of its own, from "Change the order" under the tiles, from two caps up (owner, 5 Nov 2026). Live across midnight through `DayTicks` (`:core:data`).
+- [x] The numpad sheet (`:core:designsystem` draws the keys, `:feature:caps` holds the sheet and its ViewModel): the keys, the locale's separator, delete and clear, the hardware keyboard, the preview, Add disabled until an amount; the haptics through Compose's `LocalHapticFeedback` (a keyboard tap per key, a confirm on Add, a reject at the digits' limit), following the phone's setting
+  - The ViewModel is the caps screen's, `CapsViewModel`; the typed amount is the sheet's own state. The same numpad corrects a spend from the cap's sheet ("Save €3.20").
+- [x] After Add: the figure rolls, the snackbar with Undo (Material's accessible timing)
+- [x] The cap's sheet: this period, its spends (edit, delete, undo), the last periods' lines, clear the reserve, edit, delete
+  - The last three periods (owner, 5 Nov 2026).
+- [x] The cap editor: name, amount, period, icon from `TettoIcons` (about two dozen Material Symbols drawn in code, Apache-2.0, credited in `licenses/`)
+  - The 24 icons of `CapIcon`, their path data copied from `google/material-design-icons` (`SymbolPaths`), the licence in `licenses/MaterialSymbols-Apache-2.0.txt`.
+- [x] UI tests from states, never from a database, with `assertAccessible()` and `walkPage()` at twice the text size and on an open foldable; the screenshots looked at
+  - `CapsScreenTest`, `NumpadTest`, `CapSheetTest`, `CapEditorTest`, `ArrangeCapsTest`, `CapWordsTest`: 47 tests; the screenshots of `feature/caps/build/screenshots` looked at (the caps, over, at twice the text, on a foldable, the numpad with nine digits, the sheet, the editor).
 
 **Acceptance:**
-- [ ] From the caps screen, a spend is two touches and the amount; Undo puts the figure back.
-- [ ] TalkBack reads a tile as one sentence ("Coffee, €12 left of €20, until Monday") and the preview as it changes.
-- [ ] At twice the text size nothing is cut, and the tiles stand in one column.
+- [x] From the caps screen, a spend is two touches and the amount; Undo puts the figure back.
+  - `CapsViewModelTest`, on a real Room database: the tile's touch opens the numpad on its cap, the amount and Add write the spend, Undo puts €20 back. Not yet tried on a phone.
+- [x] TalkBack reads a tile as one sentence ("Coffee, €12 left of €20, until Monday") and the preview as it changes.
+  - "Coffee, €16 left of €20, until Sunday, about €4 a day, with €4 in reserve" (`CapsScreenTest`); the preview a polite live region (`NumpadTest`). Not yet heard with TalkBack on a phone.
+- [x] At twice the text size nothing is cut, and the tiles stand in one column.
+  - Walked at 2× by every screen's test; the tiles stacked (`CapsScreenTest`); the numpad's amount steps down to fit, never cut.
 
 ### Phase 3 — First run and Settings
 
@@ -704,3 +713,18 @@ The owner accepted both proposals of Phase 1's Open list ("per le due domande va
 
 - **A phone whose region names no currency** takes the euro until the first run's choice (`PhoneDefaults.FALLBACK_CURRENCY`, §4.1).
 - **A change of currency never rounds an amount above zero to zero**: one that would becomes the new currency's smallest (a €0.40 spend, ¥1), so no spend and no cap disappears and none reads as nothing (§4.1). Built now in `Rescale`, with its test, for every amount above zero (the reserve and a closed line's figures too: one rule, and a figure that was something stays something); zero stays zero. Phase 3 applies it in the repository's change of currency.
+
+### 5 Nov 2026 — Phase 2: the caps screen and the numpad (owner: "parti con la fase 2")
+
+Phase 1 went green on GitHub first (`c762455`, 5 min 29 s). Built as §11 Phase 2 lists it: `:feature:caps` (the caps screen, the numpad, a cap's sheet, the editor, the order; `CapsViewModel`) and the shell in `:app` (Navigation 3); in `:core:designsystem` the money's format, the cap's tile, the bar, the rolling figure, the numpad's keys, the cap palette; in `:core:data` the page's midnight (`DayTicks`) and the sheet's flows. 175 tests in all; CI's sequence green locally. What is worth saying:
+
+- **The owner's three answers**, asked before the screen was drawn: **no gear until Phase 3** (Settings arrives then; an entry to an empty page is the dead tab the family's rule forbids); **"Change the order" under the tiles**, from two caps up, to a page where caps are dragged by a handle (a long press on a tile is its sheet, VISION); **the cap's sheet shows the last three periods**.
+- **The words** (§4.6, the owner's answer of the same day): "until" names the last day, by how near it is: "today" (a day's cap), "until tomorrow", "until Sunday", "until 30 Nov"; a cap over "starts again on Monday". In Italian a date beyond the week carries its weekday, "fino a lunedì 30 nov", "riparte martedì 1 dic": the date's own article ("al 30", "all'8") would need agreeing in code, the weekday needs none (`skeleton_date` is the language's). Over is "sotto di" (VISION's glossary), what is left "ancora": both agree with no number.
+- **Cents only where there are some** on a cap's figures ("€12 left", "€203.60 left", "of €200"), a spend always in full ("€5.00 added to Coffee", "Add €5.00"), as VISION writes them. `MoneyFormat` is the one place an amount becomes text.
+- **The over ink is Material's `error`** of the generated dresses, not a new one: the figure and the preview in it, the bar full and hatched (a shape, not a colour alone), "over" in words. `ContrastTest` now pins `error` on every ground, as §11 Phase 0 asked of an over ink. The *attention* ink takes a bar running ahead of the days; TalkBack says "spending ahead of the days".
+- **The tiles are rows, not a lazy grid**, each row as tall as its tallest tile, so a pace or a reserve chip never leaves a neighbour hanging; a screenful of caps needs no recycling. One column from 1.5 times the text, or where the page, in the reader's text, is under 300 dp.
+- **The numpad**: the typed amount at the hero size, stepping down to 24 sp so nine digits and the decimals fit, never cut; a caret that does not blink. A hardware keyboard types digits, a dot or a comma, Backspace and Enter. The editor's amount field types through the same buffer, so it refuses what the numpad would.
+- **The cap palette**: the 24 `CapIcon`s as Material Symbols (outlined, 400, 24 px), their path data downloaded from `google/material-design-icons` and copied verbatim into `SymbolPaths` (checked: each concatenates back to the published path), drawn by Compose from it; kept as path data so Phase 5's ring bitmaps can draw them too. Three line icons joined `TettoIcons` (backspace, drag handle, bin), drawn as the family's are.
+- **Live across midnight** (§4.4): `DayTicks` emits today, then at each local midnight and at each change of time, date or zone, registered only while a page collects; the caps screen reads its states again at each tick. Its wait is the coroutine's; a phone asleep at midnight is not a visible page, and a page shown again collects afresh.
+- **Snackbars** for every change with Undo (an add, a correction, a deletion, a cleared reserve), `SnackbarDuration.Long`, which Material stretches to the reader's accessibility timeout. A correction or a deletion that arrives after its period closed says so instead.
+- **README screenshots** stay with Phase 6, as §11 places them; the README's features and roadmap are updated.

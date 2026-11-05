@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The caps screen. "Left" is what can still be spent; "over" is past the cap (VISION's glossary). -->
+    <string name="caps_empty_title">No caps yet</string>
+    <string name="caps_empty_body">A cap is what you allow yourself for one thing, by the day, the week, the month or the year. What is left, and until when, will be here.</string>
+    <string name="new_cap">New cap</string>
+    <string name="change_order">Change the order</string>
+
+    <!-- The sentence on top (PLANNING.md §4.6): a cap over first, then one renewed today, then all under. -->
+    <string name="sentence_one_under">%1$s: %2$s left %3$s.</string>
+    <string name="sentence_all_under">All under your caps. %1$s is the closest: %2$s left %3$s.</string>
+    <string name="sentence_over_one">%1$s is %2$s over. It starts again %3$s.</string>
+    <plurals name="sentence_over_some">
+        <item quantity="one">%1$s and %2$d other cap are over. %1$s starts again %3$s.</item>
+        <item quantity="other">%1$s and %2$d other caps are over. %1$s starts again %3$s.</item>
+    </plurals>
+    <string name="sentence_over_every">Every cap is over. %1$s starts again %2$s.</string>
+    <string name="sentence_renewed_one">%1$s starts again today: %2$s %3$s.</string>
+    <plurals name="sentence_renewed_some">
+        <item quantity="one">%1$s and %2$d other cap start again today.</item>
+        <item quantity="other">%1$s and %2$d other caps start again today.</item>
+    </plurals>
+
+    <!-- Until when: the period's last day, included ("until Sunday"); and when a cap over starts again. -->
+    <string name="until_today">today</string>
+    <string name="until_tomorrow">until tomorrow</string>
+    <string name="until_day">until %s</string>
+    <string name="again_tomorrow">tomorrow</string>
+    <string name="again_day">on %s</string>
+    <!-- How a date beyond the next six days is written, as a date skeleton. -->
+    <string name="skeleton_date">dMMM</string>
+
+    <!-- A cap's tile. -->
+    <string name="tile_left">%s left</string>
+    <string name="tile_over">%s over</string>
+    <string name="tile_detail">of %1$s · %2$s</string>
+    <string name="tile_detail_over">of %1$s · starts again %2$s</string>
+    <string name="tile_pace">about %s a day</string>
+    <string name="tile_reserve">+%s reserve</string>
+    <string name="tile_description_left">%1$s, %2$s left of %3$s, %4$s</string>
+    <string name="tile_description_over">%1$s, %2$s over its cap of %3$s, starts again %4$s</string>
+    <string name="tile_description_ahead">spending ahead of the days</string>
+    <string name="tile_description_reserve">with %s in reserve</string>
+    <string name="tile_click">Add a spend</string>
+    <string name="tile_long_click">Open the cap</string>
+
+    <!-- After a change, with Undo. -->
+    <string name="notice_added">%1$s added to %2$s</string>
+    <string name="notice_corrected">Corrected to %s</string>
+    <string name="notice_deleted">%1$s deleted from %2$s</string>
+    <string name="notice_reserve_cleared">%s’s reserve cleared</string>
+    <string name="notice_cap_deleted">%s deleted</string>
+    <string name="notice_period_closed">That period has closed: its spends no longer change.</string>
+    <string name="action_undo">Undo</string>
+
+    <!-- The numpad. -->
+    <string name="numpad_add">Add</string>
+    <string name="numpad_add_amount">Add %s</string>
+    <string name="numpad_save">Save</string>
+    <string name="numpad_save_amount">Save %s</string>
+    <string name="numpad_correcting">Correcting a spend</string>
+    <string name="preview_left">%s left</string>
+    <string name="preview_over">%s over</string>
+    <string name="preview_still_over">Still %s over</string>
+    <string name="numpad_open_cap">Open %s</string>
+
+    <!-- A cap's sheet. -->
+    <string name="sheet_this_period">This period</string>
+    <string name="sheet_cap">Cap</string>
+    <string name="sheet_reserve">Reserve</string>
+    <string name="sheet_spent">Spent</string>
+    <string name="sheet_left">Left</string>
+    <string name="sheet_over">Over</string>
+    <string name="sheet_spends">This period’s spends</string>
+    <string name="sheet_no_spends">Nothing spent in this period yet.</string>
+    <string name="spend_correct">Correct</string>
+    <string name="spend_delete">Delete</string>
+    <string name="sheet_last_periods">The last periods</string>
+    <string name="line_even">%1$s: %2$s of %3$s</string>
+    <string name="line_to_reserve">%1$s: %2$s of %3$s, +%4$s to the reserve</string>
+    <string name="line_from_reserve">%1$s: %2$s of %3$s, %4$s from the reserve</string>
+    <string name="line_forgiven">%1$s: %2$s of %3$s, %4$s forgiven</string>
+    <plurals name="line_run_days">
+        <item quantity="one">%1$s: nothing spent in %2$d day, the reserve at %3$s</item>
+        <item quantity="other">%1$s: nothing spent in %2$d days, the reserve at %3$s</item>
+    </plurals>
+    <plurals name="line_run_weeks">
+        <item quantity="one">%1$s: nothing spent in %2$d week, the reserve at %3$s</item>
+        <item quantity="other">%1$s: nothing spent in %2$d weeks, the reserve at %3$s</item>
+    </plurals>
+    <plurals name="line_run_months">
+        <item quantity="one">%1$s: nothing spent in %2$d month, the reserve at %3$s</item>
+        <item quantity="other">%1$s: nothing spent in %2$d months, the reserve at %3$s</item>
+    </plurals>
+    <plurals name="line_run_years">
+        <item quantity="one">%1$s: nothing spent in %2$d year, the reserve at %3$s</item>
+        <item quantity="other">%1$s: nothing spent in %2$d years, the reserve at %3$s</item>
+    </plurals>
+    <string name="sheet_clear_reserve">Clear the reserve</string>
+    <string name="sheet_edit">Edit</string>
+    <string name="sheet_delete">Delete the cap</string>
+    <string name="delete_title">Delete %s?</string>
+    <string name="delete_body">Its spends and its past periods go with it.</string>
+    <string name="delete_confirm">Delete</string>
+
+    <!-- The cap editor. -->
+    <string name="editor_edit">Edit the cap</string>
+    <string name="editor_name">Name</string>
+    <string name="editor_amount">Amount</string>
+    <string name="editor_period">Period</string>
+    <string name="editor_icon">Icon</string>
+    <string name="editor_save">Save</string>
+    <string name="editor_kind_note">This period’s spends move into the new period; the reserve stays.</string>
+    <string name="action_back">Back</string>
+
+    <!-- The order. -->
+    <string name="arrange_hint">Drag a cap by its handle.</string>
+    <string name="arrange_done">Done</string>
+    <string name="arrange_move_up">Move up</string>
+    <string name="arrange_move_down">Move down</string>
+</resources>

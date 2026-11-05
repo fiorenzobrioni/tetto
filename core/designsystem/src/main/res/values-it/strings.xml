@@ -1,4 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="action_cancel">Annulla</string>
+
+    <!-- I tasti del tastierino, come li dice TalkBack. -->
+    <string name="numpad_delete">Cancella</string>
+    <string name="numpad_clear">Cancella tutto</string>
+
+    <!-- Il periodo di un tetto. -->
+    <string name="period_day">Giorno</string>
+    <string name="period_week">Settimana</string>
+    <string name="period_month">Mese</string>
+    <string name="period_year">Anno</string>
+
+    <!-- Le icone della tavolozza dei tetti, per ciò che rappresentano. -->
+    <string name="cap_icon_groceries">Spesa</string>
+    <string name="cap_icon_eating_out">Mangiare fuori</string>
+    <string name="cap_icon_coffee">Caffè e bar</string>
+    <string name="cap_icon_shopping">Shopping</string>
+    <string name="cap_icon_fun">Svago</string>
+    <string name="cap_icon_transport">Trasporti</string>
+    <string name="cap_icon_fuel">Carburante</string>
+    <string name="cap_icon_gifts">Regali</string>
+    <string name="cap_icon_personal_care">Cura della persona</string>
+    <string name="cap_icon_pets">Animali</string>
+    <string name="cap_icon_travel">Viaggi</string>
+    <string name="cap_icon_home">Casa</string>
+    <string name="cap_icon_bills">Bollette</string>
+    <string name="cap_icon_health">Salute</string>
+    <string name="cap_icon_kids">Bambini</string>
+    <string name="cap_icon_clothes">Abbigliamento</string>
+    <string name="cap_icon_books">Libri</string>
+    <string name="cap_icon_sport">Sport</string>
+    <string name="cap_icon_car">Auto</string>
+    <string name="cap_icon_tech">Tecnologia</string>
+    <string name="cap_icon_subscriptions">Abbonamenti</string>
+    <string name="cap_icon_hobbies">Hobby</string>
+    <string name="cap_icon_education">Istruzione</string>
+    <string name="cap_icon_other">Altro</string>
 </resources>

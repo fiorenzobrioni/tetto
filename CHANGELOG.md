@@ -12,7 +12,12 @@ All notable changes to Tetto are documented here. The format follows
 
 ### Added
 
-- The rules behind every cap, not yet on screen: a cap's own period (a day, a week, a month from
+- The rules behind every cap: a cap's own period (a day, a week, a month from
   the day you choose, or a year); what a period leaves over set aside as a reserve, up to one
   period's cap; an overspend the reserve cannot cover forgiven when the period ends; amounts
   counted in whole cents, and a spend correctable while its period is open.
+- The caps screen: one sentence before any number, a tile per cap with what is left, until when,
+  a bar with a mark for today, the pace and the reserve; over said in words.
+- The numpad: two touches and the amount, the preview of what will be left, Undo after every
+  change; a cap's sheet with this period's spends, to correct or delete, and the last periods.
+- New caps and changes to them (name, amount, period, icon), and the caps' order.

@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">Tetto</string>
-
-    <!-- The caps screen with no cap yet. -->
-    <string name="caps_empty_title">No caps yet</string>
-    <string name="caps_empty_body">A cap is what you allow yourself for one thing, by the day, the week, the month or the year. What is left, and until when, will be here.</string>
 </resources>

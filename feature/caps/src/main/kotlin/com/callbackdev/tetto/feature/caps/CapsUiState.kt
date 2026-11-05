@@ -1,0 +1,45 @@
+package com.callbackdev.tetto.feature.caps
+
+import com.callbackdev.tetto.core.data.caps.ClearedReserve
+import com.callbackdev.tetto.core.domain.cap.CapsSentence
+import com.callbackdev.tetto.core.model.AppCurrency
+import com.callbackdev.tetto.core.model.CapState
+import com.callbackdev.tetto.core.model.ClosedPeriod
+import com.callbackdev.tetto.core.model.Money
+import com.callbackdev.tetto.core.model.Spend
+import java.time.LocalDate
+
+/** The caps screen (PLANNING.md §11 Phase 2): today, the currency, the caps in the reader's order, the sentence. */
+data class CapsUiState(
+    val today: LocalDate,
+    val currency: AppCurrency,
+    val caps: List<CapState>,
+    val sentence: CapsSentence,
+) {
+    fun cap(id: Long): CapState? = caps.firstOrNull { it.cap.id == id }
+}
+
+/** A cap's sheet: this period's spends, newest first, and the last periods' lines, the latest first. */
+data class CapSheetData(val capId: Long, val spends: List<Spend>, val lines: List<ClosedPeriod>)
+
+/**
+ * The numpad, open on [capId]: adding a spend, or correcting [correcting], a spend of the cap's
+ * open period.
+ */
+data class NumpadTarget(val capId: Long, val correcting: Spend? = null)
+
+/** What the screen says after a change, with Undo where it can be undone. */
+sealed interface CapsNotice {
+    data class Added(val spend: Spend, val capName: String) : CapsNotice
+
+    data class Corrected(val spendId: Long, val amount: Money, val previous: Money) : CapsNotice
+
+    data class Deleted(val spend: Spend, val capName: String) : CapsNotice
+
+    data class ReserveCleared(val cleared: ClearedReserve, val capName: String) : CapsNotice
+
+    data class CapDeleted(val capName: String) : CapsNotice
+
+    /** A correction or a deletion arrived after its period had closed (midnight passed meanwhile). */
+    data object PeriodClosed : CapsNotice
+}

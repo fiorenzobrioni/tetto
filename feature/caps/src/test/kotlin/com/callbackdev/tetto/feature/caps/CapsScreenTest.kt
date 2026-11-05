@@ -1,0 +1,195 @@
+package com.callbackdev.tetto.feature.caps
+
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.unit.dp
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.callbackdev.tetto.core.designsystem.theme.TettoTheme
+import com.callbackdev.tetto.core.model.CapIcon
+import com.callbackdev.tetto.core.model.Money
+import com.callbackdev.tetto.core.model.PeriodKind
+import com.callbackdev.tetto.core.testing.assertAccessible
+import com.callbackdev.tetto.core.testing.walkPage
+import com.callbackdev.tetto.core.testing.writeScreenshot
+import com.callbackdev.tetto.feature.caps.CapsSample.euros
+import com.google.common.truth.Truth.assertThat
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
+
+/** The caps screen from its states (PLANNING.md §11 Phase 2), never from a database. */
+@RunWith(AndroidJUnit4::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(qualifiers = "en-rGB-w411dp-h891dp-xxhdpi")
+class CapsScreenTest {
+    @get:Rule val compose = createComposeRule()
+
+    private val added = mutableListOf<Long>()
+    private val opened = mutableListOf<Long>()
+    private var newCap = 0
+    private var order = 0
+
+    private fun draw(state: CapsUiState, dark: Boolean = false) {
+        compose.setContent {
+            TettoTheme(darkTheme = dark) {
+                CapsScreen(
+                    state = state,
+                    onAddSpend = { added += it },
+                    onOpenCap = { opened += it },
+                    onNewCap = { newCap++ },
+                    onChangeOrder = { order++ },
+                )
+            }
+        }
+    }
+
+    private fun description(tag: String): String =
+        compose.onNodeWithTag(tag).fetchSemanticsNode().config[SemanticsProperties.ContentDescription].single()
+
+    @Test
+    fun `with no cap, says so, and offers the first one`() {
+        draw(CapsSample.ui(emptyList()))
+        compose.onNodeWithText("No caps yet").assertIsDisplayed()
+        compose.onNodeWithText("New cap").performClick()
+        assertThat(newCap).isEqualTo(1)
+        compose.onNodeWithText("Change the order").assertDoesNotExist()
+        compose.assertAccessible()
+        compose.writeScreenshot("caps-empty")
+    }
+
+    @Test
+    @Config(qualifiers = "it-rIT-w411dp-h891dp-xxhdpi")
+    fun `with no cap, in Italian`() {
+        draw(CapsSample.ui(emptyList()))
+        compose.onNodeWithText("Ancora nessun tetto").assertIsDisplayed()
+        compose.onNodeWithText("Nuovo tetto").assertIsDisplayed()
+        compose.writeScreenshot("caps-empty-it")
+    }
+
+    @Test
+    fun `all under, the sentence names the closest, before any number`() {
+        draw(CapsSample.ui(CapsSample.underCaps))
+        compose.onNodeWithText(
+            "All under your caps. Restaurants is the closest: €12 left until 30 Nov.",
+        ).assertIsDisplayed()
+        compose.onNodeWithText("Thursday 5 November", substring = true).assertIsDisplayed()
+        compose.assertAccessible()
+        compose.writeScreenshot("caps")
+    }
+
+    @Test
+    fun `a tile reads as one sentence, and its touches are named`() {
+        draw(CapsSample.ui(CapsSample.underCaps))
+        assertThat(description(CapsTags.tile(1)))
+            .isEqualTo("Coffee, €16 left of €20, until Sunday, about €4 a day, with €4 in reserve")
+        assertThat(description(CapsTags.tile(5))).isEqualTo("Lunch, €7.50 left of €12, today")
+        val tile = compose.onNodeWithTag(CapsTags.tile(1))
+        tile.assert(SemanticsMatcher("named touch") { it.config[SemanticsActions.OnClick].label == "Add a spend" })
+        tile.assert(
+            SemanticsMatcher("named long press") {
+                it.config[SemanticsActions.OnLongClick].label ==
+                    "Open the cap"
+            },
+        )
+        tile.performClick()
+        tile.performSemanticsAction(SemanticsActions.OnLongClick)
+        assertThat(added).containsExactly(1L)
+        assertThat(opened).containsExactly(1L)
+    }
+
+    @Test
+    fun `from two caps, the order can be changed`() {
+        draw(CapsSample.ui(listOf(CapsSample.coffee, CapsSample.groceries)))
+        compose.onNodeWithText("Change the order").performClick()
+        assertThat(order).isEqualTo(1)
+    }
+
+    @Test
+    fun `over is said in words, with when the cap starts again`() {
+        draw(CapsSample.ui(listOf(CapsSample.coffee, CapsSample.shopping, CapsSample.groceries)))
+        compose.onNodeWithText("Shopping is €30 over. It starts again on 1 Dec.").assertIsDisplayed()
+        assertThat(description(CapsTags.tile(4))).isEqualTo("Shopping, €30 over its cap of €100, starts again on 1 Dec")
+        compose.writeScreenshot("caps-over")
+    }
+
+    @Test
+    fun `every cap over`() {
+        val over = CapsSample.state(6, "Fun", CapIcon.FUN, euros(50), PeriodKind.WEEK, euros(55))
+        draw(CapsSample.ui(listOf(CapsSample.shopping, over)))
+        compose.onNodeWithText("Every cap is over. Shopping starts again on 1 Dec.").assertIsDisplayed()
+    }
+
+    @Test
+    fun `a cap renewed today says so, when none is over`() {
+        val renewed = CapsSample.state(
+            7,
+            "Books",
+            CapIcon.BOOKS,
+            euros(30),
+            PeriodKind.MONTH,
+            Money.ZERO,
+        ).let { it.copy(renewedToday = true) }
+        draw(CapsSample.ui(listOf(CapsSample.coffee, renewed)))
+        compose.onNodeWithText("Books starts again today: €30 until 30 Nov.").assertIsDisplayed()
+    }
+
+    @Test
+    fun `dark`() {
+        draw(
+            CapsSample.ui(listOf(CapsSample.coffee, CapsSample.shopping, CapsSample.groceries, CapsSample.lunch)),
+            dark = true,
+        )
+        compose.assertAccessible()
+        compose.writeScreenshot("caps-dark")
+    }
+
+    @Test
+    @Config(qualifiers = "it-rIT-w411dp-h891dp-xxhdpi")
+    fun `in Italian`() {
+        draw(CapsSample.ui(CapsSample.underCaps))
+        // Italian writes the euro after the figure, past a no-break space.
+        compose.onNodeWithText("Tutti sotto il tetto. Il più vicino è Restaurants: ancora 12 € fino a lunedì 30 nov.")
+            .assertIsDisplayed()
+        assertThat(description(CapsTags.tile(1))).isEqualTo(
+            "Coffee, ancora 16 € su 20 €, fino a domenica, circa 4 € al giorno, con 4 € di riserva",
+        )
+        compose.writeScreenshot("caps-it")
+    }
+
+    @Test
+    @Config(qualifiers = "en-rGB-w411dp-h891dp-xxhdpi", fontScale = 2f)
+    fun `at twice the text size, the tiles stand in one column and nothing is cut`() {
+        draw(CapsSample.ui(CapsSample.underCaps + CapsSample.shopping))
+        val first = compose.onNodeWithTag(CapsTags.tile(1)).fetchSemanticsNode().boundsInRoot
+        val second = compose.onNodeWithTag(CapsTags.tile(2)).fetchSemanticsNode().boundsInRoot
+        assertThat(second.left).isEqualTo(first.left)
+        assertThat(second.top).isGreaterThan(first.bottom)
+        compose.walkPage(hasTestTag(CapsTags.PAGE), "caps-large-text")
+    }
+
+    @Test
+    @Config(qualifiers = "en-rGB-w841dp-h701dp-xxhdpi")
+    fun `on an open foldable, a centred column in two`() {
+        draw(CapsSample.ui(CapsSample.underCaps + CapsSample.shopping))
+        val page = compose.onNodeWithTag(CapsTags.PAGE).fetchSemanticsNode().boundsInRoot
+        val first = compose.onNodeWithTag(CapsTags.tile(1)).fetchSemanticsNode().boundsInRoot
+        val second = compose.onNodeWithTag(CapsTags.tile(2)).fetchSemanticsNode().boundsInRoot
+        assertThat(second.top).isEqualTo(first.top)
+        // The column is the family's page width, centred: as far from the right as from the left.
+        val density = compose.onNodeWithTag(CapsTags.PAGE).fetchSemanticsNode().layoutInfo.density.density
+        assertThat(first.left / density).isGreaterThan(100.dp.value)
+        assertThat((page.right - second.right) / density).isWithin(2f).of(first.left / density)
+        compose.walkPage(hasTestTag(CapsTags.PAGE), "caps-foldable")
+    }
+}

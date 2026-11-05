@@ -184,6 +184,53 @@ object TettoIcons {
         }
     }
 
+    /** The numpad's delete key: a key cap pointing back, with a cross. */
+    val Backspace: ImageVector by lazy {
+        icon("backspace", autoMirror = true) {
+            moveTo(8.5f, 5.5f)
+            lineTo(19f, 5.5f)
+            curveTo(20.1f, 5.5f, 21f, 6.4f, 21f, 7.5f)
+            lineTo(21f, 16.5f)
+            curveTo(21f, 17.6f, 20.1f, 18.5f, 19f, 18.5f)
+            lineTo(8.5f, 18.5f)
+            lineTo(3f, 12f)
+            close()
+            moveTo(11.5f, 9.5f)
+            lineTo(16.5f, 14.5f)
+            moveTo(16.5f, 9.5f)
+            lineTo(11.5f, 14.5f)
+        }
+    }
+
+    /** What a row is dragged by: two columns of three dots. */
+    val DragHandle: ImageVector by lazy {
+        icon("drag_handle") {
+            for (x in listOf(9.5f, 14.5f)) {
+                for (y in listOf(7f, 12f, 17f)) circle(x, y, 0.6f)
+            }
+        }
+    }
+
+    /** A bin: deleting a spend. */
+    val Trash: ImageVector by lazy {
+        icon("trash") {
+            moveTo(4.5f, 6.5f)
+            lineTo(19.5f, 6.5f)
+            moveTo(9.5f, 6.5f)
+            lineTo(9.5f, 4.5f)
+            lineTo(14.5f, 4.5f)
+            lineTo(14.5f, 6.5f)
+            moveTo(6.5f, 6.5f)
+            lineTo(7.5f, 19.5f)
+            lineTo(16.5f, 19.5f)
+            lineTo(17.5f, 6.5f)
+            moveTo(10.5f, 10f)
+            lineTo(10.5f, 16f)
+            moveTo(13.5f, 10f)
+            lineTo(13.5f, 16f)
+        }
+    }
+
     private fun PathBuilder.roundRect(left: Float, top: Float, right: Float, bottom: Float, r: Float) {
         moveTo(left + r, top)
         lineTo(right - r, top)

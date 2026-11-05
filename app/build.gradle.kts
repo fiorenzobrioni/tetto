@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.tetto.android.application)
     alias(libs.plugins.tetto.android.compose)
     alias(libs.plugins.tetto.android.hilt)
+    // The shell's keys are serializable: the back stack outlives the process.
+    alias(libs.plugins.kotlin.serialization)
 }
 
 // The version lives in gradle.properties; versionCode follows from it (PLANNING.md §11 Phase 0),
@@ -99,14 +101,16 @@ android {
 
 dependencies {
     implementation(project(":core:model"))
-    // The engine and its storage (Phase 1): nothing reads them yet, but the app is built from them,
-    // so `:app:lintDebug` (checkDependencies) and R8 see them from the phase they join.
     implementation(project(":core:data"))
     implementation(project(":core:designsystem"))
+    implementation(project(":feature:caps"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.android)
 
     testImplementation(project(":core:testing"))

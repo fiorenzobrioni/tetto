@@ -1,4 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="action_cancel">Cancel</string>
+
+    <!-- The numpad's keys, as TalkBack says them. -->
+    <string name="numpad_delete">Delete</string>
+    <string name="numpad_clear">Clear</string>
+
+    <!-- A cap's period, by its kind: the editor's choice, and the first run's (Phase 3). -->
+    <string name="period_day">Day</string>
+    <string name="period_week">Week</string>
+    <string name="period_month">Month</string>
+    <string name="period_year">Year</string>
+
+    <!-- The cap palette's icons, by what they stand for: TalkBack's names for them, and the first
+         run's areas (Phase 3). -->
+    <string name="cap_icon_groceries">Groceries</string>
+    <string name="cap_icon_eating_out">Eating out</string>
+    <string name="cap_icon_coffee">Coffee and bars</string>
+    <string name="cap_icon_shopping">Shopping</string>
+    <string name="cap_icon_fun">Fun</string>
+    <string name="cap_icon_transport">Transport</string>
+    <string name="cap_icon_fuel">Fuel</string>
+    <string name="cap_icon_gifts">Gifts</string>
+    <string name="cap_icon_personal_care">Personal care</string>
+    <string name="cap_icon_pets">Pets</string>
+    <string name="cap_icon_travel">Travel</string>
+    <string name="cap_icon_home">Home</string>
+    <string name="cap_icon_bills">Bills</string>
+    <string name="cap_icon_health">Health</string>
+    <string name="cap_icon_kids">Kids</string>
+    <string name="cap_icon_clothes">Clothes</string>
+    <string name="cap_icon_books">Books</string>
+    <string name="cap_icon_sport">Sport</string>
+    <string name="cap_icon_car">Car</string>
+    <string name="cap_icon_tech">Tech</string>
+    <string name="cap_icon_subscriptions">Subscriptions</string>
+    <string name="cap_icon_hobbies">Hobbies</string>
+    <string name="cap_icon_education">Education</string>
+    <string name="cap_icon_other">Other</string>
 </resources>

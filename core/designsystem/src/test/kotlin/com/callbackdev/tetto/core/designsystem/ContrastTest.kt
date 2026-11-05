@@ -41,12 +41,13 @@ class ContrastTest {
                 expect(dress, "onSurface on $ground", s.onSurface, color)
                 expect(dress, "onSurfaceVariant on $ground", s.onSurfaceVariant, color)
                 expect(dress, "primary on $ground", s.primary, color)
+                // A cap over says so in the error ink, on its tile and on the numpad's sheet (Phase 2).
+                expect(dress, "error on $ground", s.error, color)
             }
             expect(dress, "onPrimary on primary", s.onPrimary, s.primary)
             expect(dress, "onPrimaryContainer on primaryContainer", s.onPrimaryContainer, s.primaryContainer)
             expect(dress, "onSecondaryContainer on secondaryContainer", s.onSecondaryContainer, s.secondaryContainer)
             expect(dress, "onErrorContainer on errorContainer", s.onErrorContainer, s.errorContainer)
-            expect(dress, "error on surface", s.error, s.surface)
             expect(dress, "inverseOnSurface on inverseSurface", s.inverseOnSurface, s.inverseSurface)
         }
     }

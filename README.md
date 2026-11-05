@@ -47,11 +47,11 @@ What 1.0 will do ([VISION.md](./VISION.md) has the full scope):
 
 - 🧢 **Caps, each on its own period**: a day, a week, a month or a year, with the week's first day
   and the month's first day yours to choose.
-- 👀 **What is left, first**: one sentence on top ("Everything under its cap; Coffee is closest,
-  €3 left until Monday"), then a tile per cap with what is left, the cap, when it renews, and a
-  bar with a mark for today, so you see at once whether spending runs ahead of the days.
+- 👀 **What is left, first**: one sentence on top ("All under your caps. Restaurants is the
+  closest: €12 left until 30 Nov."), then a tile per cap with what is left, the cap, its last
+  day, and a bar with a mark for today, so you see at once whether spending runs ahead of the days.
 - 🔢 **Two touches and the amount**: a numpad that shows what will be left before you add, and an
-  undo after every change. A spend of today can be corrected or deleted.
+  undo after every change. Any spend of the current period can be corrected or deleted.
 - 🛟 **Kind by design**: what a period leaves over becomes a reserve (up to one period's cap); an
   overspend uses it; what it cannot cover is forgiven when the period ends.
 - 🏠 **Two widgets that never scroll**: «At a glance», your caps as the card's size allows, and
@@ -103,7 +103,7 @@ The phased plan, with every decision and its reason, is in [PLANNING.md](./PLANN
 
 - **Phase 0**, foundations: the build, the design system, CI. *Done.*
 - **Phase 1**, the cap engine: periods, the reserve and forgiveness, every edge case tested. *Done.*
-- **Phase 2**, the caps screen, the numpad and a cap's sheet.
+- **Phase 2**, the caps screen, the numpad and a cap's sheet. *Done.*
 - **Phase 3**, the first run and settings.
 - **Phase 4**, your data and the evening reminder.
 - **Phase 5**, the two widgets and the launcher's shortcuts.

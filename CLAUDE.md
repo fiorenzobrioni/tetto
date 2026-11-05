@@ -16,10 +16,10 @@ single-purpose apps by callbackdev, with **Chiaro** (weather), **Passo** (step c
 release setup, and the same visual language. Its build and structure are Tempo's (itself
 Passo's), with Passo's Room back.
 
-**State (5 Nov 2026): Phases 0 and 1 are built.** The build, the design system, the empty caps
-screen, CI, the keystores, and the cap engine with its storage (no screen reads it yet); the
-modules in the build are `:app`, `:core:model`, `:core:domain`, `:core:data`,
-`:core:designsystem` and `:core:testing`. The rest of the table below is the target: each
+**State (5 Nov 2026): Phases 0, 1 and 2 are built.** The build, the design system, CI, the
+keystores, the cap engine with its storage, and the caps screen with its numpad, its sheets, the
+editor and the order; the modules in the build are `:app`, `:core:model`, `:core:domain`,
+`:core:data`, `:core:designsystem`, `:core:testing` and `:feature:caps`. The rest of the table below is the target: each
 module joins with the phase that brings its first code (PLANNING.md §11), so check before
 citing a file.
 

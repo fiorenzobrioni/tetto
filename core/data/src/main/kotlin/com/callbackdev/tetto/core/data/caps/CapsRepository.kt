@@ -75,6 +75,16 @@ constructor(
             .map { currentStates() }
             .distinctUntilChanged()
 
+    /** The open period's spends of the cap [capId], newest first, as they change: the cap's sheet. */
+    fun observeOpenSpends(capId: Long): Flow<List<Spend>> = changes().map { openSpends(capId) }.distinctUntilChanged()
+
+    /** The cap [capId]'s latest closed lines, at most [limit], the latest first, as they change. */
+    fun observeClosedPeriods(capId: Long, limit: Int): Flow<List<ClosedPeriod>> =
+        changes().map { closedPeriods(capId).take(limit) }.distinctUntilChanged()
+
+    private fun changes(): Flow<Set<String>> =
+        database.invalidationTracker.createFlow(*TettoDatabase.CAP_TABLES).conflate()
+
     /** The caps' states once, for a card's render, the reminder, the numpad over the home screen. */
     suspend fun currentStates(): List<CapState> = afterCatchUp { settings ->
         val today = clock.today()
