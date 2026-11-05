@@ -17,7 +17,7 @@
 ## State
 
 - **Released**: nothing yet.
-- **In progress**: Phase 0, built (5 Nov 2026): the build, the design system, the empty caps screen, CI and the keystores; it closes with CI green on GitHub and the ring's colours (§15, Open). Next: Phase 1, the cap engine.
+- **In progress**: Phase 0, built (5 Nov 2026) and green on GitHub, the release workflow rehearsed with the release key; it closes with the ring's colours (§15, Open). Next: Phase 1, the cap engine.
 - **Later, and optional**: Phase 8, Google Play (§11).
 
 ---
@@ -453,6 +453,7 @@ Each phase ends with a merged PR, green CI and its acceptance criteria met. Phas
 
 **Acceptance:**
 - CI is green on GitHub.
+  - Android CI run #1 (Phase 0, `20b7757`), green in 5 min 50 s; the release workflow's rehearsal, run by hand the same day, green: the four secrets decoded, the APK signed by `CN=callbackdev`, SHA-256 `28a0e860…199df1`, the release key's. Nothing published.
 - The app launches and shows the caps screen's empty state in the family's dress, in English and Italian.
   - Drawn and tested under Robolectric (`CapsEmptyPageTest`: English, Italian, dark, twice the text size, an open foldable, `assertAccessible`); not yet run on a device.
 - Adding `INTERNET` or `CAMERA` to any manifest fails `checkForbiddenPermissions`.
