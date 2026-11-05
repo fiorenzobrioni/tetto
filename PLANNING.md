@@ -17,7 +17,8 @@
 ## State
 
 - **Released**: nothing yet.
-- **In progress**: Phase 0, built (5 Nov 2026) and green on GitHub, the release workflow rehearsed with the release key; it closes with the ring's colours (§15, Open). Next: Phase 1, the cap engine.
+- **Done**: Phase 0, the foundations (5 Nov 2026): green on GitHub, the release workflow rehearsed with the release key, the mark in the owner's colours.
+- **Next**: Phase 1, the cap engine.
 - **Later, and optional**: Phase 8, Google Play (§11).
 
 ---
@@ -431,7 +432,7 @@ Each phase ends with a merged PR, green CI and its acceptance criteria met. Phas
 - [x] The owner's review of VISION.md and answers to its open questions (5 Nov 2026, recorded in §15)
 - [x] `README.md` in the family's style (centred header, badges, What Tetto is, Screenshots, Features, Principles, Install with the fingerprint, Roadmap, Build, Tech stack, Project structure, Project documentation, The family, License; no em or en dashes), `LICENSE` (GPL-3.0 full text), `.gitignore` (the family's: `*.jks`, `*.keystore`, `*.p12`, `*.pfx` refused, `keystore/debug.keystore` allowed), `.editorconfig`, `CHANGELOG.md` (Keep a Changelog, an empty `[Unreleased]`)
 - [x] Gradle setup from Tempo (Passo's build): version catalog at the latest stable versions, `build-logic` convention plugins renamed `tetto.*`, **with Passo's `AndroidRoomConventionPlugin` back** (`tetto.android.room`, the schema directory); the wrapper; `gradle/google-maven-mirror.init.gradle.kts`; `tetto.versionName` in `gradle.properties`, `versionCode` derived (major * 10000 + minor * 100 + patch)
-  - *Deviation:* the versions are the sisters' of 2 Nov 2026, not raised for Tetto alone, so the five build alike; lint names newer stable ones (AGP 9.5.0, Kotlin 2.4.21, DataStore 1.3.0, kotlinx.serialization 1.12.0, Navigation 3 1.2.1, Spotless 8.11.0; WorkManager 2.12.0, which stays pinned): a family-wide bump is the owner's (§15, Open).
+  - *Deviation:* the versions are Passo's and Tempo's of 2 Nov 2026, kept (owner, 5 Nov 2026), though lint names newer stable ones (AGP 9.5.0, Kotlin 2.4.21, DataStore 1.3.0, kotlinx.serialization 1.12.0, Navigation 3 1.2.1, Spotless 8.11.0; WorkManager 2.12.0, which stays pinned).
 - [x] The forbidden list of §10 in `ForbiddenPermissions.kt`, wired to `check`
 - [x] Module skeleton (§2), each module joining with its first code
   - `:app`, `:core:model` (the appearance's enums), `:core:designsystem`, `:core:testing`. The caps screen's empty state is the shell's, in `:app`, until `:feature:caps` joins in Phase 2 (ADR 0001, 6).
@@ -439,8 +440,8 @@ Each phase ends with a merged PR, green CI and its acceptance criteria met. Phas
 - [x] `:core:testing` from Tempo's (`assertAccessible()`, `walkPage()`)
 - [x] Hilt, `MainActivity` edge to edge with the caps screen's empty state
 - [x] `strings.xml` for `values/` (English) and `values-it/`; `locales_config.xml` for the per-app language
-- [ ] Launcher icon drawn by `tools/draw_launcher_icon.py`, from Saldo's script (the emblem in the same place): the family's ring (radius 21, stroke 10, on the warm white `#F7F4EE`), cut by Tetto's amber roof at the lower right, with the sisters' gap; the monochrome layer for themed icons; the ring's colours with the owner (§15, Open)
-  - Drawn (5 Nov 2026): the roof as three strokes with round ends (two slopes, a chimney), 6.2 units, upright, its edge at 31.4 of the 33-unit safe circle; the ring in the first proposal, raspberry to deep plum, until the owner chooses (§15, Open). The box closes with the colours.
+- [x] Launcher icon drawn by `tools/draw_launcher_icon.py`, from Saldo's script (the emblem in the same place): the family's ring (radius 21, stroke 10, on the warm white `#F7F4EE`), cut by Tetto's amber roof at the lower right, with the sisters' gap; the monochrome layer for themed icons; the ring's colours with the owner (§15, Open)
+  - Drawn (5 Nov 2026): the roof as three strokes with round ends (two slopes, a chimney), 6.2 units, upright, its edge at 31.4 of the 33-unit safe circle; the ring fuchsia to wine, the owner's choice of two proposals (§15, 5 Nov 2026, «the owner's three answers»).
 - [x] The crash page (`app/src/crashpage`), for debug builds and the debug-signed release, as Tempo's
 - [x] CI: `android-ci.yml` (formatting, forbidden permissions, unit tests, lint, then the APKs and the R8 mapping) and the tag-triggered `release.yml` (the tag matches `tetto.versionName`; the same gates; the keystore decoded from the secrets; the signed APK; **the signature checked against the release key's fingerprint**; the SHA-256 file; the mapping; the body from `CHANGELOG.md`), as Tempo's
   - Verified locally with CI's own sequence (`spotlessCheck`, `checkForbiddenPermissions`, `test`, `lintDebug`, `assembleDebug`, `assembleRelease -PsignReleaseWithDebugKey`): green, 13 tests. The release workflow's signature check pins `28:A0:…:9D:F1`.
@@ -589,9 +590,7 @@ Each phase ends with a merged PR, green CI and its acceptance criteria met. Phas
 
 What is still to decide or to do, in one place, besides the steps of the phases in §11 (which keep their boxes there): a box opens here, with the reference to the log entry it comes from, and closes here, with the one that closes it. A new question is written here and asked before it is built.
 
-- [ ] **«In words»'s «The sentence» switch** (owner; Phase 5; §15, 5 Nov 2026, «the family's circle, recalibrated»): a switch on the card's settings, on by default, that keeps a tall card to the amount and its cap, its circle taking the band without the sentence (95 dp two rows high), as Passo's and Tempo's cards do. Proposed; confirmed by the owner before it is built.
-- [ ] **The family's versions** (owner; §15, 5 Nov 2026, «Phase 0»): Tetto builds on the sisters' versions of 2 Nov 2026; lint names newer stable ones (AGP 9.5.0, Kotlin 2.4.21, DataStore 1.3.0, kotlinx.serialization 1.12.0, Navigation 3 1.2.1, Spotless 8.11.0). A bump is the family's, all five apps together, or none; WorkManager stays pinned at 2.10.5 whatever is decided.
-- [ ] **The ring's colours** (Phase 0, with the owner; §15, 5 Nov 2026). The emblem is decided: Tetto's roof at the lower right, Saldo's place. The ring must stay clearly apart from Saldo's (its halves of sea green and soft brick), and from the other sisters' (Chiaro's sky, Passo's greens, Tempo's azure to cobalt), under deuteranopia too, as Saldo's review of 18 Oct 2026 checked its own. Few hues are free: Chiaro's ring already passes through a violet (`#6B4FC8`) and a deep indigo, Saldo's through a brick, and the amber is every emblem's. Proposal, to draw and compare with the owner: raspberry to deep plum (blue-reds, away from Saldo's orange-red brick and darker than Chiaro's violet), checked side by side with the four sisters' icons.
+Nothing is open (5 Nov 2026): the three questions of Phase 0 were answered the same day (the log, «the owner's three answers»).
 
 ---
 
@@ -657,4 +656,12 @@ Built from the sisters as they stood after the owner's pull of 5 Nov 2026 (`pass
 - **Keystores**: Tetto's own debug key (`D4:DF:…:78:17`); the release key's fingerprint pinned in `release.yml` and published in `keystore/README.md` and the README.
 - **The mark**: the roof as three heavy strokes with round ends, upright at the lower right, cut out of the ring with the sisters' gap. A lighter stroke (4.6) was drawn first and read as a thin tool beside the sisters' filled emblems at launcher size. The ring's colours are the owner's (Open): two proposals drawn beside the four sisters' marks, on light and dark grounds, under deuteranopia and in grey, raspberry to deep plum (in the script until the choice) and fuchsia to wine. Said with them: a peach, rose and berry ring was once turned down for Tempo, and the free hues are few.
 - **Lint** reads `local.properties` too: on Windows its `sdk.dir` needs `C\:/…`, or lint fails with `PropertyEscape`. The file is not committed; CI has none.
+
+### 5 Nov 2026 — The owner's three answers: the ring, «The sentence», the versions (owner)
+
+The owner answered the three questions Phase 0 left open, which close in §15's Open:
+
+- **The ring is fuchsia to wine** (`FF9AD5` to `E0218A` to `7A0B4E`), proposal B of two drawn beside the sisters' marks; raspberry to deep plum was the other. Drawn by `tools/draw_launcher_icon.py`; the README's badges take the ring's deep end, as Tempo's take its own (ADR 0002). Phase 0 closes with it.
+- **«The sentence» on «In words»: yes** (§7, as written there): on by default; off, a tall card says the amount and its cap, and its circle takes the band without the sentence, as the sisters' cards do. Built in Phase 5.
+- **The versions stay** Passo's and Tempo's of 2 Nov 2026. Asked whether they should be raised, and what is lost if not: the apps build as they are, pinned versions do not drift, and nothing breaks by waiting; what waiting forgoes is the fixes in the newer releases, which were not read here, and a gap that is cheaper to close a step at a time than all at once later. The advice given: no bump inside a phase, nor for one app alone; one session for the apps that share this build (Passo, Tempo, Tetto) between two releases, patch versions first, each app through its full CI and a look on the phone, WorkManager left pinned. Said with it, correcting ADR 0001 as first written: Chiaro and Saldo are on an older build (AGP 8.13), so the family is not one build today.
 

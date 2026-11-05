@@ -23,8 +23,9 @@ tables, so its build is Passo's with Room, as Tempo carries it.
    Compose BOM 2026.09.00, Hilt 2.60.1, Room 2.8.5, Glance 1.2.0, WorkManager 2.10.5 (pinned, as
    the sisters'), Navigation 3 1.2.0, DataStore 1.2.1; the version catalog and the convention
    plugins in `build-logic/` (renamed `tetto.*`); Java 21 without a toolchain; ktlint through
-   Spotless; JUnit 4, Truth, Turbine, Robolectric. The versions are the sisters' of 2 Nov 2026,
-   their latest stable then; none was raised for Tetto alone, so the five build alike.
+   Spotless; JUnit 4, Truth, Turbine, Robolectric. The versions are Passo's and Tempo's of
+   2 Nov 2026, their latest stable then, and stay so (owner, 5 Nov 2026): Tetto builds as they
+   do. Chiaro and Saldo are on an older build (AGP 8.13); the family is not one build today.
 3. **Room, back.** Passo's `AndroidRoomConventionPlugin` (`tetto.android.room`): KSP, the schema
    exported to `<module>/schemas` and committed. The caps, the open periods' spends and the
    closed periods are tables (PLANNING.md §5); the settings and the widgets' looks are DataStore.

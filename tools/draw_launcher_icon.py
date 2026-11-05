@@ -8,8 +8,8 @@ Tetto's roof, at the lower right (owner, 5 Nov 2026: the place the other money a
 takes, since a reader most often installs one of the two). The roof stands upright, as a roof
 does, whatever the ring's angle: two slopes and a chimney, each a stroke with round ends, so it
 reads as a drawn roof and not as a caret or an arrow. The ring shades clockwise from just past
-the roof round to it again, light to dark; its colours are the owner's choice (PLANNING.md §15,
-Open), kept clearly apart from every sister's ring, under deuteranopia too.
+the roof round to it again, light to dark: fuchsia to wine, the owner's choice (PLANNING.md §15,
+5 Nov 2026), clearly apart from every sister's ring, under deuteranopia too.
 
 Re-running this script IS the drawing: ic_launcher_foreground.xml and ic_launcher_monochrome.xml
 are its output and are not edited by hand. Only the standard library is used, so any Python 3
@@ -40,9 +40,11 @@ CHIMNEY_X = 4.4
 CHIMNEY_TOP = -6.4
 GAP = 3.0  # the clear band around the roof, where it cuts the ring: the sisters' gap
 
-# The ring, from just past the roof round to it again: (position along the sweep, colour). The
-# owner chooses it (PLANNING.md §15, Open): this is the proposal drawn for that choice.
-RING_STOPS = [(0.0, "F27DA6"), (0.45, "C2286E"), (1.0, "5B1848")]
+# The ring, from just past the roof round to it again: (position along the sweep, colour).
+# Fuchsia to wine (owner, 5 Nov 2026), chosen from two proposals drawn beside the sisters' marks
+# (raspberry to deep plum was the other): bright where the sisters' rings are green, blue or
+# brick, and a hue none of them wears.
+RING_STOPS = [(0.0, "FF9AD5"), (0.45, "E0218A"), (1.0, "7A0B4E")]
 AMBER = ("FFC658", "EF8618")  # the emblem's amber, every sister's
 
 

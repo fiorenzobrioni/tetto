@@ -177,8 +177,8 @@ figures; the hero size is kept for one number per screen. The semantic inks are 
 (spending ahead of the days) and, only if a phase needs it, one for over, each with its contrast
 test. Icons are `TettoIcons`, drawn in code: the cap palette is a curated set of Material
 Symbols (Apache-2.0, credited in `licenses/`), never the whole library. The launcher icon (the
-family's ring, cut by Tetto's amber roof at the lower right, Saldo's place: owner, 5 Nov 2026;
-the ring's colours kept clearly apart from Saldo's) is written by `tools/draw_launcher_icon.py`:
+family's ring in fuchsia to wine, cut by Tetto's amber roof at the lower right, Saldo's place:
+owner, 5 Nov 2026) is written by `tools/draw_launcher_icon.py`:
 change the script and re-run it, never the two XML layers. The first run shows no icon (the
 family's onboarding frame).
 

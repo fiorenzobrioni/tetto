@@ -1,6 +1,6 @@
 # ADR 0002: The family's design language, and Tetto's mark (Phase 0)
 
-- Status: accepted; the ring's colours pending the owner (PLANNING.md §15, Open)
+- Status: accepted
 - Date: 2026-11-05
 
 ## Context
@@ -49,9 +49,10 @@ keeps one drawing of each thing in the family.
    from the other sisters' (Chiaro's sky to violet and indigo, Passo's greens, Tempo's azure to
    cobalt), under deuteranopia too. The free hues are few (blue-reds to purples, away from
    Saldo's orange-red brick and Chiaro's violet), and a peach, rose and berry ring was once
-   turned down by the owner for Tempo; the proposals are drawn side by side with the four
-   sisters' marks for the owner to choose. Until then the script draws the first proposal,
-   raspberry to deep plum. The monochrome layer restates the same shapes for themed icons. The
+   turned down by the owner for Tempo. Two proposals were drawn side by side with the four
+   sisters' marks, on light and dark grounds, under deuteranopia and in grey: raspberry to deep
+   plum, and **fuchsia to wine** (`FF9AD5` to `E0218A` to `7A0B4E`), the owner's choice (5 Nov
+   2026). The monochrome layer restates the same shapes for themed icons. The
    first run shows no icon (the family's onboarding frame).
 6. **Tests carried over**: `TypographyTest` (every Material role follows the typeface setting),
    `ContrastTest` (every text ink at 4.5:1 on every ground, in both dresses and themes),
