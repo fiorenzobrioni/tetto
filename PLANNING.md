@@ -17,7 +17,7 @@
 ## State
 
 - **Released**: nothing yet.
-- **In progress**: Phase 0. VISION.md was reviewed by the owner on 5 Nov 2026 (VISION, «The owner's answers»; §15's log); the build, the design system and CI come next. Open, in §15: the ring's colours.
+- **In progress**: Phase 0, built (5 Nov 2026): the build, the design system, the empty caps screen, CI and the keystores; it closes with CI green on GitHub and the ring's colours (§15, Open). Next: Phase 1, the cap engine.
 - **Later, and optional**: Phase 8, Google Play (§11).
 
 ---
@@ -429,27 +429,34 @@ Each phase ends with a merged PR, green CI and its acceptance criteria met. Phas
 - [x] `VISION.md` from the owner's concept, with its corrections and open questions (draft, 5 Nov 2026)
 - [x] `PLANNING.md` and `CLAUDE.md` (5 Nov 2026)
 - [x] The owner's review of VISION.md and answers to its open questions (5 Nov 2026, recorded in §15)
-- [ ] `README.md` in the family's style (centred header, badges, What Tetto is, Screenshots, Features, Principles, Install with the fingerprint, Roadmap, Build, Tech stack, Project structure, Project documentation, The family, License; no em or en dashes), `LICENSE` (GPL-3.0 full text), `.gitignore` (the family's: `*.jks`, `*.keystore`, `*.p12`, `*.pfx` refused, `keystore/debug.keystore` allowed), `.editorconfig`, `CHANGELOG.md` (Keep a Changelog, an empty `[Unreleased]`)
-- [ ] Gradle setup from Tempo (Passo's build): version catalog at the latest stable versions, `build-logic` convention plugins renamed `tetto.*`, **with Passo's `AndroidRoomConventionPlugin` back** (`tetto.android.room`, the schema directory); the wrapper; `gradle/google-maven-mirror.init.gradle.kts`; `tetto.versionName` in `gradle.properties`, `versionCode` derived (major * 10000 + minor * 100 + patch)
-- [ ] The forbidden list of §10 in `ForbiddenPermissions.kt`, wired to `check`
-- [ ] Module skeleton (§2), each module joining with its first code
-- [ ] `:core:designsystem` from Tempo's: Chiaro's two generated dresses (`Scheme.kt`, never hand-edited), `Type.kt`, `Shape.kt`, `Motion.kt`, `PageWidth.kt`, `WidgetPalette.kt`, `DenseTargets.kt`, the settings rows, `StatusCard`, `RevealItem`; Google Sans and Inter with their licences; `TypographyTest`, `ContrastTest`. The semantic inks reduced to `attention` until a phase needs another (an over ink, if Phase 2 needs one, comes with its contrast test)
-- [ ] `:core:testing` from Tempo's (`assertAccessible()`, `walkPage()`)
-- [ ] Hilt, `MainActivity` edge to edge with the caps screen's empty state
-- [ ] `strings.xml` for `values/` (English) and `values-it/`; `locales_config.xml` for the per-app language
+- [x] `README.md` in the family's style (centred header, badges, What Tetto is, Screenshots, Features, Principles, Install with the fingerprint, Roadmap, Build, Tech stack, Project structure, Project documentation, The family, License; no em or en dashes), `LICENSE` (GPL-3.0 full text), `.gitignore` (the family's: `*.jks`, `*.keystore`, `*.p12`, `*.pfx` refused, `keystore/debug.keystore` allowed), `.editorconfig`, `CHANGELOG.md` (Keep a Changelog, an empty `[Unreleased]`)
+- [x] Gradle setup from Tempo (Passo's build): version catalog at the latest stable versions, `build-logic` convention plugins renamed `tetto.*`, **with Passo's `AndroidRoomConventionPlugin` back** (`tetto.android.room`, the schema directory); the wrapper; `gradle/google-maven-mirror.init.gradle.kts`; `tetto.versionName` in `gradle.properties`, `versionCode` derived (major * 10000 + minor * 100 + patch)
+  - *Deviation:* the versions are the sisters' of 2 Nov 2026, not raised for Tetto alone, so the five build alike; lint names newer stable ones (AGP 9.5.0, Kotlin 2.4.21, DataStore 1.3.0, kotlinx.serialization 1.12.0, Navigation 3 1.2.1, Spotless 8.11.0; WorkManager 2.12.0, which stays pinned): a family-wide bump is the owner's (§15, Open).
+- [x] The forbidden list of §10 in `ForbiddenPermissions.kt`, wired to `check`
+- [x] Module skeleton (§2), each module joining with its first code
+  - `:app`, `:core:model` (the appearance's enums), `:core:designsystem`, `:core:testing`. The caps screen's empty state is the shell's, in `:app`, until `:feature:caps` joins in Phase 2 (ADR 0001, 6).
+- [x] `:core:designsystem` from Tempo's: Chiaro's two generated dresses (`Scheme.kt`, never hand-edited), `Type.kt`, `Shape.kt`, `Motion.kt`, `PageWidth.kt`, `WidgetPalette.kt`, `DenseTargets.kt`, the settings rows, `StatusCard`, `RevealItem`; Google Sans and Inter with their licences; `TypographyTest`, `ContrastTest`. The semantic inks reduced to `attention` until a phase needs another (an over ink, if Phase 2 needs one, comes with its contrast test)
+- [x] `:core:testing` from Tempo's (`assertAccessible()`, `walkPage()`)
+- [x] Hilt, `MainActivity` edge to edge with the caps screen's empty state
+- [x] `strings.xml` for `values/` (English) and `values-it/`; `locales_config.xml` for the per-app language
 - [ ] Launcher icon drawn by `tools/draw_launcher_icon.py`, from Saldo's script (the emblem in the same place): the family's ring (radius 21, stroke 10, on the warm white `#F7F4EE`), cut by Tetto's amber roof at the lower right, with the sisters' gap; the monochrome layer for themed icons; the ring's colours with the owner (§15, Open)
-- [ ] The crash page (`app/src/crashpage`), for debug builds and the debug-signed release, as Tempo's
-- [ ] CI: `android-ci.yml` (formatting, forbidden permissions, unit tests, lint, then the APKs and the R8 mapping) and the tag-triggered `release.yml` (the tag matches `tetto.versionName`; the same gates; the keystore decoded from the secrets; the signed APK; **the signature checked against the release key's fingerprint**; the SHA-256 file; the mapping; the body from `CHANGELOG.md`), as Tempo's
-- [ ] Tetto's own debug keystore (`keystore/debug.keystore`, alias `tetto-debug`, passwords `android`, RSA 2048, PKCS12), committed on purpose, with `keystore/README.md`; not a copy of a sister's
+  - Drawn (5 Nov 2026): the roof as three strokes with round ends (two slopes, a chimney), 6.2 units, upright, its edge at 31.4 of the 33-unit safe circle; the ring in the first proposal, raspberry to deep plum, until the owner chooses (§15, Open). The box closes with the colours.
+- [x] The crash page (`app/src/crashpage`), for debug builds and the debug-signed release, as Tempo's
+- [x] CI: `android-ci.yml` (formatting, forbidden permissions, unit tests, lint, then the APKs and the R8 mapping) and the tag-triggered `release.yml` (the tag matches `tetto.versionName`; the same gates; the keystore decoded from the secrets; the signed APK; **the signature checked against the release key's fingerprint**; the SHA-256 file; the mapping; the body from `CHANGELOG.md`), as Tempo's
+  - Verified locally with CI's own sequence (`spotlessCheck`, `checkForbiddenPermissions`, `test`, `lintDebug`, `assembleDebug`, `assembleRelease -PsignReleaseWithDebugKey`): green, 13 tests. The release workflow's signature check pins `28:A0:…:9D:F1`.
+- [x] Tetto's own debug keystore (`keystore/debug.keystore`, alias `tetto-debug`, passwords `android`, RSA 2048, PKCS12), committed on purpose, with `keystore/README.md`; not a copy of a sister's
+  - `CN=Tetto Debug, O=callbackdev, C=IT`, created 5 Nov 2026, SHA-256 `D4:DF:35:86:…:69:78:17` (`keystore/README.md`).
 - [x] The **release key**: created by the owner, kept outside the repo, in the four repository secrets `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` (set on 5 Nov 2026)
-- [ ] The release key's SHA-256 fingerprint from the owner, into `keystore/README.md`, the README's Install section and `release.yml`'s signature check
-- [ ] `docs/planning/README.md` and `tools/planning_index.py` from Tempo's (How it is made)
-- [ ] `docs/adr/0001-foundations.md`, `docs/adr/0002-design-language.md` (the family's language, Tetto's mark)
+- [x] The release key's SHA-256 fingerprint from the owner, into `keystore/README.md`, the README's Install section and `release.yml`'s signature check
+- [x] `docs/planning/README.md` and `tools/planning_index.py` from Tempo's (How it is made)
+- [x] `docs/adr/0001-foundations.md`, `docs/adr/0002-design-language.md` (the family's language, Tetto's mark)
 
 **Acceptance:**
 - CI is green on GitHub.
 - The app launches and shows the caps screen's empty state in the family's dress, in English and Italian.
+  - Drawn and tested under Robolectric (`CapsEmptyPageTest`: English, Italian, dark, twice the text size, an open foldable, `assertAccessible`); not yet run on a device.
 - Adding `INTERNET` or `CAMERA` to any manifest fails `checkForbiddenPermissions`.
+  - Verified (5 Nov 2026): both added to the app's manifest failed the debug and release checks, naming both. The merged manifest today holds only AndroidX's own `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`.
 
 ### Phase 1 — The cap engine (highest risk)
 
@@ -582,6 +589,7 @@ Each phase ends with a merged PR, green CI and its acceptance criteria met. Phas
 What is still to decide or to do, in one place, besides the steps of the phases in §11 (which keep their boxes there): a box opens here, with the reference to the log entry it comes from, and closes here, with the one that closes it. A new question is written here and asked before it is built.
 
 - [ ] **«In words»'s «The sentence» switch** (owner; Phase 5; §15, 5 Nov 2026, «the family's circle, recalibrated»): a switch on the card's settings, on by default, that keeps a tall card to the amount and its cap, its circle taking the band without the sentence (95 dp two rows high), as Passo's and Tempo's cards do. Proposed; confirmed by the owner before it is built.
+- [ ] **The family's versions** (owner; §15, 5 Nov 2026, «Phase 0»): Tetto builds on the sisters' versions of 2 Nov 2026; lint names newer stable ones (AGP 9.5.0, Kotlin 2.4.21, DataStore 1.3.0, kotlinx.serialization 1.12.0, Navigation 3 1.2.1, Spotless 8.11.0). A bump is the family's, all five apps together, or none; WorkManager stays pinned at 2.10.5 whatever is decided.
 - [ ] **The ring's colours** (Phase 0, with the owner; §15, 5 Nov 2026). The emblem is decided: Tetto's roof at the lower right, Saldo's place. The ring must stay clearly apart from Saldo's (its halves of sea green and soft brick), and from the other sisters' (Chiaro's sky, Passo's greens, Tempo's azure to cobalt), under deuteranopia too, as Saldo's review of 18 Oct 2026 checked its own. Few hues are free: Chiaro's ring already passes through a violet (`#6B4FC8`) and a deep indigo, Saldo's through a brick, and the amber is every emblem's. Proposal, to draw and compare with the owner: raspberry to deep plum (blue-reds, away from Saldo's orange-red brick and darker than Chiaro's violet), checked side by side with the four sisters' icons.
 
 ---
@@ -635,4 +643,17 @@ What changes in Tetto (§7, rewritten in place):
 4. The owner's two-by-two (188 × 218 dp) joins the reference grants Tetto's widget tests measure.
 
 Nothing else in Tetto had been copied from what changed: the pulls touched the sisters' widgets and plans only (`git diff` of both), not the build, the design system or the catalog Phase 0 copies.
+
+### 5 Nov 2026 — Phase 0: the foundations (owner: "commit, push and start Phase 0")
+
+Built from the sisters as they stood after the owner's pull of 5 Nov 2026 (`passo@e2b7923`, `tempo@6ce51eb`; the pull touched only their widgets and plans). ADR 0001 and 0002 record the choices; what is worth saying here:
+
+- **The build is Passo's**, which is Tempo's with Room: `build-logic` renamed `tetto.*`, `tetto.android.room` included (it joins with `:core:data`), the catalog as theirs. The versions were not raised for Tetto alone (Open, «the family's versions»).
+- **The permission gate** carries §10's list in full: the family's, plus camera, microphone, SMS, contacts, calendar, shared storage and media, installed apps and activity recognition. Checked by hand: `INTERNET` and `CAMERA` in the manifest turn both variants red.
+- **Modules**: `:app`, `:core:model`, `:core:designsystem`, `:core:testing`. The empty caps screen is the shell's in `:app` until `:feature:caps` (Phase 2): the feature convention brings `:core:domain` and `:core:data`, which have no code yet. It says "No caps yet" and what a cap is; no "New cap" before it works.
+- **The design system is Tempo's**, without its two panes (`TwoPanes`: Tetto has no page for them; `PageWidthTest` now pins the column's gutter instead), without Tempo's clock and calendar icons, and with `attention` redefined as the ink of a cap spending ahead of its days.
+- **Backup**: the allowlist is written now (the database and the settings file, before they exist), so no build ever carries more; checked on a device in Phase 4.
+- **Keystores**: Tetto's own debug key (`D4:DF:…:78:17`); the release key's fingerprint pinned in `release.yml` and published in `keystore/README.md` and the README.
+- **The mark**: the roof as three heavy strokes with round ends, upright at the lower right, cut out of the ring with the sisters' gap. A lighter stroke (4.6) was drawn first and read as a thin tool beside the sisters' filled emblems at launcher size. The ring's colours are the owner's (Open): two proposals drawn beside the four sisters' marks, on light and dark grounds, under deuteranopia and in grey, raspberry to deep plum (in the script until the choice) and fuchsia to wine. Said with them: a peach, rose and berry ring was once turned down for Tempo, and the free hues are few.
+- **Lint** reads `local.properties` too: on Windows its `sdk.dir` needs `C\:/…`, or lint fails with `PropertyEscape`. The file is not committed; CI has none.
 

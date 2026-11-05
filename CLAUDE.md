@@ -16,10 +16,11 @@ single-purpose apps by callbackdev, with **Chiaro** (weather), **Passo** (step c
 release setup, and the same visual language. Its build and structure are Tempo's (itself
 Passo's), with Passo's Room back.
 
-**State (5 Nov 2026): only the documents exist.** VISION.md is reviewed by the owner, and
-Phase 0 (PLANNING.md §11) builds everything this file describes: the commands, modules and
-files below are the target, true from Phase 0 on. Until then, nothing is built and nothing is
-assumed to exist; check before citing a file.
+**State (5 Nov 2026): Phase 0 is built.** The build, the design system, the empty caps
+screen, CI and the keystores exist; the modules in the build are `:app`, `:core:model`,
+`:core:designsystem` and `:core:testing`. The rest of the table below is the target: each
+module joins with the phase that brings its first code (PLANNING.md §11), so check before
+citing a file.
 
 **Tetto and Saldo are two separate apps, alternatives to each other** (owner, 5 Nov 2026).
 Tetto takes the family's look and structure from its sisters, so the apps are recognisable;

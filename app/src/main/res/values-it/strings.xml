@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- La schermata dei tetti, senza ancora un tetto. -->
+    <string name="caps_empty_title">Ancora nessun tetto</string>
+    <string name="caps_empty_body">Un tetto è quanto ti concedi per una cosa, al giorno, alla settimana, al mese o all\'anno. Qui troverai quanto ti resta, e fino a quando.</string>
+</resources>

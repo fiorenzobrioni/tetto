@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Tetto's permissions are the short list in PLANNING.md §10: none of its own until the reminder
+  (Phase 4) and what Glance's WorkManager brings (Phase 5). Never here, from this file or from
+  any library: INTERNET, location, exact alarms, battery-optimization exemptions, camera,
+  microphone, SMS, contacts, calendar, storage, the list of installed apps, activity
+  recognition, body sensors. `checkForbiddenPermissions` fails the build on the merged manifest
+  if one appears.
+
+  Backup: explicit, with an allowlist (res/xml/data_extraction_rules.xml, PLANNING.md §5). It is
+  Android that sends the copy, if the reader turned backup on; Tetto has no network permission
+  and gains none from this.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:name=".TettoApplication"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:enableOnBackInvokedCallback="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:localeConfig="@xml/locales_config"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Tetto">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.Tetto">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

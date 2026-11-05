@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  What Android's backup and device transfer carry, decided rather than inherited (PLANNING.md §5).
+  An allowlist, so nothing is carried by accident:
+
+  - `databases/tetto.db` and its write-ahead log: the caps, the open periods' spends, the closed
+    periods (Phase 1).
+  - `files/datastore/settings.preferences_pb`: the money, the reminder, the appearance.
+
+  Left out by not being named: the widgets' looks (keyed by widget ids, which a restore renews),
+  caches, and `no_backup`. Written in Phase 0, before those files exist, so that no build ever
+  carries more than this; checked with `bmgr` on a device in Phase 4.
+
+  The same list twice on purpose: `<cloud-backup>` is the copy Android sends to Google Drive,
+  end-to-end encrypted with the phone's PIN, pattern or password since Android 9, and only if
+  the reader turned backup on; `<device-transfer>` is the direct phone-to-phone move. Tetto
+  sends neither itself and needs no permission for them: Android does the moving.
+
+  NOT `android:allowBackup="false"`: on Android 12 and later some makers' phones still move the
+  app's data in a device transfer anyway.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="database" path="tetto.db" />
+        <include domain="database" path="tetto.db-wal" />
+        <include domain="file" path="datastore/settings.preferences_pb" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="database" path="tetto.db" />
+        <include domain="database" path="tetto.db-wal" />
+        <include domain="file" path="datastore/settings.preferences_pb" />
+    </device-transfer>
+</data-extraction-rules>
