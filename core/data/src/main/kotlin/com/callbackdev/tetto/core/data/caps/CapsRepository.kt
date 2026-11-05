@@ -342,6 +342,12 @@ constructor(
         after
     }
 
+    /**
+     * [block] under [lock], for this module's other repositories whose work spans the caps and the
+     * settings (a restore, an erase: `BackupRepository`): nothing reads or writes the caps meanwhile.
+     */
+    internal suspend fun <T> exclusively(block: suspend () -> T): T = lock.withLock { block() }
+
     /** A read or a write, under [lock], after the catch-up, in the same transaction. */
     private suspend fun <T> afterCatchUp(block: suspend (UserSettings) -> T): T = lock.withLock {
         val settings = preferences.current()
@@ -376,8 +382,8 @@ constructor(
         )
     }
 
-    /** Runs inside a transaction: closes what ended for every cap (§4.4). */
-    private suspend fun catchUpLocked(settings: UserSettings, today: LocalDate) {
+    /** Runs inside a transaction, under [lock]: closes what ended for every cap (§4.4). */
+    internal suspend fun catchUpLocked(settings: UserSettings, today: LocalDate) {
         for (row in dao.capRows()) {
             val cap = row.cap.toModel()
             val plan = CatchUp.plan(cap, Money(row.spent), settings.rule(cap.kind, phone), today) ?: continue

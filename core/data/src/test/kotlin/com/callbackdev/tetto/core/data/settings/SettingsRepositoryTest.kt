@@ -35,6 +35,7 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import java.io.File
 import java.time.DayOfWeek
+import java.time.LocalTime
 import java.time.ZoneId
 
 /**
@@ -116,6 +117,9 @@ class SettingsRepositoryTest {
         repository.setPalette(AppPalette.PAPER)
         repository.setFont(AppFont.SYSTEM)
         repository.setDynamicColor(true)
+        repository.setReminder(true)
+        repository.setReminderTime(LocalTime.of(21, 15))
+        repository.noteNotificationsAsked()
 
         restart()
 
@@ -129,6 +133,9 @@ class SettingsRepositoryTest {
                 font = AppFont.SYSTEM,
                 dynamicColor = true,
                 onboardingCompleted = true,
+                reminderOn = true,
+                reminderTime = LocalTime.of(21, 15),
+                askedNotifications = true,
             ),
         )
         assertThat(repository.currency.first()).isEqualTo(AppCurrency("JPY", 0))

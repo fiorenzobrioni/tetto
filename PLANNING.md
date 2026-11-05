@@ -17,8 +17,8 @@
 ## State
 
 - **Released**: nothing yet.
-- **Done**: Phase 0, the foundations (5 Nov 2026): green on GitHub, the release workflow rehearsed with the release key, the mark in the owner's colours. Phase 1, the cap engine (5 Nov 2026): `:core:domain` and `:core:data`, 117 tests, green on GitHub (`c762455`, 5 min 29 s). Phase 2, the caps screen and the numpad (5 Nov 2026): `:feature:caps` and the shell, green on GitHub (`4a40d7a`, 6 min 39 s). Phase 3, the first run and Settings (5 Nov 2026): `:feature:onboarding` and `:feature:settings`, 224 tests in all, green on GitHub (`e1f6b0d`, 8 min 16 s).
-- **Next**: Phase 4, your data and the reminder (`:core:reminder` joins with it).
+- **Done**: Phase 0, the foundations (5 Nov 2026): green on GitHub, the release workflow rehearsed with the release key, the mark in the owner's colours. Phase 1, the cap engine (5 Nov 2026): `:core:domain` and `:core:data`, 117 tests, green on GitHub (`c762455`, 5 min 29 s). Phase 2, the caps screen and the numpad (5 Nov 2026): `:feature:caps` and the shell, green on GitHub (`4a40d7a`, 6 min 39 s). Phase 3, the first run and Settings (5 Nov 2026): `:feature:onboarding` and `:feature:settings`, 224 tests in all, green on GitHub (`e1f6b0d`, 8 min 16 s). Phase 4, your data and the reminder (5 Nov 2026): `:core:reminder` joins, 313 tests in all; its device checks wait for the owner's phone (§11 Phase 4).
+- **Next**: Phase 5, the widgets and the launcher's shortcuts (`:widget` joins with it).
 - **Later, and optional**: Phase 8, Google Play (§11).
 
 ---
@@ -282,7 +282,7 @@ From a cap, its open period's spends and today (`CapStates.of`):
 | `month_start_day` | 1 | 1 to 31 (§4.2) |
 | `week_start` | none (the locale's) | A `DayOfWeek`, once the reader picks one |
 | `reminder_on` | false | The evening reminder |
-| `reminder_time` | 20:30 | Local time |
+| `reminder_time` | 20:30 | Local time, written as `java.time` writes one (`20:30`) |
 | `asked_notifications` | false | Whether the permission was ever asked: what tells "askable" from "denied for good" (Tempo's rule) |
 | `onboarding_completed` | false | |
 | `caps_tip_seen` | false | The caps screen's first-day tip, pointing to the guide, dismissed or followed (Phase 6) |
@@ -294,9 +294,10 @@ One `WidgetLook` per `appWidgetId`: the card's ground (light, dark, system, one 
 ### Backup
 
 - **Android's backup** (`data_extraction_rules.xml`, cloud copy and device transfer): the database (`tetto.db` and its write-ahead log) and the settings file, an allowlist (the family's rule, Passo's ADR 0007). The widgets' file stays out: widget ids are renewed by a restore.
-- **The backup file** (`BackupCodec`, `:core:domain`, kotlinx.serialization over DTOs kept apart from the model): `format: "tetto-backup"`, `version: 1`; the caps, every spend, the closed periods, the settings the reader chose (currency, month start, week start, appearance, the reminder). Dates ISO, instants epoch milliseconds, amounts minor units with the currency's code. A file cut short is **damaged**; a newer version asks for an **update**; anything else is **not a Tetto backup**. Nothing is written until the whole file has been read and checked.
-- **A restore replaces** this phone's caps, spends and closed periods, after a confirmation that says so: on a new phone there is nothing to merge with, and a merge of two sets of caps would double them. (Passo merges because a new phone has already counted steps by itself; Tetto has no data it did not get from the reader.) The catch-up runs right after.
-- **The CSV** (`CsvExport`, pure): one row per spend, a header row, ISO dates and times, the cap's name, the amount in the currency's major unit with a dot, the currency's code, the period's start and end.
+- **The backup file** (`BackupCodec`, `:core:domain`, kotlinx.serialization over DTOs kept apart from the model; `docs/adr/0004-your-data.md`): JSON, indented, `format: "tetto-backup"`, `version: 1`; the app's version, the zone and the instant it was written; the currency's code and its `decimals` where it was written; the settings the reader chose (month start, week start, appearance, the reminder); the caps in the reader's order, each holding every spend and every closed line. Dates ISO, instants epoch milliseconds, amounts minor units. No ids, and nothing of one phone's (the first run's flag, the asked permission). A file cut short is **damaged**; a newer version asks for an **update**; anything else is **not a Tetto backup**. Read whole and checked before anything is written: strict where a value decides a figure or a period (an amount, a date, a kind, the month or week start, a spend or a closed line after the open period, a closed period twice, figures too large to sum), lenient where a default cannot mislead (an unknown icon is "other", an unknown palette the default). A file whose decimals for its currency are not this phone's is rescaled as a change of currency would be (§4.1).
+- **A restore replaces** this phone's caps, spends and closed periods, and its settings with the backup's, after a confirmation that says when and by which Tetto the file was written, its caps by name, and what it replaces: on a new phone there is nothing to merge with, and a merge of two sets of caps would double them. (Passo merges because a new phone has already counted steps by itself; Tetto has no data it did not get from the reader.) The settings come with the caps because the open periods were made by the backup's week and month starts. Under the caps' one lock: the settings, then one transaction (the old caps out, the backup's in, the catch-up); a transaction that fails puts the settings back (`BackupRepository.restore`).
+- **The CSV** (`CsvExport`, pure): one row per spend of every period, oldest first, a header row of fixed English identifiers (`date,time,cap,amount,currency,period_start,period_end`), ISO dates and 24-hour times in the phone's zone, the cap's name (never a formula), the amount in the currency's major unit with a dot, the currency's code, the period's first and last day; RFC 4180, UTF-8 with a byte-order mark. From the same snapshot as a backup, after the catch-up.
+- **Erase everything**: confirmed; the caps (and with them every spend and closed line) in one transaction, then the settings to their defaults, so the first run takes over. The asked permission stays: a fact about the phone, not the reader's data. Ids are never given twice (`AUTOINCREMENT`), so an Undo still pending can never reach a cap or a spend made after.
 
 ---
 
@@ -388,8 +389,10 @@ At 115% and 130% text the two-by-two's band grows and its circle stands at 44 dp
 - **Channel `reminder`** (default importance), the evening reminder, opt-in:
   - turned on in Settings, where `POST_NOTIFICATIONS` is asked (never at the first run); denied, the switch says why and how to change it;
   - one inexact alarm, `setAndAllowWhileIdle(RTC_WAKEUP, …)` at the reader's time (as Passo's evening reminder: no exact-alarm permission), armed again at every start of the process, every change of the setting, every clock or zone change, after a boot (`RECEIVE_BOOT_COMPLETED`) and an update (`MY_PACKAGE_REPLACED`), and at each firing;
-  - at its firing: the catch-up, then **nothing** if there is no cap or if a spend was added today (§4.3); else "Anything to add today?", whose touch opens the caps screen; it goes by itself at the end of the day (`setTimeoutAfter`);
-  - no alarm armed while the reminder's notifications cannot show (armed again when they can: the app's return, the system's block-state broadcasts), Passo's rule of 2 Nov 2026.
+  - at its firing: the next alarm armed first; then **nothing** if the reminder was turned off meanwhile, if its day is over (an alarm held back past midnight: `ReminderSchedule.stillTimely`), if there is no cap, or if a spend was added today (§4.3), the catch-up first; else "Anything to add today?", whose touch opens the caps screen; it goes by itself at the end of the day (`setTimeoutAfter`), and is taken back when the app comes to the front (its question has brought the reader there) or the reminder is turned off;
+  - no alarm armed while the reminder's notifications cannot show (armed again when they can: the app's return, the system's block-state broadcasts, Settings' own request), Passo's rule of 2 Nov 2026;
+  - its status-bar icon is the mark's roof alone (`ic_stat_tetto`, drawn by `tools/draw_launcher_icon.py` at a lighter stroke than the launcher's);
+  - in Settings, with the reminder on and its notifications blocked, a card over the group says why and holds the one button that fixes it: "Allow" while Android will still ask (`asked_notifications` tells "askable" from "denied for good"), else the system's page, the app's notifications or the reminder's channel.
 - **No other notification**: no threshold alerts, no "over" alerts (VISION).
 - **Launcher shortcuts** (dynamic: a static one names its package, and the debug build's is another): the first four caps in the reader's order, each its icon and name, opening `QuickAddActivity` on that cap. Published again when the caps, their order or their names change, and when the app's language changes (Tempo's lesson of 30 Oct 2026).
 - **Pin request**: the first run's last page and Settings offer "Add a widget to the home screen" through `AppWidgetManager.requestPinAppWidget`, where the launcher supports it.
@@ -412,7 +415,7 @@ At 115% and 130% text the two-by-two's band grows and its circle stands at 44 dp
 | Permission / element | Type | Why |
 |---|---|---|
 | `POST_NOTIFICATIONS` | Runtime | The evening reminder, asked when the reader turns it on (Phase 4) |
-| `RECEIVE_BOOT_COMPLETED` | Normal | Arm the reminder again after a boot (also brought by WorkManager) |
+| `RECEIVE_BOOT_COMPLETED` | Normal | Arm the reminder again after a boot (declared by `:core:reminder`; also brought by WorkManager) |
 | `WAKE_LOCK`, `ACCESS_NETWORK_STATE`, `FOREGROUND_SERVICE` | Normal | Brought by WorkManager, which Glance runs its sessions on, as in the family. Without `INTERNET` nothing can leave the phone. Tetto's own code uses none of them |
 | `android:allowBackup="true"` + `dataExtractionRules` | Manifest | The database and the settings file only (§5) |
 
@@ -527,21 +530,29 @@ Each phase ends with a merged PR, green CI and its acceptance criteria met. Phas
 ### Phase 4 — Your data and the reminder
 
 - [ ] Android's backup: `data_extraction_rules.xml`, the allowlist of §5; checked with `bmgr` on a device
-- [ ] The backup file: `BackupCodec` with its tests (damaged, newer, not a Tetto backup, the round trip); export (`ACTION_CREATE_DOCUMENT`); restore (`ACTION_OPEN_DOCUMENT`, read whole and checked, replace after a confirmation, the catch-up after)
-- [ ] The CSV export (`CsvExport`, with its tests)
-- [ ] Erase everything, confirmed, back to the first run
-- [ ] The evening reminder (§8): the setting and its time, the permission when turned on, `:core:reminder` (the alarm, its re-arming, the receivers, the channel), "a spend today" at firing; `ReminderSchedule` tested across daylight saving
-- [ ] The privacy statement's words: "Tetto sends nothing", and what Android's backup does
+  - The allowlist names the files the code writes (`TettoDatabase.NAME`, `UserPreferencesDataSource.FILE_NAME`, the WAL), in force since Phase 0; `docs/adr/0004-your-data.md`. The `bmgr` check (`adb shell bmgr backupnow com.callbackdev.tetto.debug`, then a restore on a clean install) waits for the owner's phone.
+- [x] The backup file: `BackupCodec` with its tests (damaged, newer, not a Tetto backup, the round trip); export (`ACTION_CREATE_DOCUMENT`); restore (`ACTION_OPEN_DOCUMENT`, read whole and checked, replace after a confirmation, the catch-up after)
+  - `BackupCodec` (20 tests), `BackupRepository` (`:core:data`, 9 tests), `DataViewModel` on real files (6 tests); the restore's dialog names the file's caps and what it replaces (`docs/adr/0004-your-data.md`).
+- [x] The CSV export (`CsvExport`, with its tests)
+  - One row per spend, from the backup's snapshot: 8 tests (the periods, the zone, the decimals, quoting, formulas).
+- [x] Erase everything, confirmed, back to the first run
+- [x] The evening reminder (§8): the setting and its time, the permission when turned on, `:core:reminder` (the alarm, its re-arming, the receivers, the channel), "a spend today" at firing; `ReminderSchedule` tested across daylight saving
+  - `ReminderSchedule` (13 tests: both daylight-saving days, a skipped and a repeated time, a new zone, a flight west, a late alarm); `EveningReminder` under Robolectric (16 tests: the alarm's kind and time, armed only while on and allowed, the firing's four silences, the catch-up first, taken back when turned off or the app opens).
+- [x] The privacy statement's words: "Tetto sends nothing", and what Android's backup does
+  - Settings' «Your data», over its rows: they leave the phone only in a file the reader saves, or in Android's backup if turned on.
 
 **Acceptance:**
-- [ ] An export restored on a clean install reproduces the caps, the reserves, the open spends and the closed periods exactly.
+- [x] An export restored on a clean install reproduces the caps, the reserves, the open spends and the closed periods exactly.
+  - `BackupRepositoryTest`: a month of spending on one phone, encoded, decoded and restored on a clean install of another (another region, another first day of the week): every cap's state, open spends and closed lines equal, and a backup of the restored phone is the same file. Not yet tried on a phone.
 - [ ] On the phone: the reminder arrives near its time on a day with no spend, and not on a day with one; with it off, `dumpsys alarm` shows no alarm of Tetto's.
+  - Waits for the owner's phone, with §9's checks (`dumpsys alarm | grep tetto`, `batterystats`, Doze). Under Robolectric: the alarm is `RTC_WAKEUP`, allowed while idle, one at a time, none while off or blocked.
 
 ### Phase 5 — The widgets and the launcher's shortcuts
 
 - [ ] `GlanceFit` (pure, §6) with tests at the reference grants; the forms of §7; «In words»'s circle (the family's three functions) and type steps (`WidgetType`) copied from the sisters' and pinned at every reference grant, with the sentence and without; `docs/adr/0003-widgets.md`
 - [ ] «At a glance» and «In words» in Glance on the family's card; the ring painted as the family's (a bitmap, 416 px at most); the per-widget settings screen with its live preview; the previews (static and generated)
 - [ ] `QuickAddActivity`: the numpad over the home screen, its confirmation line with Undo; from a card's cap and from a shortcut
+  - A spend added from it takes the evening reminder back from the shade, as the app's return does (`EveningReminder.appOpened`; §15, Phase 4).
 - [ ] The refresh (§7): after every write, the midnight alarm, the exempt broadcasts; the catch-up in `provideGlance`
 - [ ] The dynamic launcher shortcuts (§8)
 - [ ] The pin request, in the first run and in Settings
@@ -746,3 +757,18 @@ Built as §11 Phase 3 lists it: `:feature:onboarding` (the welcome, the areas, t
 - **The currencies listed** (`Currencies`, `:core:designsystem`): those some region uses today (`Currency.getInstance` of each country), so no lira, no funds' accounting codes, no gold; the reader's own is kept even if no region uses it; named in the reader's language and in its alphabetical order; found by a part of the name, accents aside ("zloty" finds the złoty), the start of the code, or the symbol.
 - **What two features share is `:core:designsystem`'s**: the amount field (`MoneyField`, out of the editor) and the currency picker. So `:core:designsystem` uses `:core:domain`'s `MoneyInput` (pure Kotlin): one rule for what an amount may be, wherever it is typed (§2). `CapDraft`, the editor's four fields, moved to `:core:model`, where the first run and the repository take it too.
 - **The appearance** (`MainActivity`): theme, dress, typeface and wallpaper colours from the settings, the bars' ink following the applied theme, and one bare frame until the settings are read, so neither the wrong dress nor the first run flashes before the caps. The rows and their words are the family's, as the sisters' Settings write them.
+
+### 5 Nov 2026 — Phase 4: your data and the reminder (owner: "Implementa la fase 4 di Tetto")
+
+Built as §11 Phase 4 lists it: in `:core:domain` the backup file (`BackupCodec`), the spends' CSV (`CsvExport`) and the reminder's schedule (`ReminderSchedule`); in `:core:data` the three new settings and `BackupRepository`; `:core:reminder` joins, with the alarm, its receiver, the channel and the notification; in `:feature:settings` the reminder's group and «Your data». 313 tests in all (224 at Phase 3); CI's sequence green locally. §5, §8 and §10 are updated in place; the backup file, a contract with every later version, has its ADR (`docs/adr/0004-your-data.md`; 0003 stays the widgets', as §7 names it). No question was open, and none was opened: what follows are the choices made on the way, each with its reason.
+
+- **The backup file** (ADR 0004): JSON, indented so it can be read without the app; the caps in the reader's order, each holding its spends and its closed lines, so the file cannot hold a spend without its cap; no ids (a restore gives new ones). The currency travels with its `decimals`, and a file written where its currency had others is rescaled by §4.1's rule. **Read whole and checked**: strict where a value decides a figure or a period (a new period kind, in a later Tetto, raises the version), lenient where a default cannot mislead. Every figure together must fit a `Long`, so no sum the engine makes of a restored file can overflow.
+- **A restore brings the settings with the caps**: the open periods were made by the backup's week and month starts, and another phone's rule could close them by mistake; the appearance and the reminder come too, a restore being the reader's own phone again. One exception: a week that follows the phone (never chosen) follows the new phone's, from the restore on, as a change of the phone's language would; the engine closes the old week at the new rule's boundary (tested). What belongs to one phone stays: whether its first run is done, whether it asked for the permission. Under the caps' one lock, with the catch-up in the same transaction; a failure puts the settings back (tested with a planted trigger).
+- **The restore's dialog** says when and by which Tetto the file was written, its caps by name (four at most, else three "and 2 more", in the locale's own list), its spends, their currency, and what it replaces here; its button is in the over ink when it replaces caps. The export's card says where the file went, and that it is not encrypted.
+- **The CSV** is the spends of every period, oldest first, with the period each counts in (its first and last day, as the cap's sheet says them), from the same snapshot as a backup. The row is offered only when there are spends: a table with nothing in it is no file to offer.
+- **Erase everything** says, before it is done, what goes, that a saved backup is not touched, and that it cannot be undone; then the caps, then the settings, and the first run takes over by itself. Its row's label is in the over ink: the settings kit's `ValueRow` took a `labelColor` for it.
+- **The reminder is decided at its firing**, not by leaving a day with a spend unarmed: a spend added and then undone would leave that day without its reminder. One wake a day while it is on and can show, as §9 allows. At its firing, silence for four reasons (turned off meanwhile, its day over, no cap, a spend today), the catch-up first. Its notification goes at the end of the day, when it is turned off, and when the app comes to the front: its question has brought the reader there.
+- **The permission**: asked when the reader turns the reminder on, where Android still asks; refused, the switch stays on and a card over the group says why, with "Allow" while Android will ask again (`asked_notifications`, Tempo's rule) and the system's page after, the app's notifications or the reminder's channel. Not asked yet is the quieter card; blocked is the problem's. The time row is always open: a time chosen while the reminder is off is the one it starts with.
+- **The status-bar icon** is the mark's roof alone, three strokes on the 24-unit grid, drawn by `tools/draw_launcher_icon.py` at a lighter stroke than the launcher's (at the launcher's weight the slopes and the chimney ran into one blot at 24 dp; drawn and looked at both ways).
+- **Settings' order**: the money, the reminder, the appearance, the language, «Your data» (the privacy statement first, its words now saying the data leaves the phone only in a file the reader saves or in Android's backup if turned on; then the three rows; erasing apart, below), about, the credits. The «Privacy» header became «Your data», as VISION names the group.
+- **Left for the owner's phone**: the `bmgr` check of Android's backup, a restore on a clean install, the reminder's delivery and its silence, and §9's alarm checks (§11 Phase 4, its two open boxes). Left for Phase 5: `QuickAddActivity` should take the reminder back too when a spend is added from the home screen, as the app's return does.

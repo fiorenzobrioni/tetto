@@ -105,4 +105,23 @@ interface CapsDao {
 
     @Update
     suspend fun updateClosedPeriods(periods: List<ClosedPeriodEntity>)
+
+    // Your data (Phase 4): the backup reads everything, a restore and an erase replace it.
+
+    @Insert
+    suspend fun insertSpends(spends: List<SpendEntity>)
+
+    /**
+     * Deletes every cap; their spends and closed periods go with them (`ON DELETE CASCADE`). The
+     * ids' sequence stays: an id is never given twice, so an Undo still pending for a spend that
+     * was here can never reach one restored after it.
+     */
+    @Query("DELETE FROM caps")
+    suspend fun deleteAllCaps(): Int
+
+    @Query("SELECT COUNT(*) FROM caps")
+    suspend fun capCount(): Int
+
+    @Query("SELECT COUNT(*) FROM spends")
+    suspend fun spendCount(): Int
 }

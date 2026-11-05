@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Draws Tetto's launcher mark: the two adaptive-icon layers in app/src/main/res/drawable.
+"""Draws Tetto's launcher mark: the two adaptive-icon layers in app/src/main/res/drawable, and
+the status-bar icon (core/reminder/src/main/res/drawable/ic_stat_tetto.xml).
 
     python3 tools/draw_launcher_icon.py
 
@@ -11,8 +12,12 @@ reads as a drawn roof and not as a caret or an arrow. The ring shades clockwise 
 the roof round to it again, light to dark: fuchsia to wine, the owner's choice (PLANNING.md §15,
 5 Nov 2026), clearly apart from every sister's ring, under deuteranopia too.
 
-Re-running this script IS the drawing: ic_launcher_foreground.xml and ic_launcher_monochrome.xml
-are its output and are not edited by hand. Only the standard library is used, so any Python 3
+The status-bar icon is the roof alone, the mark's emblem, its three strokes where the launcher
+draws them, scaled to the 24-unit grid with 2 units clear on each side and a lighter stroke: a ring
+with a cut would read as a blot at that size, and a roof reads as Tetto's.
+
+Re-running this script IS the drawing: ic_launcher_foreground.xml, ic_launcher_monochrome.xml and
+ic_stat_tetto.xml are its output and are not edited by hand. Only the standard library is used, so any Python 3
 runs it.
 """
 
@@ -21,6 +26,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 RES = ROOT / "app/src/main/res/drawable"
+STAT = ROOT / "core/reminder/src/main/res/drawable/ic_stat_tetto.xml"
+STAT_SIZE = 24.0
+STAT_MARGIN = 2.0
+# The status-bar roof's stroke on the 24-unit grid: lighter than the launcher's, whose weight is
+# set to stand beside the ring, so the slopes and the chimney stay apart at 24 dp (at the
+# launcher's weight they ran together into one blot).
+STAT_STROKE = 3.0
 
 CENTRE = 54.0
 RING_RADIUS = 21.0
@@ -185,6 +197,37 @@ def vector(body, aapt=True):
 """
 
 
+def status_bar():
+    """The roof's strokes moved to the 24-unit grid, as wide as it allows, centred, in white."""
+    ox, oy = point(ROOF_ANGLE)
+    local = [((ax - ox, ay - oy), (bx - ox, by - oy)) for (ax, ay), (bx, by) in strokes()]
+    xs = [x for a, b in local for x, _ in (a, b)]
+    ys = [y for a, b in local for _, y in (a, b)]
+    left, right, top, bottom = min(xs), max(xs), min(ys), max(ys)
+    scale = (STAT_SIZE - 2 * STAT_MARGIN - STAT_STROKE) / max(right - left, bottom - top)
+    middle = ((left + right) / 2, (top + bottom) / 2)
+    r = STAT_STROKE / 2 / scale
+
+    def moved(p):
+        return (STAT_SIZE / 2 + (p[0] - middle[0]) * scale, STAT_SIZE / 2 + (p[1] - middle[1]) * scale)
+
+    paths = "\n".join(
+        f'    <path android:pathData="{capsule(moved(a), moved(b), r * scale, hole=False)}" android:fillColor="#FFFFFFFF"/>'
+        for a, b in local
+    )
+    return HEADER.format(
+        what="The status-bar icon of the evening reminder: the mark's roof alone, its three strokes\n"
+        "     on the 24-unit grid. White on transparent, as status-bar icons must be: the system tints it."
+    ) + f"""<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+{paths}
+</vector>
+"""
+
+
 def main():
     reach = check_safe()
     RES.mkdir(parents=True, exist_ok=True)
@@ -207,7 +250,10 @@ def main():
         encoding="utf-8",
         newline="\n",
     )
+    STAT.parent.mkdir(parents=True, exist_ok=True)
+    STAT.write_text(status_bar(), encoding="utf-8", newline="\n")
     print("wrote", RES / "ic_launcher_foreground.xml", "and", RES / "ic_launcher_monochrome.xml", f"(reach {reach:.2f})")
+    print("wrote", STAT)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Il promemoria serale: il suo canale, come lo elencano le impostazioni del sistema. -->
+    <string name="reminder_channel_name">Promemoria serale</string>
+    <string name="reminder_channel_description">Chiede la sera se c’è qualcosa da aggiungere, solo in un giorno senza spese aggiunte.</string>
+
+    <!-- La notifica: una domanda, e che cosa fa un tocco. -->
+    <string name="reminder_title">Qualcosa da aggiungere oggi?</string>
+    <string name="reminder_text">Ancora nessuna spesa oggi. Un tocco apre i tuoi tetti.</string>
+</resources>

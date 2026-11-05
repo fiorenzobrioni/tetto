@@ -19,7 +19,9 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.io.IOException
+import java.time.DateTimeException
 import java.time.DayOfWeek
+import java.time.LocalTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -65,6 +67,9 @@ constructor(private val dataStore: DataStore<Preferences>) {
             font = enumOr(prefs[Keys.FONT], defaults.font),
             dynamicColor = prefs[Keys.DYNAMIC_COLOR] ?: defaults.dynamicColor,
             onboardingCompleted = prefs[Keys.ONBOARDING_COMPLETED] ?: defaults.onboardingCompleted,
+            reminderOn = prefs[Keys.REMINDER_ON] ?: defaults.reminderOn,
+            reminderTime = prefs[Keys.REMINDER_TIME]?.let(::timeOrNull) ?: defaults.reminderTime,
+            askedNotifications = prefs[Keys.ASKED_NOTIFICATIONS] ?: defaults.askedNotifications,
         )
     }
 
@@ -78,6 +83,9 @@ constructor(private val dataStore: DataStore<Preferences>) {
         prefs.putOrRemove(Keys.FONT, settings.font.name, defaults.font.name)
         prefs.putOrRemove(Keys.DYNAMIC_COLOR, settings.dynamicColor, defaults.dynamicColor)
         prefs.putOrRemove(Keys.ONBOARDING_COMPLETED, settings.onboardingCompleted, defaults.onboardingCompleted)
+        prefs.putOrRemove(Keys.REMINDER_ON, settings.reminderOn, defaults.reminderOn)
+        prefs.putOrRemove(Keys.REMINDER_TIME, settings.reminderTime.toString(), defaults.reminderTime.toString())
+        prefs.putOrRemove(Keys.ASKED_NOTIFICATIONS, settings.askedNotifications, defaults.askedNotifications)
     }
 
     private fun <T> MutablePreferences.putOrRemove(key: Preferences.Key<T>, value: T?, default: T?) {
@@ -87,7 +95,16 @@ constructor(private val dataStore: DataStore<Preferences>) {
     private fun UserSettings.sanitized(): UserSettings = copy(
         currency = currency?.takeIf { AppCurrency.ofOrNull(it) != null },
         monthStartDay = monthStartDay.coerceIn(1, 31),
+        // A time of day to the minute: the reminder is set by one, and "20:30" reads back as it.
+        reminderTime = reminderTime.withSecond(0).withNano(0),
     )
+
+    /** "20:30", as [write] stores it; anything else reads as the default. */
+    private fun timeOrNull(text: String): LocalTime? = try {
+        LocalTime.parse(text)
+    } catch (_: DateTimeException) {
+        null
+    }
 
     /** An enum stored by its name; a name this build does not know (a newer one's) reads as [default]. */
     private inline fun <reified E : Enum<E>> enumOr(name: String?, default: E): E =
@@ -102,6 +119,11 @@ constructor(private val dataStore: DataStore<Preferences>) {
         val FONT = stringPreferencesKey("font")
         val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        val REMINDER_ON = booleanPreferencesKey("reminder_on")
+
+        /** The local time, as `java.time` writes one: "20:30". */
+        val REMINDER_TIME = stringPreferencesKey("reminder_time")
+        val ASKED_NOTIFICATIONS = booleanPreferencesKey("asked_notifications")
     }
 
     companion object {

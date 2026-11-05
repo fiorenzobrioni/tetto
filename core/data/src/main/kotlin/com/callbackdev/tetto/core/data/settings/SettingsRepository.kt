@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import java.time.DayOfWeek
+import java.time.LocalTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -63,6 +64,20 @@ constructor(
 
     suspend fun setDynamicColor(on: Boolean) {
         preferences.update { it.copy(dynamicColor = on) }
+    }
+
+    /** The evening reminder on or off (PLANNING.md §8); its alarm follows the setting by itself. */
+    suspend fun setReminder(on: Boolean) {
+        preferences.update { it.copy(reminderOn = on) }
+    }
+
+    suspend fun setReminderTime(time: LocalTime) {
+        preferences.update { it.copy(reminderTime = time) }
+    }
+
+    /** Tetto asked for the notification permission: from now on, a refusal may be for good. */
+    suspend fun noteNotificationsAsked() {
+        preferences.update { it.copy(askedNotifications = true) }
     }
 
     /**
