@@ -2,7 +2,7 @@
 <!--
   Tetto's permissions are the short list in PLANNING.md §10: the evening reminder's two
   (notifications, asked when the reader turns it on; the boot broadcast), declared by
-  :core:reminder, and what Glance's WorkManager brings (Phase 5). Never here, from this file or from
+  :core:reminder, and what Glance's WorkManager brings (:widget, Phase 5). Never here, from this file or from
   any library: INTERNET, location, exact alarms, battery-optimization exemptions, camera,
   microphone, SMS, contacts, calendar, storage, the list of installed apps, activity
   recognition, body sensors. `checkForbiddenPermissions` fails the build on the merged manifest
@@ -40,6 +40,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- The numpad over the home screen (PLANNING.md §7, §8): opened by a card's cap or a
+             launcher shortcut, both Tetto's own (a shortcut is started with the publisher's
+             identity), so not exported. Translucent, its own task, out of the recent apps: the
+             reader is back on the home screen after Add. -->
+        <activity
+            android:name=".quickadd.QuickAddActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:taskAffinity="com.callbackdev.tetto.quickadd"
+            android:theme="@style/Theme.Tetto.QuickAdd" />
 
         <!-- Room is :core:data's, not on :app's compile classpath: lint cannot see the class this removes. -->
         <service

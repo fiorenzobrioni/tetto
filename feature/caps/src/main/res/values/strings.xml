@@ -118,4 +118,11 @@
     <string name="arrange_done">Done</string>
     <string name="arrange_move_up">Move up</string>
     <string name="arrange_move_down">Move down</string>
+
+    <!-- The numpad over the home screen (PLANNING.md §7): after Add, what is left; a cap gone. -->
+    <string name="quick_after">%1$s %2$s</string>
+    <string name="quick_after_over">%1$s · starts again %2$s</string>
+    <string name="quick_gone_title">This cap is no longer here</string>
+    <string name="quick_gone_body">It was deleted in Tetto after the card or the shortcut was made.</string>
+    <string name="quick_open_app">Open Tetto</string>
 </resources>

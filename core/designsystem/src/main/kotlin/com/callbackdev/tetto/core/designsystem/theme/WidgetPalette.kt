@@ -3,9 +3,10 @@ package com.callbackdev.tetto.core.designsystem.theme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Color
 import com.callbackdev.tetto.core.model.AppPalette
+import com.callbackdev.tetto.core.model.WidgetCardColor
 
-/**
- * The card colours a home-screen widget can wear: **six, hex for hex** the table of
+/*
+ * The card colours a home-screen widget can wear ([WidgetCardColor]): **six, hex for hex** the table of
  * `docs/adr/0003-widgets.md` (PLANNING.md §7), measured against the inks they carry: every one of the six is a dark ground under
  * white ink, white never under 7.8:1, the 75% quiet ink never under 5.2:1, the 85% one never
  * under 6.1:1.

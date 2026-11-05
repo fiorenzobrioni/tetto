@@ -16,14 +16,15 @@ single-purpose apps by callbackdev, with **Chiaro** (weather), **Passo** (step c
 release setup, and the same visual language. Its build and structure are Tempo's (itself
 Passo's), with Passo's Room back.
 
-**State (5 Nov 2026): Phases 0 to 4 are built.** The build, the design system, CI, the
+**State (5 Nov 2026): Phases 0 to 5 are built.** The build, the design system, CI, the
 keystores, the cap engine with its storage, the caps screen with its numpad, its sheets, the
 editor and the order, the first run and Settings, your data (the backup file, the restore, the
-CSV, erasing everything) and the evening reminder; the modules in the build are `:app`,
-`:core:model`, `:core:domain`, `:core:data`, `:core:reminder`, `:core:designsystem`,
-`:core:testing`, `:feature:caps`, `:feature:onboarding` and `:feature:settings`. The rest of
-the table below is the target: each module joins with the phase that brings its first code
-(PLANNING.md §11), so check before citing a file.
+CSV, erasing everything) and the evening reminder, the two home-screen cards with their settings,
+the numpad over the home screen (`QuickAddActivity`) and the launcher's shortcuts; the modules in
+the build are `:app`, `:core:model`, `:core:domain`, `:core:data`, `:core:reminder`,
+`:core:designsystem`, `:core:testing`, `:feature:caps`, `:feature:onboarding`,
+`:feature:settings` and `:widget`. `:feature:guide` joins with Phase 6 (PLANNING.md §11), so
+check before citing a file.
 
 **Tetto and Saldo are two separate apps, alternatives to each other** (owner, 5 Nov 2026).
 Tetto takes the family's look and structure from its sisters, so the apps are recognisable;
@@ -102,14 +103,14 @@ that does not match it.
 | Module | Kind | Holds |
 |---|---|---|
 | `:core:model` | pure Kotlin/JVM | data classes shared by everything: `Money` (`Long` minor units), `AppCurrency`, `PeriodKind`, `PeriodRule`, `DateRange`, `Cap`, `Spend`, `ClosedPeriod`, `CapState`, `CapIcon`, `CapDraft`, the settings enums and `UserSettings`, `WidgetLook` |
-| `:core:domain` | pure Kotlin/JVM | the cap engine: `PeriodCalendar` (a period from a date and a rule), `Days` (where dates meet instants: midnights, a day's instants, how near a day is), `Rollover` and `CatchUp` (closing periods, the reserve's limit, forgiveness, a run of empty periods folded), `CapChanges` (the open period a new cap or a new rule gets), `CapStates` (left, over, the bar, the mark for today, ahead of the days, the pace, the renewal), `MoneyInput` (the numpad's buffer), `Rescale` (a change of currency's decimals), `SpendPreview`, `CapsSentence`; `ReminderSchedule`; `BackupCodec`, `CsvExport`; the widgets' arithmetic (`GlanceFit`) |
-| `:core:data` | Android library | Room (`TettoDatabase`: `caps`, `spends`, `closed_periods`; schema exported to `core/data/schemas/`), DataStore (`settings`; `widgets`, not backed up); `CapsRepository` (the catch-up before every read and write, in one transaction, one at a time), `SettingsRepository`, `BackupRepository` (the backup's snapshot, the restore, the CSV, erasing everything, under the caps' lock), `TodaySource`, `PhoneDefaults` (the region's currency, the locale's week) |
+| `:core:domain` | pure Kotlin/JVM | the cap engine: `PeriodCalendar` (a period from a date and a rule), `Days` (where dates meet instants: midnights, a day's instants, how near a day is), `Rollover` and `CatchUp` (closing periods, the reserve's limit, forgiveness, a run of empty periods folded), `CapChanges` (the open period a new cap or a new rule gets), `CapStates` (left, over, the bar, the mark for today, ahead of the days, the pace, the renewal), `MoneyInput` (the numpad's buffer), `Rescale` (a change of currency's decimals), `SpendPreview`, `CapsSentence`; `ReminderSchedule`; `BackupCodec`, `CsvExport`; the widgets' arithmetic (`GlanceFit`, `WidgetType`, the text metrics) and what they show (`WidgetCaps`, `CapNote`) |
+| `:core:data` | Android library | Room (`TettoDatabase`: `caps`, `spends`, `closed_periods`; schema exported to `core/data/schemas/`), DataStore (`settings`; `widgets`, not backed up); `CapsRepository` (the catch-up before every read and write, in one transaction, one at a time), `SettingsRepository`, `BackupRepository` (the backup's snapshot, the restore, the CSV, erasing everything, under the caps' lock), `TodaySource`, `PhoneDefaults` (the region's currency, the locale's week); `HomeScreenCards` (the pin request, bound by `:widget`) and `QuickAdd` (the door to the numpad over the home screen) |
 | `:core:reminder` | Android library | the evening reminder's Android half (`EveningReminder`, started by the application): the inexact alarm and its re-arming, the receiver (alarm, boot, package replaced, time and zone, the notifications' block states), the `reminder` channel and its notification (`ic_stat_tetto`, drawn by the icon script), `ReminderAccess` (whether it can show, and the page that fixes it) |
 | `:core:designsystem` | Android library | M3 theme (Chiaro's dresses through Passo and Tempo), typography, shapes, motion, page gutter (`PageWidth.kt`), the widget card colours, `TettoIcons` (the curated cap icons, Material Symbols drawn in code); the settings rows and `StatusCard`; the numpad's keys, a cap's tile, the bar with its mark, the ring; the amount field (`MoneyField`, through `:core:domain`'s `MoneyInput`, its one use of the domain) and the currency picker (`CurrencyPickerDialog`, `Currencies`), shared by the editor, the first run and Settings; money formatting (`MoneyFormat`, from minor units and the locale) |
 | `:core:testing` | Android library, test-only | `assertAccessible()` (labels, 48dp touch targets) and `walkPage()`, shared by the UI tests as `testImplementation` |
-| `:feature:*` | Android library | `caps` (the caps screen, the numpad sheet and its ViewModel, a cap's sheet, the cap editor), `onboarding` (welcome, the areas, the amounts), `settings` (money, the reminder, appearance, your data with its `DataViewModel`, about), `guide` (in Chiaro's shape, Phase 6) |
-| `:widget` | Android library | the two Glance cards («At a glance», «In words»), their settings screen, their looks, the midnight alarm and the exempt broadcasts |
-| `:app` | application | `Application`, `MainActivity` (the reader's appearance), the shell (onboarding, then Navigation 3), `QuickAddActivity` (the numpad over the home screen, from a card or a shortcut), the dynamic launcher shortcuts, DI entry points; wires everything |
+| `:feature:*` | Android library | `caps` (the caps screen, the numpad sheet and its ViewModel, a cap's sheet, the cap editor, the numpad over the home screen's ViewModel and sheet), `onboarding` (welcome, the areas, the amounts), `settings` (money, the reminder, appearance, your data with its `DataViewModel`, about), `guide` (in Chiaro's shape, Phase 6) |
+| `:widget` | Android library | the two Glance cards («At a glance», «In words»), the ring's painter, their settings screen with the real card as its preview, their looks (`WidgetLookStore`, the `widgets` file), the refresh (`WidgetUpdater` after every write, `MidnightAlarm`, the exempt broadcasts), the pin request (`PinnedCards`), the generated previews |
+| `:app` | application | `Application`, `MainActivity` (the reader's appearance), the shell (onboarding, the first run's last page `HomeOffer`, then Navigation 3), `QuickAddActivity` (the numpad over the home screen, from a card or a shortcut), the dynamic launcher shortcuts (`CapShortcuts`), DI entry points; wires everything |
 
 Rules: `:core:model` and `:core:domain` stay pure Kotlin/JVM; if a class there needs a `Context`
 or a `Resources`, it is in the wrong module. Feature modules depend on `core:*`, never on each

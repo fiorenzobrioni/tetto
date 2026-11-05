@@ -109,7 +109,7 @@ The phased plan, with every decision and its reason, is in [PLANNING.md](./PLANN
 - **Phase 2**, the caps screen, the numpad and a cap's sheet. *Done.*
 - **Phase 3**, the first run and settings. *Done.*
 - **Phase 4**, your data and the evening reminder. *Done.*
-- **Phase 5**, the two widgets and the launcher's shortcuts.
+- **Phase 5**, the two widgets and the launcher's shortcuts. *Done.*
 - **Phase 6**, the guide and the accessibility pass.
 - **Phase 7**, the 1.0 release on GitHub.
 - **Phase 8**, Google Play: optional, later.

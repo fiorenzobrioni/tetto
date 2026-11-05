@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">Tetto</string>
+
+    <!-- The launcher's shortcuts (PLANNING.md §8): the cap's name is the short label. -->
+    <string name="shortcut_add_long">Add a spend to %s</string>
+    <string name="shortcut_gone">This cap is no longer here</string>
+
+    <!-- The first run's last page, where the launcher can place a card (PLANNING.md §8). -->
+    <string name="home_offer_title">Your caps on the home screen</string>
+    <string name="home_offer_body">A card shows what is left of each cap at a glance, and a touch on one opens the numpad over the home screen: two touches and the amount.</string>
+    <string name="home_offer_add">Add the card</string>
+    <string name="home_offer_added">On your home screen</string>
+    <string name="home_offer_later">Not now</string>
+    <string name="home_offer_done">Done</string>
+    <string name="home_offer_note">Hold the card on the home screen to choose its colour and its caps, or to make it larger.</string>
 </resources>

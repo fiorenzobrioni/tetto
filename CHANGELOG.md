@@ -35,3 +35,17 @@ All notable changes to Tetto are documented here. The format follows
   restored from one, after it is read whole and checked and you have seen what it holds; the
   spends for a spreadsheet, one row each, as CSV; and erasing everything, back to the first run.
   Tetto still sends nothing: no storage permission is asked, the file goes where you put it.
+- Two home-screen cards, on the same card as the family's: «At a glance», your caps as many as
+  the card's size allows, each with what is left and a slim bar; and «In words», one cap in a
+  ring (the one you choose, or the closest to its cap) with what is left in words. Over is said
+  in words on the cards too. Each card has its own settings: its background and colour, its
+  opacity, which caps, and the sentence.
+- A spend from the home screen: a touch on a cap opens the numpad over the home screen, and a
+  moment after Add you are back where you were; Undo puts the amount back on the numpad.
+- The launcher's shortcuts: a long press on Tetto's icon, and your first four caps go straight to
+  the numpad.
+- The cards stay fresh without asking anything of the battery: after every change, at midnight
+  (one alarm that never wakes the phone, only while a card is placed), and when the clock, the
+  time zone or the language changes.
+- After the first run, and in Settings, Tetto offers to put a card on your home screen, where the
+  launcher allows it.

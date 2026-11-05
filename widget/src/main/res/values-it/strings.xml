@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_glance_label">Colpo d’occhio</string>
+    <string name="widget_glance_desc">I tuoi tetti, ciascuno con quanto resta e una barra sottile. Toccandone uno aggiungi una spesa.</string>
+    <string name="widget_words_label">In parole</string>
+    <string name="widget_words_desc">Un tetto in un anello, e quanto resta a parole. Toccandolo aggiungi una spesa.</string>
+
+    <string name="widget_preview_left">ancora 12 €</string>
+    <string name="widget_preview_line">Caffè · fino a domenica</string>
+    <string name="widget_preview_pace">circa 4 €\nal giorno</string>
+    <string name="widget_preview_cap1">Caffè</string>
+    <string name="widget_preview_fig1">12 €</string>
+    <string name="widget_preview_cap2">Spesa</string>
+    <string name="widget_preview_fig2">62 €</string>
+    <string name="widget_preview_cap3">Cene fuori</string>
+    <string name="widget_preview_fig3">48 €</string>
+    <string name="widget_preview_cap4">Trasporti</string>
+    <string name="widget_preview_cap5">Svago</string>
+
+    <string name="widget_until_today">oggi</string>
+    <string name="widget_until_tomorrow">fino a domani</string>
+    <string name="widget_until_day">fino a %s</string>
+    <string name="widget_again_tomorrow">domani</string>
+    <string name="widget_again_day">%s</string>
+    <!-- In Italian a date carries its weekday ("fino a lunedì 30 nov"): no article to agree. -->
+    <string name="widget_skeleton_date" translatable="false">EEEEdMMM</string>
+
+    <string name="widget_left">ancora %s</string>
+    <string name="widget_over">sotto di %s</string>
+    <string name="widget_word_left">ancora</string>
+    <string name="widget_word_over">sotto di</string>
+    <bool name="widget_word_above">true</bool>
+
+    <string name="widget_detail">su %1$s · %2$s</string>
+    <string name="widget_detail_over">su %1$s · riparte %2$s</string>
+    <string name="widget_line">%1$s · %2$s</string>
+    <string name="widget_line_over">%1$s · riparte %2$s</string>
+    <string name="widget_of">su %s</string>
+    <string name="widget_starts_again">riparte %s</string>
+    <string name="widget_pace">circa %s al giorno</string>
+    <string name="widget_pace_short">%s al giorno</string>
+
+    <string name="widget_note_pace">Circa %s al giorno</string>
+    <string name="widget_note_ahead_pace">In anticipo sui giorni: circa %s al giorno</string>
+    <string name="widget_note_ahead">Spese in anticipo sui giorni</string>
+    <string name="widget_note_ahead_short">In anticipo sui giorni</string>
+    <string name="widget_note_reserve">Con %s di riserva</string>
+    <string name="widget_note_forgiven">Condonato quando riparte</string>
+
+    <string name="widget_description_left">%1$s, ancora %2$s su %3$s, %4$s</string>
+    <string name="widget_description_over">%1$s, sotto di %2$s su un tetto di %3$s, riparte %4$s</string>
+    <string name="widget_description_ahead">spese in anticipo sui giorni</string>
+    <string name="widget_description_pace">circa %s al giorno</string>
+    <string name="widget_description_reserve">con %s di riserva</string>
+    <string name="widget_description_add">Aggiungi una spesa</string>
+
+    <plurals name="widget_more">
+        <item quantity="one">altro %d</item>
+        <item quantity="other">altri %d</item>
+    </plurals>
+    <plurals name="widget_more_short">
+        <item quantity="one">+%d</item>
+        <item quantity="other">+%d</item>
+    </plurals>
+
+    <string name="widget_no_caps_title">Ancora nessun tetto</string>
+    <string name="widget_no_caps_hint">Tocca per crearne uno in Tetto</string>
+    <string name="widget_gone_title">Questo tetto non c’è più</string>
+    <string name="widget_gone_hint">Scegline un altro nelle impostazioni di questa scheda</string>
+    <string name="widget_unavailable_title">Impossibile leggere i tetti</string>
+    <string name="widget_unavailable_hint">Tocca per aprire Tetto</string>
+    <string name="widget_open_tetto">Apri Tetto</string>
+
+    <string name="widget_config_title">Questa scheda</string>
+    <string name="widget_config_preview_desc">Anteprima della scheda</string>
+    <string name="widget_config_preview_sample">Con tetti d’esempio: i tuoi saranno qui appena ne crei uno.</string>
+    <string name="widget_config_size_placed">Com’è ora</string>
+    <string name="widget_config_resize_hint">Sulla schermata Home tieni premuta la scheda e trascinane i bordi: si ridispone da sola.</string>
+    <string name="widget_config_background">Sfondo</string>
+    <string name="widget_bg_light">Chiaro</string>
+    <string name="widget_bg_dark">Scuro</string>
+    <string name="widget_bg_system">Come il telefono</string>
+    <string name="widget_bg_color">Un colore</string>
+    <string name="widget_color_blue">Blu</string>
+    <string name="widget_color_azure">Azzurro</string>
+    <string name="widget_color_green">Verde</string>
+    <string name="widget_color_teal">Verde mare</string>
+    <string name="widget_color_plum">Viola</string>
+    <string name="widget_color_clay">Terracotta</string>
+    <string name="widget_config_opacity">Opacità dello sfondo</string>
+    <string name="widget_opacity_full">Pieno</string>
+    <string name="widget_opacity_transparent">Trasparente</string>
+    <string name="widget_opacity_percent">%1$d%%</string>
+    <string name="widget_config_caps">Tetti</string>
+    <string name="widget_config_all_caps">Tutti i tetti</string>
+    <string name="widget_config_all_caps_note">Nel tuo ordine, quanti ne contiene la scheda; gli altri contati.</string>
+    <string name="widget_config_chosen_caps_note">Solo i tetti spuntati qui, nel tuo ordine. Un tetto creato dopo non si aggiunge.</string>
+    <string name="widget_config_cap">Il tetto</string>
+    <string name="widget_config_closest">Il più vicino al suo tetto</string>
+    <string name="widget_config_closest_note">Quello a cui oggi resta meno per il suo tetto, o il primo che è sotto.</string>
+    <string name="widget_config_sentence">La frase</string>
+    <string name="widget_config_sentence_note">Sotto quanto resta, su una scheda alta due righe o più: circa quanto al giorno, o le spese in anticipo sui giorni. Spenta, la scheda dice quanto resta e fino a quando, e l’anello prende lo spazio.</string>
+    <string name="widget_config_no_caps">Ancora nessun tetto: la scheda li mostrerà appena ne crei uno.</string>
+    <string name="widget_config_reset">Ripristina questa scheda</string>
+    <string name="widget_config_done">Fatto</string>
+</resources>

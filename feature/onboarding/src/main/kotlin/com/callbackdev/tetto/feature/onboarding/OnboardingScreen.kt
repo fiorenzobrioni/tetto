@@ -98,8 +98,12 @@ enum class OnboardingStep {
     AMOUNTS,
 }
 
+/**
+ * The first run. [onFinishing] hears, as the run ends, whether it made caps: the shell may then
+ * offer the home screen's card before the caps screen (PLANNING.md §8).
+ */
 @Composable
-fun OnboardingRoute(viewModel: OnboardingViewModel = hiltViewModel()) {
+fun OnboardingRoute(onFinishing: (withCaps: Boolean) -> Unit = {}, viewModel: OnboardingViewModel = hiltViewModel()) {
     val started by viewModel.currency.collectAsStateWithLifecycle()
     val finishing by viewModel.isFinishing.collectAsStateWithLifecycle()
     // Until the settings are read the run has no currency to offer: nothing rather than a guess.
@@ -125,9 +129,13 @@ fun OnboardingRoute(viewModel: OnboardingViewModel = hiltViewModel()) {
                 val drafts = picks.areas.map {
                     CapDraft(resources.getString(it.area.labelRes), it.amount, it.kind, it.area)
                 }
+                onFinishing(drafts.isNotEmpty())
                 viewModel.finish(currency.code, drafts)
             },
-            startFromNothing = { viewModel.finish(currency.code, emptyList()) },
+            startFromNothing = {
+                onFinishing(false)
+                viewModel.finish(currency.code, emptyList())
+            },
         ),
     )
 }

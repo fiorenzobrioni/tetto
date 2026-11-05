@@ -7,4 +7,13 @@
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
     </style>
+
+    <!-- The numpad over the home screen: a window with nothing of its own, the sheet draws its
+         scrim; no window animation, the sheet rises by itself. -->
+    <style name="Theme.Tetto.QuickAdd" parent="Theme.Tetto">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
 </resources>

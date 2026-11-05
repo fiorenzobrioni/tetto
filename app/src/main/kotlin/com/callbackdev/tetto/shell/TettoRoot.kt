@@ -11,7 +11,12 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -49,13 +54,22 @@ data object ArrangeKey : NavKey
 data object SettingsKey : NavKey
 
 /**
- * The shell (PLANNING.md §11 Phases 2 and 3): the first run until it is done, then the pages. The
- * first run stands before them, not on the back stack: it is not a page to go back to.
+ * The shell (PLANNING.md §11 Phases 2, 3 and 5): the first run until it is done, then the pages. The
+ * first run stands before them, not on the back stack: it is not a page to go back to. A run that
+ * made caps ends on the home screen's card, where the launcher can place one and none is there
+ * yet (PLANNING.md §8); the caps are already made then, so a process ended on that page loses
+ * nothing and makes nothing twice.
  */
 @Composable
 fun TettoRoot(settings: UserSettings) {
+    val offer: HomeOfferViewModel = hiltViewModel()
+    var offeringHome by rememberSaveable { mutableStateOf(false) }
     if (!settings.onboardingCompleted) {
-        OnboardingRoute()
+        OnboardingRoute(onFinishing = { withCaps -> offeringHome = withCaps && offer.worthOffering() })
+        return
+    }
+    if (offeringHome) {
+        HomeOfferRoute(onLeave = { offeringHome = false }, viewModel = offer)
         return
     }
     MainPages()

@@ -171,4 +171,11 @@
     <string name="data_failed_damaged_body">It is cut short, or was changed by hand, so its figures cannot be trusted. Nothing changed.</string>
     <string name="data_failed_restore_title">The backup could not be restored</string>
     <string name="data_failed_restore_body">Something went wrong while it was written. Your caps and settings are as they were.</string>
+
+    <!-- The home screen's cards (PLANNING.md §8), where the launcher can place one on request. -->
+    <string name="settings_group_home">Home screen</string>
+    <string name="settings_card_glance">At a glance</string>
+    <string name="settings_card_glance_note">Your caps, each with what is left. Touch to place the card.</string>
+    <string name="settings_card_words">In words</string>
+    <string name="settings_card_words_note">One cap in a ring, and what is left in words. Touch to place the card.</string>
 </resources>

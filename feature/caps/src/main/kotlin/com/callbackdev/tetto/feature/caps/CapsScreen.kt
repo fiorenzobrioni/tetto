@@ -212,6 +212,9 @@ object CapsTags {
     const val EDITOR_SAVE = "cap_editor_save"
     const val ARRANGE = "arrange"
     const val ARRANGE_LIST = "arrange_list"
+    const val QUICK_ADDED = "quick_added"
+    const val QUICK_UNDO = "quick_undo"
+    const val QUICK_GONE = "quick_gone"
 
     fun tile(capId: Long) = "cap_tile_$capId"
 
