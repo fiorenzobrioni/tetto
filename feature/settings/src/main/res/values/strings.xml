@@ -17,6 +17,23 @@
     <string name="settings_week_start_phone">%s, as the phone</string>
     <string name="settings_week_start_explanation">Weekly caps start again on this day. Their current period moves to the new dates, with its spends.</string>
 
+    <!-- The evening reminder (PLANNING.md §8). -->
+    <string name="settings_group_reminder">Reminder</string>
+    <string name="settings_reminder">Evening reminder</string>
+    <!-- "“Anything to add today?” around 20:30, only on a day with no spend added". -->
+    <string name="settings_reminder_note">“Anything to add today?” around %s, only on a day with no spend added</string>
+    <string name="settings_reminder_time">Time</string>
+    <string name="settings_reminder_time_note">Around this time: to save battery, Android may bring it a few minutes later.</string>
+    <string name="settings_save">Save</string>
+    <!-- When the reminder is on and Android would drop it: why, and the one thing that fixes it. -->
+    <string name="settings_reminder_ask_title">Tetto may not notify you yet</string>
+    <string name="settings_reminder_ask_body">The reminder is a notification, and Android asks you once whether Tetto may send them.</string>
+    <string name="settings_reminder_ask_action">Allow</string>
+    <string name="settings_reminder_blocked_title">Notifications are off for Tetto</string>
+    <string name="settings_reminder_blocked_channel_title">The reminder’s notifications are off</string>
+    <string name="settings_reminder_blocked_body">The reminder cannot arrive until they are on again, in the phone’s settings.</string>
+    <string name="settings_reminder_blocked_action">Open settings</string>
+
     <!-- The appearance, the family's. -->
     <string name="settings_group_appearance">Appearance</string>
     <string name="settings_theme">Theme</string>
@@ -47,10 +64,11 @@
     <string name="settings_language">App language</string>
     <string name="settings_language_system">Same as the phone</string>
 
-    <!-- The privacy statement: "Tetto sends nothing", and what Android's backup does (CLAUDE.md). -->
-    <string name="settings_privacy">Privacy</string>
+    <!-- Your data: the privacy statement ("Tetto sends nothing", and what Android's backup does:
+         CLAUDE.md), then the backup, the restore, the spends for a spreadsheet, erasing everything. -->
+    <string name="settings_group_data">Your data</string>
     <string name="settings_privacy_headline">No account, no ads, no tracking.</string>
-    <string name="settings_privacy_body">Tetto has no internet permission at all, so it cannot send your caps or your spends anywhere: Tetto sends nothing. They are kept on this phone. Android’s own backup, if you turned it on, keeps a copy of them and of your settings in your Google account, encrypted with your screen lock.</string>
+    <string name="settings_privacy_body">Tetto has no internet permission at all, so it cannot send your caps or your spends anywhere: Tetto sends nothing. They stay on this phone, and leave it only in a file you save yourself, or in Android’s own backup, if you turned it on, which keeps a copy of them and of your settings in your Google account, encrypted with your screen lock.</string>
 
     <string name="settings_group_about">About</string>
     <string name="settings_version">Version</string>
@@ -70,4 +88,87 @@
     <string name="settings_credit_font_inuse_system">in use: the font your phone is set in</string>
     <string name="settings_credit_icons">Icons</string>
     <string name="settings_credit_icons_note">Material Symbols by Google, Apache License 2.0</string>
+
+    <!-- Your data's rows. -->
+    <plurals name="data_caps">
+        <item quantity="one">%d cap</item>
+        <item quantity="other">%d caps</item>
+    </plurals>
+    <plurals name="data_spends">
+        <item quantity="one">%d spend</item>
+        <item quantity="other">%d spends</item>
+    </plurals>
+    <string name="data_backup">Back up to a file</string>
+    <!-- "4 caps and 37 spends, with your settings, in a file you choose". -->
+    <string name="data_backup_note">%1$s and %2$s, with your settings, in a file you choose</string>
+    <string name="data_backup_note_empty">No caps yet: the file would hold your settings alone</string>
+    <string name="data_restore">Restore from a backup</string>
+    <string name="data_restore_note">Brings back a backup’s caps and settings, in place of this phone’s</string>
+    <string name="data_spends">Spends for a spreadsheet</string>
+    <!-- "37 spends, one row each, as a CSV file". -->
+    <string name="data_spends_note">%s, one row each, as a CSV file</string>
+    <string name="data_spends_none">No spends yet</string>
+    <string name="data_erase">Erase everything</string>
+    <string name="data_erase_note">Every cap, spend and setting, from this phone: Tetto starts again from its first run</string>
+    <string name="data_busy_writing">Writing the file…</string>
+    <string name="data_busy_reading">Reading the file…</string>
+    <string name="data_busy_restoring">Restoring…</string>
+    <string name="data_busy_erasing">Erasing…</string>
+
+    <!-- Before a restore: what the file holds and what it replaces. -->
+    <string name="data_restore_title">Restore this backup?</string>
+    <!-- "Written on 5 Nov 2026, 21:14 by Tetto 0.1.0." -->
+    <string name="data_restore_written">Written on %1$s by Tetto %2$s.</string>
+    <string name="data_restore_written_unversioned">Written on %1$s.</string>
+    <!-- "4 caps: Coffee, Groceries, Shopping and Travel". -->
+    <plurals name="data_restore_caps">
+        <item quantity="one">%1$d cap: %2$s</item>
+        <item quantity="other">%1$d caps: %2$s</item>
+    </plurals>
+    <!-- The last of the names listed, when there are more: "Coffee, Groceries, Shopping and 2 more". -->
+    <string name="data_restore_more">%d more</string>
+    <string name="data_restore_no_caps">No caps: your settings alone</string>
+    <!-- "Amounts in Swiss Franc". -->
+    <string name="data_restore_currency">Amounts in %s</string>
+    <plurals name="data_restore_replaces">
+        <item quantity="one">It replaces the cap on this phone, with its spends, and your settings. This cannot be undone.</item>
+        <item quantity="other">It replaces the %d caps on this phone, with their spends, and your settings. This cannot be undone.</item>
+    </plurals>
+    <string name="data_restore_settings">Your settings become the backup’s too.</string>
+    <string name="data_restore_confirm">Restore</string>
+
+    <!-- Before erasing everything. -->
+    <string name="data_erase_title">Erase everything?</string>
+    <plurals name="data_erase_body">
+        <item quantity="one">Your cap, its spends and its reserve, and your settings, are erased from this phone, and Tetto starts again from its first run. A backup you saved is not touched. This cannot be undone.</item>
+        <item quantity="other">Your %d caps, their spends and their reserves, and your settings, are erased from this phone, and Tetto starts again from its first run. A backup you saved is not touched. This cannot be undone.</item>
+    </plurals>
+    <string name="data_erase_body_empty">Your settings are erased from this phone, and Tetto starts again from its first run. This cannot be undone.</string>
+    <string name="data_erase_confirm">Erase</string>
+
+    <!-- What an export or a restore came to, on a card until it is put away. -->
+    <string name="data_ok">OK</string>
+    <string name="data_saved_title">Backup saved</string>
+    <!-- "4 caps and 37 spends, with your settings, in tetto-backup-2026-11-05.json. …". -->
+    <string name="data_saved_body">%1$s and %2$s, with your settings, in %3$s. The file is not encrypted: keep it somewhere private.</string>
+    <string name="data_saved_body_unnamed">%1$s and %2$s, with your settings. The file is not encrypted: keep it somewhere private.</string>
+    <string name="data_spends_saved_title">Spends saved</string>
+    <string name="data_spends_saved_body">%1$s, one row each, in %2$s.</string>
+    <string name="data_spends_saved_body_unnamed">%1$s, one row each.</string>
+    <string name="data_restored_title">Backup restored</string>
+    <!-- "4 caps and 37 spends are back, with your settings. …". -->
+    <string name="data_restored_body">%1$s and %2$s are back, with your settings. A period that ended since the backup was made has closed.</string>
+    <string name="data_restored_body_empty">Your settings are back.</string>
+    <string name="data_failed_write_title">The file could not be written</string>
+    <string name="data_failed_write_body">The place you chose refused it, or has no room left. Nothing changed in Tetto.</string>
+    <string name="data_failed_read_title">The file could not be read</string>
+    <string name="data_failed_read_body">It may have been moved, or be too large to be a backup. Nothing changed.</string>
+    <string name="data_failed_not_tetto_title">Not a Tetto backup</string>
+    <string name="data_failed_not_tetto_body">This file was not written by Tetto’s “Back up to a file”. Nothing changed.</string>
+    <string name="data_failed_too_new_title">A backup from a newer Tetto</string>
+    <string name="data_failed_too_new_body">Update Tetto to restore it. Nothing changed.</string>
+    <string name="data_failed_damaged_title">The backup is damaged</string>
+    <string name="data_failed_damaged_body">It is cut short, or was changed by hand, so its figures cannot be trusted. Nothing changed.</string>
+    <string name="data_failed_restore_title">The backup could not be restored</string>
+    <string name="data_failed_restore_body">Something went wrong while it was written. Your caps and settings are as they were.</string>
 </resources>

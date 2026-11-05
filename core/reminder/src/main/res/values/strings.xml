@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The evening reminder (PLANNING.md §8): its channel, as the system's settings list it. -->
+    <string name="reminder_channel_name">Evening reminder</string>
+    <string name="reminder_channel_description">Asks in the evening whether there is anything to add, only on a day with no spend added.</string>
+
+    <!-- The notification: one question, and what a touch does. -->
+    <string name="reminder_title">Anything to add today?</string>
+    <string name="reminder_text">No spend added yet today. A touch opens your caps.</string>
+</resources>

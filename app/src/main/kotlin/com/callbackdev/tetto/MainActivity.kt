@@ -16,6 +16,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.callbackdev.tetto.core.data.settings.SettingsRepository
 import com.callbackdev.tetto.core.designsystem.theme.TettoTheme
 import com.callbackdev.tetto.core.model.ThemeMode
+import com.callbackdev.tetto.core.reminder.EveningReminder
 import com.callbackdev.tetto.shell.TettoRoot
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -23,11 +24,15 @@ import javax.inject.Inject
 /**
  * The one activity, edge to edge. It wears the reader's appearance (theme, dress, typeface,
  * wallpaper colours: PLANNING.md §11 Phase 3) and hands the pages to [TettoRoot], which starts
- * with the first run until it is done.
+ * with the first run until it is done. Each time it comes to the front, the evening reminder
+ * hears of it (PLANNING.md §8): its question has brought the reader here, and the notifications
+ * may have been turned on or off meanwhile.
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @Inject lateinit var settingsRepository: SettingsRepository
+
+    @Inject lateinit var reminder: EveningReminder
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,5 +69,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        reminder.appOpened()
     }
 }

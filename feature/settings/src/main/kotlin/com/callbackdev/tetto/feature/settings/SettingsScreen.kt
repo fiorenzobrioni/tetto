@@ -1,11 +1,17 @@
 package com.callbackdev.tetto.feature.settings
 
+import android.Manifest
 import android.app.LocaleManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
+import android.text.format.DateFormat
 import android.text.format.DateUtils
+import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,8 +43,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -59,16 +67,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.callbackdev.tetto.core.designsystem.components.CapTile
 import com.callbackdev.tetto.core.designsystem.components.CurrencyPickerDialog
+import com.callbackdev.tetto.core.designsystem.components.DENSE_TARGETS_TAG
 import com.callbackdev.tetto.core.designsystem.components.GroupDivider
 import com.callbackdev.tetto.core.designsystem.components.GroupHeader
 import com.callbackdev.tetto.core.designsystem.components.InfoRow
 import com.callbackdev.tetto.core.designsystem.components.RadioDialog
 import com.callbackdev.tetto.core.designsystem.components.SettingsGroup
+import com.callbackdev.tetto.core.designsystem.components.StatusCard
+import com.callbackdev.tetto.core.designsystem.components.StatusTone
 import com.callbackdev.tetto.core.designsystem.components.SwitchRow
 import com.callbackdev.tetto.core.designsystem.components.ValueRow
 import com.callbackdev.tetto.core.designsystem.components.currencyNamed
@@ -93,22 +106,78 @@ import com.callbackdev.tetto.core.model.PeriodKind
 import com.callbackdev.tetto.core.model.PeriodRule
 import com.callbackdev.tetto.core.model.Share
 import com.callbackdev.tetto.core.model.ThemeMode
+import com.callbackdev.tetto.core.model.UserSettings
+import com.callbackdev.tetto.core.reminder.ReminderAccess
+import com.callbackdev.tetto.core.reminder.ReminderBlock
+import com.callbackdev.tetto.feature.settings.data.DataActions
+import com.callbackdev.tetto.feature.settings.data.DataDialogs
+import com.callbackdev.tetto.feature.settings.data.DataGroup
+import com.callbackdev.tetto.feature.settings.data.DataUiState
+import com.callbackdev.tetto.feature.settings.data.DataViewModel
+import com.callbackdev.tetto.feature.settings.data.rememberDataFiles
 import java.text.NumberFormat
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Formatter
 import java.util.Locale
 import com.callbackdev.tetto.core.designsystem.R as DesignR
 
 @Composable
-fun SettingsRoute(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewModel()) {
+fun SettingsRoute(
+    onBack: () -> Unit,
+    viewModel: SettingsViewModel = hiltViewModel(),
+    dataViewModel: DataViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val data by dataViewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val activity = LocalActivity.current
+    val asked = state?.settings?.askedNotifications ?: false
+    fun readReach(askedBefore: Boolean) = ReminderReach.of(
+        block = ReminderAccess.block(context),
+        granted = ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
+            PackageManager.PERMISSION_GRANTED,
+        askedBefore = askedBefore,
+        showRationale = activity?.shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) == true,
+    )
+    var reach by remember { mutableStateOf(readReach(asked)) }
+    // Read again whenever the page comes back: from the permission's question, from the system's
+    // notification settings, or from anywhere the reader may have turned them off.
+    LifecycleResumeEffect(asked) {
+        reach = readReach(asked)
+        viewModel.reminderAccessMayHaveChanged()
+        onPauseOrDispose { }
+    }
+    val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        reach = readReach(askedBefore = true)
+        viewModel.reminderAccessMayHaveChanged()
+    }
+    val askPermission = {
+        viewModel.noteNotificationsAsked()
+        runCatching { permission.launch(Manifest.permission.POST_NOTIFICATIONS) }
+    }
     SettingsScreen(
         state = state,
         onBack = onBack,
+        reach = reach,
+        data = data,
+        dataActions = remember(dataViewModel) {
+            DataActions(
+                writeBackup = dataViewModel::writeBackup,
+                writeSpends = dataViewModel::writeSpends,
+                readBackup = dataViewModel::readBackup,
+                confirmRestore = dataViewModel::confirmRestore,
+                cancelRestore = dataViewModel::cancelRestore,
+                erase = dataViewModel::erase,
+                dismissOutcome = dataViewModel::dismissOutcome,
+                backupFileName = dataViewModel::backupFileName,
+                spendsFileName = dataViewModel::spendsFileName,
+            )
+        },
         actions = SettingsActions(
             setCurrency = viewModel::setCurrency,
             setMonthStartDay = viewModel::setMonthStartDay,
@@ -117,6 +186,20 @@ fun SettingsRoute(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMod
             setPalette = viewModel::setPalette,
             setFont = viewModel::setFont,
             setDynamicColor = viewModel::setDynamicColor,
+            // Turned on, the reminder asks for the permission where Android still lets it ask;
+            // where it does not, the card over the group says so, and opens the page that fixes it.
+            setReminder = { on ->
+                viewModel.setReminder(on)
+                if (on && reach.block == ReminderBlock.APP && reach.askable) askPermission()
+            },
+            setReminderTime = viewModel::setReminderTime,
+            fixNotifications = {
+                if (reach.block == ReminderBlock.APP && reach.askable) {
+                    askPermission()
+                } else {
+                    runCatching { context.startActivity(ReminderAccess.settingsIntent(context, reach.block)) }
+                }
+            },
             // The system's per-app language page: one place for it, the same in every app.
             openLanguage = {
                 runCatching { context.startActivity(Intent(Settings.ACTION_APP_LOCALE_SETTINGS, appUri(context))) }
@@ -136,15 +219,37 @@ class SettingsActions(
     val setPalette: (AppPalette) -> Unit = {},
     val setFont: (AppFont) -> Unit = {},
     val setDynamicColor: (Boolean) -> Unit = {},
+    val setReminder: (Boolean) -> Unit = {},
+    val setReminderTime: (LocalTime) -> Unit = {},
+    val fixNotifications: () -> Unit = {},
     val openLanguage: () -> Unit = {},
     val openUrl: (String) -> Unit = {},
 )
 
 /**
- * Settings (PLANNING.md §11 Phase 3): every group on one rounded ground under a header in the
- * accent; the money first, then a live preview of the appearance above the choices that change it,
- * the language, the privacy statement, about and the credits. The reminder and your data join with
- * Phase 4, the guide's card with Phase 6: no entry is drawn before what it opens exists.
+ * Where the reminder's notifications stand, as the route reads them from Android: what blocks them,
+ * if anything, and whether Android will still ask the reader for the permission.
+ */
+data class ReminderReach(val block: ReminderBlock, val askable: Boolean) {
+    companion object {
+        val Clear = ReminderReach(ReminderBlock.NONE, askable = false)
+
+        /**
+         * Android answers "should the app explain first?" with no both before its first question
+         * and after a refusal it will not let the app repeat: only whether Tetto ever asked
+         * ([askedBefore]) tells the two apart.
+         */
+        fun of(block: ReminderBlock, granted: Boolean, askedBefore: Boolean, showRationale: Boolean) =
+            ReminderReach(block, askable = !granted && (!askedBefore || showRationale))
+    }
+}
+
+/**
+ * Settings (PLANNING.md §11 Phases 3 and 4): every group on one rounded ground under a header in
+ * the accent; the money first, then the evening reminder, a live preview of the appearance above
+ * the choices that change it, the language, your data (the privacy statement, the backup, the
+ * restore, the spends for a spreadsheet, erasing everything), about and the credits. The guide's
+ * card joins with Phase 6: no entry is drawn before what it opens exists.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -153,6 +258,9 @@ fun SettingsScreen(
     onBack: () -> Unit,
     actions: SettingsActions,
     modifier: Modifier = Modifier,
+    reach: ReminderReach = ReminderReach.Clear,
+    data: DataUiState = DataUiState(),
+    dataActions: DataActions = DataActions(),
 ) {
     val scroll = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     Scaffold(
@@ -172,7 +280,9 @@ fun SettingsScreen(
     ) { padding ->
         // Until the store's first answer the list is not drawn: a screen of defaults that may be
         // about to change is a lie with good intentions.
-        if (state != null) SettingsList(state, actions, Modifier.fillMaxSize().padding(padding))
+        if (state != null) {
+            SettingsList(state, actions, reach, data, dataActions, Modifier.fillMaxSize().padding(padding))
+        }
     }
 }
 
@@ -183,14 +293,24 @@ private enum class Dialog {
     THEME,
     PALETTE,
     FONT,
+    REMINDER_TIME,
 }
 
 @Composable
-private fun SettingsList(state: SettingsUiState, actions: SettingsActions, modifier: Modifier) {
+private fun SettingsList(
+    state: SettingsUiState,
+    actions: SettingsActions,
+    reach: ReminderReach,
+    data: DataUiState,
+    dataActions: DataActions,
+    modifier: Modifier,
+) {
     val settings = state.settings
     val locale = LocalConfiguration.current.locales[0]
     var dialog by rememberSaveable { mutableStateOf<Dialog?>(null) }
     var confirmingCurrency by rememberSaveable { mutableStateOf<String?>(null) }
+    // Out of the lazy list: a picker's answer must not leave with a row scrolled away.
+    val files = rememberDataFiles(dataActions)
 
     LazyColumn(
         modifier = modifier.testTag(SettingsTags.LIST),
@@ -228,6 +348,17 @@ private fun SettingsList(state: SettingsUiState, actions: SettingsActions, modif
                     modifier = Modifier.testTag(SettingsTags.WEEK_START),
                 )
             }
+        }
+
+        item { GroupHeader(stringResource(R.string.settings_group_reminder)) }
+        item {
+            ReminderGroup(
+                settings = settings,
+                reach = reach,
+                onTurn = actions.setReminder,
+                onPickTime = { dialog = Dialog.REMINDER_TIME },
+                onFix = actions.fixNotifications,
+            )
         }
 
         item { GroupHeader(stringResource(R.string.settings_group_appearance)) }
@@ -272,8 +403,13 @@ private fun SettingsList(state: SettingsUiState, actions: SettingsActions, modif
             }
         }
 
-        item { GroupHeader(stringResource(R.string.settings_privacy)) }
+        item { GroupHeader(stringResource(R.string.settings_group_data)) }
         item { PrivacyCard() }
+        item {
+            Box(Modifier.padding(top = 12.dp).testTag(SettingsTags.DATA)) {
+                DataGroup(data, files, dataActions.dismissOutcome)
+            }
+        }
 
         item { GroupHeader(stringResource(R.string.settings_group_about)) }
         item {
@@ -397,8 +533,21 @@ private fun SettingsList(state: SettingsUiState, actions: SettingsActions, modif
             onDismiss = close,
         )
 
+        Dialog.REMINDER_TIME -> TimeDialog(
+            title = stringResource(R.string.settings_reminder),
+            initial = settings.reminderTime,
+            note = stringResource(R.string.settings_reminder_time_note),
+            onSave = { time ->
+                dialog = null
+                if (time != settings.reminderTime) actions.setReminderTime(time)
+            },
+            onDismiss = close,
+        )
+
         null -> Unit
     }
+
+    DataDialogs(data, files, dataActions)
 
     val to = confirmingCurrency?.let(AppCurrency::ofOrNull)
     if (to != null) {
@@ -487,6 +636,120 @@ private fun MonthStartDialog(selected: Int, onSelect: (Int) -> Unit, onDismiss: 
         },
         confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(DesignR.string.action_cancel)) } },
     )
+}
+
+/**
+ * The evening reminder (PLANNING.md §8): the switch, saying what it does and when; its time. Turned
+ * on while Android would drop it, a card over the group says why and holds the one button that
+ * fixes it, so a switch that is on never promises what Android drops.
+ */
+@Composable
+private fun ReminderGroup(
+    settings: UserSettings,
+    reach: ReminderReach,
+    onTurn: (Boolean) -> Unit,
+    onPickTime: () -> Unit,
+    onFix: () -> Unit,
+) {
+    val time = clockTime(settings.reminderTime)
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (settings.reminderOn && reach.block != ReminderBlock.NONE) {
+            val askable = reach.block == ReminderBlock.APP && reach.askable
+            StatusCard(
+                icon = TettoIcons.Bell,
+                title = stringResource(
+                    when {
+                        askable -> R.string.settings_reminder_ask_title
+                        reach.block == ReminderBlock.CHANNEL -> R.string.settings_reminder_blocked_channel_title
+                        else -> R.string.settings_reminder_blocked_title
+                    },
+                ),
+                body = stringResource(
+                    if (askable) R.string.settings_reminder_ask_body else R.string.settings_reminder_blocked_body,
+                ),
+                // Not yet asked is a step to take, not a fault: the quieter ground.
+                tone = if (askable) StatusTone.CHOICE else StatusTone.PROBLEM,
+                action = stringResource(
+                    if (askable) R.string.settings_reminder_ask_action else R.string.settings_reminder_blocked_action,
+                ),
+                onAction = onFix,
+                modifier = Modifier.padding(horizontal = ScreenMargin).testTag(SettingsTags.REMINDER_BLOCKED),
+            )
+        }
+        SettingsGroup {
+            SwitchRow(
+                label = stringResource(R.string.settings_reminder),
+                note = stringResource(R.string.settings_reminder_note, time),
+                checked = settings.reminderOn,
+                onChange = onTurn,
+                modifier = Modifier.testTag(SettingsTags.REMINDER),
+            )
+            GroupDivider()
+            // Always open: a time chosen while the reminder is off is the one it starts with.
+            ValueRow(
+                label = stringResource(R.string.settings_reminder_time),
+                value = time,
+                onClick = onPickTime,
+                modifier = Modifier.testTag(SettingsTags.REMINDER_TIME),
+            )
+        }
+    }
+}
+
+/** A time of day on Material's dial, 12 or 24 hours as the phone shows them; saved on confirm. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TimeDialog(
+    title: String,
+    initial: LocalTime,
+    note: String,
+    onSave: (LocalTime) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val context = LocalContext.current
+    val picker = rememberTimePickerState(
+        initialHour = initial.hour,
+        initialMinute = initial.minute,
+        is24Hour = DateFormat.is24HourFormat(context),
+    )
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                // At twice the text size the dial and its note scroll rather than push the buttons off.
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+            ) {
+                // Material's dial: its hours a little under 48dp apart, set by a drag as much as a tap.
+                TimePicker(state = picker, modifier = Modifier.testTag(DENSE_TARGETS_TAG))
+                Text(
+                    note,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onSave(LocalTime.of(picker.hour, picker.minute)) },
+                modifier = Modifier.testTag(SettingsTags.REMINDER_TIME_SAVE),
+            ) { Text(stringResource(R.string.settings_save)) }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(DesignR.string.action_cancel)) } },
+    )
+}
+
+/** A time of day as the phone writes one: its locale's order, 24-hour or not as the reader set it. */
+@Composable
+private fun clockTime(time: LocalTime): String {
+    val context = LocalContext.current
+    val locale = LocalConfiguration.current.locales[0]
+    val skeleton = if (DateFormat.is24HourFormat(context)) "Hm" else "hm"
+    return remember(time, locale, skeleton) {
+        time.format(DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, skeleton), locale))
+    }
 }
 
 @Composable
@@ -707,6 +970,11 @@ object SettingsTags {
     const val THEME = "settings_theme"
     const val DYNAMIC_COLOR = "settings_dynamic_color"
     const val PREVIEW = "settings_preview"
+    const val REMINDER = "settings_reminder"
+    const val REMINDER_TIME = "settings_reminder_time"
+    const val REMINDER_TIME_SAVE = "settings_reminder_time_save"
+    const val REMINDER_BLOCKED = "settings_reminder_blocked"
+    const val DATA = "settings_data"
 
     fun day(day: Int) = "settings_day_$day"
 }

@@ -11,6 +11,7 @@ import com.callbackdev.tetto.core.model.AppFont
 import com.callbackdev.tetto.core.model.AppPalette
 import com.callbackdev.tetto.core.model.ThemeMode
 import com.callbackdev.tetto.core.model.UserSettings
+import com.callbackdev.tetto.core.reminder.EveningReminder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalTime
 import javax.inject.Inject
 
 /**
@@ -41,9 +43,10 @@ data class SettingsUiState(
 }
 
 /**
- * Settings (PLANNING.md §11 Phase 3). The money's three settings go through the caps' repository,
- * which moves the open periods or rescales the amounts with them (§4.1, §4.5); the appearance is
- * written as it is chosen, and the app wears it at once.
+ * Settings (PLANNING.md §11 Phases 3 and 4). The money's three settings go through the caps'
+ * repository, which moves the open periods or rescales the amounts with them (§4.1, §4.5); the
+ * appearance is written as it is chosen, and the app wears it at once; the reminder's alarm
+ * follows its setting by itself, and hears when the notifications may have changed.
  */
 @HiltViewModel
 class SettingsViewModel
@@ -53,6 +56,7 @@ constructor(
     private val repository: SettingsRepository,
     caps: CapsRepository,
     private val clock: TodaySource,
+    private val reminder: EveningReminder,
 ) : ViewModel() {
     private val version: String = runCatching {
         context.packageManager.getPackageInfo(context.packageName, 0).versionName
@@ -80,6 +84,16 @@ constructor(
     fun setFont(font: AppFont) = launch { repository.setFont(font) }
 
     fun setDynamicColor(on: Boolean) = launch { repository.setDynamicColor(on) }
+
+    fun setReminder(on: Boolean) = launch { repository.setReminder(on) }
+
+    fun setReminderTime(time: LocalTime) = launch { repository.setReminderTime(time) }
+
+    /** Android is about to ask for the permission: from now on, a refusal may be for good. */
+    fun noteNotificationsAsked() = launch { repository.noteNotificationsAsked() }
+
+    /** Back from the permission's question or the system's page: the alarm follows what changed. */
+    fun reminderAccessMayHaveChanged() = launch { reminder.accessMayHaveChanged() }
 
     private fun launch(block: suspend () -> Unit) {
         viewModelScope.launch { block() }

@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -75,7 +76,8 @@ fun GroupDivider() {
 
 /**
  * A preference: what it is, what it says now, tap to change. With [trailing] a chevron says the
- * tap leaves the screen (a system page, a web page).
+ * tap leaves the screen (a system page, a web page). [labelColor] marks an action that cannot be
+ * undone (erasing everything) in the over ink; its words say so too.
  */
 @Composable
 fun ValueRow(
@@ -86,6 +88,7 @@ fun ValueRow(
     icon: ImageVector? = null,
     trailing: Boolean = false,
     enabled: Boolean = true,
+    labelColor: Color = Color.Unspecified,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -97,7 +100,7 @@ fun ValueRow(
     ) {
         if (icon != null) RowIcon(icon)
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(label, style = MaterialTheme.typography.bodyLarge)
+            Text(label, style = MaterialTheme.typography.bodyLarge, color = labelColor)
             Text(value, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         if (trailing) {

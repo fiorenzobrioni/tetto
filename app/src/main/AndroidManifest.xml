@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Tetto's permissions are the short list in PLANNING.md §10: none of its own until the reminder
-  (Phase 4) and what Glance's WorkManager brings (Phase 5). Never here, from this file or from
+  Tetto's permissions are the short list in PLANNING.md §10: the evening reminder's two
+  (notifications, asked when the reader turns it on; the boot broadcast), declared by
+  :core:reminder, and what Glance's WorkManager brings (Phase 5). Never here, from this file or from
   any library: INTERNET, location, exact alarms, battery-optimization exemptions, camera,
   microphone, SMS, contacts, calendar, storage, the list of installed apps, activity
   recognition, body sensors. `checkForbiddenPermissions` fails the build on the merged manifest

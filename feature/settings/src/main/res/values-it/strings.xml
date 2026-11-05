@@ -17,6 +17,21 @@
     <string name="settings_week_start_phone">%s, come il telefono</string>
     <string name="settings_week_start_explanation">I tetti settimanali ripartono in questo giorno. Il loro periodo in corso si sposta sulle nuove date, con le sue spese.</string>
 
+    <!-- Il promemoria serale. -->
+    <string name="settings_group_reminder">Promemoria</string>
+    <string name="settings_reminder">Promemoria serale</string>
+    <string name="settings_reminder_note">«Qualcosa da aggiungere oggi?» verso le %s, solo in un giorno senza spese aggiunte</string>
+    <string name="settings_reminder_time">Ora</string>
+    <string name="settings_reminder_time_note">Verso quest’ora: per risparmiare batteria, Android può portarlo qualche minuto dopo.</string>
+    <string name="settings_save">Salva</string>
+    <string name="settings_reminder_ask_title">Tetto non può ancora mandarti notifiche</string>
+    <string name="settings_reminder_ask_body">Il promemoria è una notifica, e Android ti chiede una volta se Tetto può mandarne.</string>
+    <string name="settings_reminder_ask_action">Consenti</string>
+    <string name="settings_reminder_blocked_title">Le notifiche di Tetto sono disattivate</string>
+    <string name="settings_reminder_blocked_channel_title">Le notifiche del promemoria sono disattivate</string>
+    <string name="settings_reminder_blocked_body">Il promemoria non può arrivare finché non le riattivi, nelle impostazioni del telefono.</string>
+    <string name="settings_reminder_blocked_action">Apri le impostazioni</string>
+
     <!-- L'aspetto, quello della famiglia. -->
     <string name="settings_group_appearance">Aspetto</string>
     <string name="settings_theme">Tema</string>
@@ -47,10 +62,11 @@
     <string name="settings_language">Lingua dell’app</string>
     <string name="settings_language_system">Come il telefono</string>
 
-    <!-- La privacy: "Tetto non invia nulla", e che cosa fa il backup di Android. -->
-    <string name="settings_privacy">Privacy</string>
+    <!-- I tuoi dati: la privacy ("Tetto non invia nulla", e che cosa fa il backup di Android), poi il
+         backup, il ripristino, le spese per un foglio di calcolo, cancellare tutto. -->
+    <string name="settings_group_data">I tuoi dati</string>
     <string name="settings_privacy_headline">Niente account, niente pubblicità, niente tracciamento.</string>
-    <string name="settings_privacy_body">Tetto non ha alcun permesso di accesso a internet, quindi non può mandare i tuoi tetti e le tue spese da nessuna parte: Tetto non invia nulla. Restano su questo telefono. Il backup di Android, se l’hai attivato, ne tiene una copia, con le tue impostazioni, nel tuo account Google, cifrata con il blocco schermo.</string>
+    <string name="settings_privacy_body">Tetto non ha alcun permesso di accesso a internet, quindi non può mandare i tuoi tetti e le tue spese da nessuna parte: Tetto non invia nulla. Restano su questo telefono, e lo lasciano solo in un file che salvi tu, o nel backup di Android, se l’hai attivato, che ne tiene una copia, con le tue impostazioni, nel tuo account Google, cifrata con il blocco schermo.</string>
 
     <string name="settings_group_about">Informazioni</string>
     <string name="settings_version">Versione</string>
@@ -68,4 +84,79 @@
     <string name="settings_credit_font_inuse_system">in uso: il carattere impostato sul telefono</string>
     <string name="settings_credit_icons">Icone</string>
     <string name="settings_credit_icons_note">Material Symbols di Google, Apache License 2.0</string>
+
+    <!-- Le righe dei tuoi dati. -->
+    <plurals name="data_caps">
+        <item quantity="one">%d tetto</item>
+        <item quantity="other">%d tetti</item>
+    </plurals>
+    <plurals name="data_spends">
+        <item quantity="one">%d spesa</item>
+        <item quantity="other">%d spese</item>
+    </plurals>
+    <string name="data_backup">Salva un backup</string>
+    <string name="data_backup_note">%1$s e %2$s, con le tue impostazioni, in un file che scegli tu</string>
+    <string name="data_backup_note_empty">Ancora nessun tetto: il file conterrebbe solo le impostazioni</string>
+    <string name="data_restore">Ripristina un backup</string>
+    <string name="data_restore_note">Riporta i tetti e le impostazioni di un backup, al posto di quelli di questo telefono</string>
+    <string name="data_spends">Spese per un foglio di calcolo</string>
+    <string name="data_spends_note">%s, una riga ciascuna, in un file CSV</string>
+    <string name="data_spends_none">Ancora nessuna spesa</string>
+    <string name="data_erase">Cancella tutto</string>
+    <string name="data_erase_note">Ogni tetto, spesa e impostazione, da questo telefono: Tetto riparte dal primo avvio</string>
+    <string name="data_busy_writing">Scrittura del file…</string>
+    <string name="data_busy_reading">Lettura del file…</string>
+    <string name="data_busy_restoring">Ripristino…</string>
+    <string name="data_busy_erasing">Cancellazione…</string>
+
+    <!-- Prima di un ripristino: che cosa contiene il file, e che cosa sostituisce. -->
+    <string name="data_restore_title">Ripristinare questo backup?</string>
+    <string name="data_restore_written">Scritto il %1$s da Tetto %2$s.</string>
+    <string name="data_restore_written_unversioned">Scritto il %1$s.</string>
+    <plurals name="data_restore_caps">
+        <item quantity="one">%1$d tetto: %2$s</item>
+        <item quantity="other">%1$d tetti: %2$s</item>
+    </plurals>
+    <string name="data_restore_more">altri %d</string>
+    <string name="data_restore_no_caps">Nessun tetto: solo le impostazioni</string>
+    <string name="data_restore_currency">Importi in %s</string>
+    <plurals name="data_restore_replaces">
+        <item quantity="one">Sostituisce il tetto di questo telefono, con le sue spese, e le tue impostazioni. Non si può annullare.</item>
+        <item quantity="other">Sostituisce tutti e %d i tetti di questo telefono, con le loro spese, e le tue impostazioni. Non si può annullare.</item>
+    </plurals>
+    <string name="data_restore_settings">Anche le impostazioni diventano quelle del backup.</string>
+    <string name="data_restore_confirm">Ripristina</string>
+
+    <!-- Prima di cancellare tutto. -->
+    <string name="data_erase_title">Cancellare tutto?</string>
+    <plurals name="data_erase_body">
+        <item quantity="one">Il tuo tetto, le sue spese e la sua riserva, e le tue impostazioni, vengono cancellati da questo telefono, e Tetto riparte dal primo avvio. Un backup che hai salvato resta com’è. Non si può annullare.</item>
+        <item quantity="other">I tuoi %d tetti, le loro spese e le loro riserve, e le tue impostazioni, vengono cancellati da questo telefono, e Tetto riparte dal primo avvio. Un backup che hai salvato resta com’è. Non si può annullare.</item>
+    </plurals>
+    <string name="data_erase_body_empty">Le tue impostazioni vengono cancellate da questo telefono, e Tetto riparte dal primo avvio. Non si può annullare.</string>
+    <string name="data_erase_confirm">Cancella</string>
+
+    <!-- Com'è andato un salvataggio o un ripristino, su una scheda finché non la chiudi. -->
+    <string name="data_ok">OK</string>
+    <string name="data_saved_title">Backup salvato</string>
+    <string name="data_saved_body">%1$s e %2$s, con le tue impostazioni, in %3$s. Il file non è cifrato: tienilo in un posto riservato.</string>
+    <string name="data_saved_body_unnamed">%1$s e %2$s, con le tue impostazioni. Il file non è cifrato: tienilo in un posto riservato.</string>
+    <string name="data_spends_saved_title">Spese salvate</string>
+    <string name="data_spends_saved_body">%1$s, una riga ciascuna, in %2$s.</string>
+    <string name="data_spends_saved_body_unnamed">%1$s, una riga ciascuna.</string>
+    <string name="data_restored_title">Backup ripristinato</string>
+    <string name="data_restored_body">%1$s e %2$s sono tornati, con le tue impostazioni. Un periodo finito dopo il backup si è chiuso.</string>
+    <string name="data_restored_body_empty">Le tue impostazioni sono tornate.</string>
+    <string name="data_failed_write_title">Il file non si è potuto scrivere</string>
+    <string name="data_failed_write_body">Il posto scelto l’ha rifiutato, o non ha più spazio. In Tetto non è cambiato nulla.</string>
+    <string name="data_failed_read_title">Il file non si è potuto leggere</string>
+    <string name="data_failed_read_body">Forse è stato spostato, o è troppo grande per essere un backup. Non è cambiato nulla.</string>
+    <string name="data_failed_not_tetto_title">Non è un backup di Tetto</string>
+    <string name="data_failed_not_tetto_body">Questo file non viene da «Salva un backup» di Tetto. Non è cambiato nulla.</string>
+    <string name="data_failed_too_new_title">Un backup di un Tetto più recente</string>
+    <string name="data_failed_too_new_body">Aggiorna Tetto per ripristinarlo. Non è cambiato nulla.</string>
+    <string name="data_failed_damaged_title">Il backup è danneggiato</string>
+    <string name="data_failed_damaged_body">È incompleto, o è stato modificato a mano, quindi le sue cifre non sono affidabili. Non è cambiato nulla.</string>
+    <string name="data_failed_restore_title">Il backup non si è potuto ripristinare</string>
+    <string name="data_failed_restore_body">Qualcosa è andato storto durante la scrittura. I tuoi tetti e le impostazioni sono com’erano.</string>
 </resources>

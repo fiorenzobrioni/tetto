@@ -108,7 +108,7 @@ The phased plan, with every decision and its reason, is in [PLANNING.md](./PLANN
 - **Phase 1**, the cap engine: periods, the reserve and forgiveness, every edge case tested. *Done.*
 - **Phase 2**, the caps screen, the numpad and a cap's sheet. *Done.*
 - **Phase 3**, the first run and settings. *Done.*
-- **Phase 4**, your data and the evening reminder.
+- **Phase 4**, your data and the evening reminder. *Done.*
 - **Phase 5**, the two widgets and the launcher's shortcuts.
 - **Phase 6**, the guide and the accessibility pass.
 - **Phase 7**, the 1.0 release on GitHub.

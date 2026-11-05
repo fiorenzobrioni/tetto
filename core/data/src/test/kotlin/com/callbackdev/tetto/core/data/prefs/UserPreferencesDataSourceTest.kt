@@ -18,6 +18,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.time.DayOfWeek
+import java.time.LocalTime
 
 /** The settings file (PLANNING.md §5): defaults unwritten, unreadable values read as defaults. */
 class UserPreferencesDataSourceTest {
@@ -94,5 +95,25 @@ class UserPreferencesDataSourceTest {
     fun `an out of range month start is held in range when written`() = runTest {
         assertThat(source.update { it.copy(monthStartDay = 0) }.monthStartDay).isEqualTo(1)
         assertThat(source.update { it.copy(monthStartDay = 32) }.monthStartDay).isEqualTo(31)
+    }
+
+    @Test
+    fun `the reminder and the asked permission survive, and their defaults leave no key`() = runTest {
+        val chosen = UserSettings(reminderOn = true, reminderTime = LocalTime.of(21, 45), askedNotifications = true)
+        source.update { chosen }
+        assertThat(source.current()).isEqualTo(chosen)
+        val stored = store.dataStore.data.first().asMap().mapKeys { it.key.name }
+        assertThat(stored).containsExactly("reminder_on", true, "reminder_time", "21:45", "asked_notifications", true)
+
+        source.update { it.copy(reminderOn = false, reminderTime = UserSettings.DEFAULT_REMINDER_TIME) }
+        assertThat(store.dataStore.data.first().asMap().keys.map { it.name }).containsExactly("asked_notifications")
+    }
+
+    @Test
+    fun `a reminder time is kept to the minute, and one that cannot be read is the default`() = runTest {
+        assertThat(source.update { it.copy(reminderTime = LocalTime.of(7, 5, 59, 1)) }.reminderTime)
+            .isEqualTo(LocalTime.of(7, 5))
+        store.dataStore.edit { it[stringPreferencesKey("reminder_time")] = "half past eight" }
+        assertThat(source.current().reminderTime).isEqualTo(UserSettings.DEFAULT_REMINDER_TIME)
     }
 }

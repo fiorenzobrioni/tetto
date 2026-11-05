@@ -27,3 +27,11 @@ All notable changes to Tetto are documented here. The format follows
   converts them); the day a month starts and the first day of the week; the appearance (theme,
   palette, typeface, wallpaper colours); the app's language; the privacy statement, the licence
   and the credits.
+- The evening reminder, if you turn it on in Settings: "Anything to add today?" around the time
+  you choose, only on a day with caps and no spend added, gone by itself when the day ends.
+  Android's permission is asked when you turn it on, never before; if notifications are off,
+  Settings says so and opens the page that turns them back on.
+- Your data: a backup of your caps, every spend and your settings, to a file you choose, and
+  restored from one, after it is read whole and checked and you have seen what it holds; the
+  spends for a spreadsheet, one row each, as CSV; and erasing everything, back to the first run.
+  Tetto still sends nothing: no storage permission is asked, the file goes where you put it.
