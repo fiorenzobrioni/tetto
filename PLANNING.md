@@ -1,0 +1,605 @@
+# Tetto — Technical Planning
+
+> Companion to [VISION.md](VISION.md). This document defines the architecture, the design of the cap engine, the data, the widgets, and the delivery phases.
+> It is written to be read by humans and by Claude Code.
+>
+> Keep the phase checklists up to date: tick the boxes as work is merged, and record every decision and deviation with its reason in §15's log. How the log is written and archived is in How it is made, below.
+
+---
+
+## How it is made (5 Nov 2026, as the family's)
+
+- **This file** is the living plan: the architecture and the rules the code keeps (§1 to §10, §12 to §14: living, changed in place with the code, never archived), the phases still open (§11), what is open (§15, Open), and the log of the current period (§15, after Open). New decisions are written **at the end of the log**, one `###` section per intervention, with who asked and the date (and the step, where there is one).
+- **`docs/planning/NN-<period>.md`** are the closed periods of the log, with the phases they closed, **frozen**: they are not edited. A decision that changes an old one is written here, naming the one it changes (the file, and the title or the entry's date).
+- **`docs/planning/README.md`** is the index of every `##` and `###` heading of the archive, with its line: a reference by name or by date in the code ("PLANNING.md §11 Phase 3", "§15, 5 Nov 2026") that is not in this file is found there. It is written by `python3 tools/planning_index.py`, never by hand, and changes only when archiving. Both arrive in Phase 0, from the family; until the first archive the index is empty.
+- **Archive** when the log passes ~80 KB (`sed -n '/^### Log since/,$p' PLANNING.md | wc -c`), or at a release, whichever first. A size and not a count of lines: this file writes a paragraph to a line. The log becomes the next archive file (the same header as the family's), and the phases of §11 that closed go with it (a closed phase's open box carried to Open); here an empty log stays with its start date, «Open» is reread, and the index script is run again.
+
+## State
+
+- **Released**: nothing yet.
+- **In progress**: Phase 0. VISION.md was reviewed by the owner on 5 Nov 2026 (VISION, «The owner's answers»; §15's log); the build, the design system and CI come next. Open, in §15: the ring's colours.
+- **Later, and optional**: Phase 8, Google Play (§11).
+
+---
+
+## 1. Tech stack
+
+The family's stack, as Tempo carries it from Passo (Passo ADR 0001), with Passo's Room back: Tetto is the first app since Passo to keep a table.
+
+| Concern | Choice |
+|---|---|
+| Language | Kotlin 2.4, compiled by AGP 9's built-in Kotlin, with the Compose compiler Gradle plugin; KSP for Room and Hilt |
+| Build | Gradle 9.8 with Kotlin DSL, AGP 9.4; version catalog (`gradle/libs.versions.toml`); convention plugins in `build-logic/` |
+| JDK | Java 21, `jvmTarget` 21, without a Gradle toolchain |
+| SDK levels | `minSdk 34`, `targetSdk 37`, `compileSdk 37` (the family's; owner, 5 Nov 2026) |
+| UI | Jetpack Compose, Material 3 in Chiaro's design language (its generated schemes, dynamic color on request), edge-to-edge |
+| Widget | Jetpack Glance (`glance-appwidget` + `glance-material3`) 1.2.x, `SizeMode.Exact` |
+| Architecture | MVVM with unidirectional data flow; coroutines and `Flow` |
+| Dependency injection | Hilt |
+| Persistence | Room for the caps, their spends and the closed periods (schema exported, every migration tested); DataStore (Preferences) for the settings and the widgets' looks |
+| Serialization | kotlinx.serialization: the navigation routes and the backup file, as Passo's |
+| Money | `Long` minor units of one currency (`java.util.Currency` for its code and decimals); formatted by the locale's currency format. Never `Double` or `Float` (§4.1) |
+| Background | No service, no periodic work. `AlarmManager`: the evening reminder's inexact alarm (`setAndAllowWhileIdle`, as Passo's evening reminder) and the widgets' midnight redraw (`set(RTC)`, inexact, non-wakeup, as Tempo's boundary). WorkManager only as Glance brings it, pinned as in the family |
+| Navigation | Navigation 3, as Passo's and Tempo's shell |
+| Time | `java.time`, local dates for periods; an injected clock and zone |
+| Testing | JUnit 4, Truth, Turbine, coroutines-test; Robolectric (Room, receivers, Compose UI tests); Room's `MigrationTestHelper`; Glance's unit test utilities |
+| Quality | Android Lint (`checkDependencies`), ktlint through Spotless; Baseline Profiles if start-up measures slow |
+| CI | GitHub Actions: formatting, the forbidden-permission check on the merged manifest, unit tests and lint before the APKs. A release workflow on version tags builds the signed APK and publishes it to GitHub Releases |
+| License | GPL-3.0. Every new dependency must have a GPL-3.0-compatible license (Apache-2.0, MIT, BSD) and the owner's approval |
+
+Always pick the **latest stable** versions at setup time and record them in the version catalog. Avoid alpha versions unless a phase needs them and says why.
+
+---
+
+## 2. Project structure
+
+```
+tetto/
+├── app/                    # Application, MainActivity, QuickAddActivity, navigation, launcher shortcuts, DI entry points
+├── build-logic/            # Convention plugins (android-application, library, compose, feature, hilt, room, jvm)
+├── core/
+│   ├── model/              # Pure Kotlin data classes (no Android deps)
+│   ├── domain/             # Pure Kotlin: periods, the rollover and the catch-up, money input, a cap's state, the sentence, the preview, the widgets' fit, the backup and CSV formats
+│   ├── data/               # Room (caps, spends, closed periods), DataStore, repositories exposing Flow
+│   ├── reminder/           # The evening reminder's Android half: alarm, receivers, notification channel
+│   ├── designsystem/       # M3 theme, typography, shared components (the numpad, a cap's tile, the bar, the ring), icons
+│   └── testing/            # test-only: the accessibility checks and the page walk the UI tests share
+├── feature/
+│   ├── caps/               # the caps screen, the numpad sheet, a cap's sheet, the cap editor
+│   ├── onboarding/         # welcome, the areas, the amounts
+│   ├── settings/           # settings, your data (backup, restore, CSV, erase), the reminder, about
+│   └── guide/              # the guide, in Chiaro's shape (Phase 6)
+├── widget/                 # the Glance cards, their settings screen, their refresh
+├── tools/                  # the launcher icon script, the planning index script
+├── docs/                   # ADRs, the planning archive, screenshots, device checks
+├── keystore/               # the shared debug key (deliberately committed)
+├── VISION.md
+├── PLANNING.md
+└── CLAUDE.md
+```
+
+Rules:
+
+- `core:model` and `core:domain` are pure Kotlin/JVM modules. All business logic lives there and is unit-tested without Android.
+- Feature modules depend on `core:*`, never on each other.
+- `app` wires everything together. `QuickAddActivity` (the numpad over the home screen) hosts `:feature:caps`'s numpad sheet.
+- A module joins the build in the phase that brings its first code, not before.
+
+---
+
+## 3. Architecture overview
+
+```mermaid
+flowchart LR
+    subgraph PHONE["Android"]
+        AM["AlarmManager<br/>(reminder: inexact;<br/>midnight: non-wakeup)"]
+        BCAST["Time set, time zone, locale,<br/>boot, package replaced (exempt)"]
+        SAF["Storage Access Framework<br/>(export, restore)"]
+        ABK["Android backup<br/>(allowlist)"]
+        NOTIF["Notification"]
+    end
+
+    subgraph DOMAIN[":core:domain (pure Kotlin)"]
+        PER["PeriodCalendar"]
+        ROLL["Rollover, CatchUp"]
+        STATE["CapState, Pace,<br/>CapsSentence"]
+        INPUT["MoneyInput,<br/>SpendPreview"]
+        CODEC["BackupCodec,<br/>CsvExport"]
+        FIT["GlanceFit"]
+    end
+
+    subgraph DATA[":core:data"]
+        DB[("Room: caps, spends,<br/>closed periods")]
+        DS[("DataStore: settings,<br/>widget looks")]
+        REPO["CapsRepository<br/>(catch-up before every read)"]
+        SET["SettingsRepository"]
+    end
+
+    UI["Compose screens (:feature:*)"]
+    QA["QuickAddActivity (:app)"]
+    WIDGET["Glance cards (:widget)"]
+    REM[":core:reminder"]
+
+    UI --> REPO
+    QA --> REPO
+    WIDGET --> REPO
+    REM --> REPO
+    REPO --> ROLL
+    ROLL --> PER
+    REPO --> STATE
+    REPO <--> DB
+    SET <--> DS
+    UI --> INPUT
+    QA --> INPUT
+    UI --> CODEC
+    CODEC <--> SAF
+    DB -.-> ABK
+    DS -.-> ABK
+    FIT --> WIDGET
+    AM --> REM
+    AM --> WIDGET
+    BCAST --> REM
+    BCAST --> WIDGET
+    REM --> NOTIF
+    REPO -->|"after every write"| WIDGET
+```
+
+**One writer, many readers.** Tetto's own screens (the caps screen, the cap's sheet, the numpad over the home screen) are the only writers. The readers are those screens, the widgets and the reminder; each runs the catch-up (§4.4) before it reads, so none of them ever sees a period that should have closed.
+
+**Closed when read, never on a timer.** No job closes periods at midnight. The first read after a period's end closes it, in one transaction, idempotently. A page open across midnight has a lifecycle-bound ticker for the next local midnight; the widgets have one inexact, non-wakeup alarm at the next midnight.
+
+**Computed, not stored.** What a cap says (left, over, the pace, the mark for today, the sentence) is computed from the cap, its open period's spends and today, in `:core:domain`. The database stores facts: the caps, the spends, the closed periods.
+
+---
+
+## 4. The cap engine (core design)
+
+The riskiest part of the app: a wrong period, a cent of drift or a reserve that grows by itself is what makes a reader stop trusting the numbers, and a budget whose numbers are not trusted is abandoned. Build it first, with its tests, before any screen.
+
+### 4.1 Money
+
+- **Whole minor units, `Long`** (`Money`, a value class): cents of the euro, pence, none for the yen. Never `Double` or `Float`, anywhere in `:core:model`, `:core:domain` or `:core:data`. Sums are exact.
+- **One currency for the app**, an ISO 4217 code in the settings, chosen at the first run (the phone's region's by default) and stored then, so a later change of region relabels nothing by itself. Its decimals are `Currency.defaultFractionDigits` (0, 2 or 3).
+- **Input** (`MoneyInput`, pure): the numpad's buffer, digits and at most one separator, at most the currency's decimals after it, at most nine digits before it; delete, clear; parsed to minor units exactly, never through a floating-point number. A zero amount cannot be added.
+- **Output**: formatted by the locale's currency format with the app's currency (`:core:designsystem`, from minor units through `BigDecimal.movePointLeft`), in tabular figures. The domain never formats.
+- **A change of currency** relabels the amounts; it never converts them, and Settings says so. Where the two currencies' decimals differ, the stored amounts are rescaled (euro to yen: 1250 cents become ¥13, rounded half up), in one transaction, with a test.
+- Nine digits and three decimals stay far inside a `Long`, sums included.
+
+### 4.2 Periods
+
+- **A period is a range of local dates**, start included, end excluded (`DateRange`). Its kind is the cap's: `DAY`, `WEEK`, `MONTH`, `YEAR`.
+- `PeriodCalendar.containing(date, rule)`, pure:
+  - **Day**: `[date, date + 1)`.
+  - **Week**: from the week's first day on or before the date (the setting; the locale's `WeekFields.firstDayOfWeek` by default), seven days.
+  - **Month**: from the month start day `d` (the setting, 1 to 31; 1 by default): each month starts on `min(d, its length)`, and a period runs to the next month's start. With `d = 31`: 31 Jan, 28 (or 29) Feb, 31 Mar, 30 Apr.
+  - **Year**: from January's month start (`d` January) to the next.
+- **Today** is `LocalDate.now(zone)` from an injected clock and zone (`TodaySource`, as Passo's), and the zone is the phone's current one.
+- Periods never come from timestamps compared with a stored end: a daylight-saving night, a flight across time zones and a clock set back move instants, not dates.
+
+### 4.3 Spends
+
+- A spend is an amount above zero, its cap, the instant it was added (`addedAt`, for the list's time and the CSV) and **the start of the period it counts in** (`periodStart`), fixed when it is added: the cap's open period at that moment. A later change of zone never moves it.
+- A spend counts **now**: there is no date to pick (VISION, non-goals).
+- **Edit** (the amount) and **delete** are allowed while the spend's period is the cap's open period. Spends of closed periods are frozen (§4.4).
+- **Undo** is the inverse operation by id: an add is undone by deleting that spend; a delete by inserting it again with its id and fields; an edit by writing the old amount back.
+- "A spend was added today" (the reminder): any spend whose `addedAt` falls on today's local date, in the zone at the moment of asking.
+
+### 4.4 Closing periods: the catch-up and the rollover
+
+`CapsRepository.catchUp(today)` runs, in **one Room transaction**, before any read of the caps: the caps screen's flow, a widget's `provideGlance`, the reminder's receiver, `QuickAddActivity`, the backup's export. It is **idempotent**: run twice, the second does nothing.
+
+For each cap whose open period ended on or before today (`openEnd <= today`), in order:
+
+1. `spent` = the sum of the open period's spends.
+2. **The rollover**, the concept's formula, exact and bounded:
+   - `reserveAfter = min(limit, max(0, reserve + cap − spent))`, where `limit` is the reserve's limit, **one period's cap** (owner, 5 Nov 2026): a period can at most double;
+   - `forgiven = max(0, spent − cap − reserve)`: the overspend the reserve could not cover, dropped. A new period never starts in debt.
+3. A `ClosedPeriod` row is written: the dates, the cap in force, `spent`, `reserveBefore`, `reserveAfter`, `forgiven`, and `periods = 1`.
+4. The cap's open period moves to the next one (`PeriodCalendar.next`), and the loop goes on while it has ended.
+
+**A run of empty periods** (a long absence) after the first closed one is folded into **one** `ClosedPeriod` row (from the first's start to the last's end, `spent = 0`, `periods = n`), its `reserveAfter` computed by iterating in memory (it reaches the limit within a period or two). A daily cap left for 400 days writes two rows, not 400.
+
+**What never happens:**
+
+- A period is never reopened. If today falls before the open period's start (a clock set back, a flight west across midnight), nothing closes and a new spend counts in the open period.
+- A closed period is never changed. A correction is possible only in the open period, so the reserve never changes behind the reader's back.
+
+**While visible**: the caps screen and the cap's sheet hold a ticker for the next local midnight (`repeatOnLifecycle(STARTED)`); at its tick the catch-up runs and the state is computed again. The ticker is re-armed on a time or zone change.
+
+### 4.5 Changing a cap
+
+- **Name, icon**: nothing else changes.
+- **Amount**: applies to the open period at once (what is left is computed again); the reserve stays, and the new limit applies at the next close.
+- **Period kind**, or the settings' week start or month start day for the caps of that kind: the open period is **replaced** by the new rule's period that contains today. This period's spends move to it (their `periodStart` updated); the reserve stays. No `ClosedPeriod` row is written: nothing closed, the period was replaced. Spends of periods already closed stay in them.
+- **Clear the reserve**: the reserve becomes zero, with undo.
+- **Delete**: the cap, its spends and its closed periods (`ON DELETE CASCADE`), after a confirmation.
+- **Order**: the caps' `position`, written for every moved cap in one transaction.
+
+### 4.6 What a cap says (`CapState`, pure)
+
+From a cap, its open period's spends and today:
+
+- `left = cap + reserve − spent`; **over** when `left < 0` (said "€30 over", never "−€30" alone).
+- `daysLeft = openEnd − today`, at least 1.
+- **The bar**: `spentShare = spent / (cap + reserve)`, held to `[0, 1]`, with an over state beyond.
+- **The mark for today**, for a week, a month or a year: `daysShare = (today − openStart + 1) / length`, today counted.
+- **Ahead of the days**: not over, and `spentShare > daysShare`: spending runs ahead of the period (the bar takes the *attention* ink). No fixed threshold.
+- **The pace**, for a week, a month or a year, while not over and `daysLeft ≥ 2`: `left / daysLeft`, rounded down to a whole unit of the currency; not shown under one unit.
+- **The renewal**: the open period's end, said as a weekday within the week ("until Monday"), else as a date ("until 1 Dec").
+
+`SpendPreview(state, typed)`, pure: `after = left − typed`; **fits** (`after ≥ 0`, "€15 left"), **goes over** (`left ≥ 0 > after`, "€30 over"), **still over** (`left < 0`, "still €45 over").
+
+`CapsSentence(states, today)`, pure, returns a structure (a kind and its values), never a string: no caps; all under their caps, with the one closest (the lowest `left / (cap + reserve)`), its left and its renewal; one or more over, with the first and when it starts again; a cap renewed today. The words are resources, in both languages, with plurals.
+
+### 4.7 Edge cases (all need unit tests)
+
+- Money: `0,10 + 0,20` is exactly 30 cents; the separator of each locale; a currency with no decimals (the separator key absent) and one with three; nine digits; a zero amount refused; the rescale between currencies of different decimals.
+- Periods: a week starting on Monday and on Sunday; a month starting on the 1st, the 15th, the 29th, 30th and 31st, across February in a leap year and not; a year starting on 1 and on 31 January; the day of a daylight-saving change (23 and 25 hours) in both directions.
+- The catch-up: nothing ended; one period ended; several; a run of 400 empty daily periods (two rows); idempotence; a cap created today; today before the open period's start (clock set back, a flight west); a flight east across two midnights.
+- The rollover: under the cap (the reserve grows), exactly at the cap, over within the reserve (the reserve shrinks), over beyond it (forgiveness, the reserve at zero), the reserve at its limit, the limit after a change of amount.
+- Changes: the amount mid-period; the kind mid-period (week to month, month to week, to a day), the spends moved and the closed ones untouched; the month start day changed; the week start changed; clearing the reserve; deleting a cap with closed periods.
+- Spends: undo of an add, a delete, an edit; an edit refused in a closed period; "a spend today" across midnight and after a change of zone.
+- What a cap says: over; exactly zero left; the pace under one unit; the last day of a period; a day cap (no mark, no pace); a cap with a reserve and nothing spent.
+- The sentence: no caps; one cap; all under; several over; ties for the closest.
+
+---
+
+## 5. Data model
+
+### `:core:model` (pure)
+
+- `Money` (value class over `Long` minor units), `AppCurrency(code, fractionDigits)`
+- `PeriodKind` (`DAY`, `WEEK`, `MONTH`, `YEAR`), `PeriodRule(kind, weekStart, monthStartDay)`, `DateRange(start, endExclusive)`
+- `Cap(id, name, icon: CapIcon, amount: Money, kind: PeriodKind, reserve: Money, openStart: LocalDate, position)`
+- `Spend(id, capId, amount: Money, addedAt: Instant, periodStart: LocalDate)`
+- `ClosedPeriod(capId, range: DateRange, cap, spent, reserveBefore, reserveAfter, forgiven, periods)`
+- `CapState` (§4.6), `CapIcon` (the curated set's keys), `UserSettings`, `WidgetLook`
+
+### Room (`TettoDatabase`, file `tetto.db`, version 1)
+
+| Table | Columns | Notes |
+|---|---|---|
+| `caps` | `id` (PK), `name`, `icon` (key), `amount` (minor units), `kind`, `reserve` (minor units), `open_start` (epoch day), `position`, `created_at` (epoch ms) | |
+| `spends` | `id` (PK), `cap_id` (FK → `caps`, `ON DELETE CASCADE`), `amount` (minor units, > 0), `added_at` (epoch ms), `period_start` (epoch day) | Index on (`cap_id`, `period_start`); index on `added_at` (the reminder's "today") |
+| `closed_periods` | `cap_id` (FK, cascade), `start`, `end` (epoch days), `cap`, `spent`, `reserve_before`, `reserve_after`, `forgiven` (minor units), `periods` (≥ 1) | PK (`cap_id`, `start`) |
+
+- The schema is exported (`core/data/schemas/`) and committed; every migration from version 1 on has a `MigrationTestHelper` test and an upgrade test from the first release's schema, as Passo's. Never `fallbackToDestructiveMigration`.
+- Size: a few thousand spends a year, a few hundred closed periods. Spends of closed periods are kept for the CSV and the backup and never listed (owner, 5 Nov 2026).
+
+### DataStore (Preferences), file `settings`
+
+| Key | Default | Meaning |
+|---|---|---|
+| `theme`, `palette`, `font`, `dynamic_color` | system, VIVID, GOOGLE_SANS, false | The family's appearance |
+| `currency` | the phone's region's, written at the first run | ISO 4217 code (§4.1) |
+| `month_start_day` | 1 | 1 to 31 (§4.2) |
+| `week_start` | none (the locale's) | A `DayOfWeek`, once the reader picks one |
+| `reminder_on` | false | The evening reminder |
+| `reminder_time` | 20:30 | Local time |
+| `asked_notifications` | false | Whether the permission was ever asked: what tells "askable" from "denied for good" (Tempo's rule) |
+| `onboarding_completed` | false | |
+| `caps_tip_seen` | false | The caps screen's first-day tip, pointing to the guide, dismissed or followed (Phase 6) |
+
+### DataStore, file `widgets` (not backed up)
+
+One `WidgetLook` per `appWidgetId`: the card's ground (light, dark, system, one of the six colours), its opacity, which caps («At a glance»: all, or a chosen set in the reader's order; «In words»: one cap, or the closest to its cap). Removed in `onDeleted`.
+
+### Backup
+
+- **Android's backup** (`data_extraction_rules.xml`, cloud copy and device transfer): the database (`tetto.db` and its write-ahead log) and the settings file, an allowlist (the family's rule, Passo's ADR 0007). The widgets' file stays out: widget ids are renewed by a restore.
+- **The backup file** (`BackupCodec`, `:core:domain`, kotlinx.serialization over DTOs kept apart from the model): `format: "tetto-backup"`, `version: 1`; the caps, every spend, the closed periods, the settings the reader chose (currency, month start, week start, appearance, the reminder). Dates ISO, instants epoch milliseconds, amounts minor units with the currency's code. A file cut short is **damaged**; a newer version asks for an **update**; anything else is **not a Tetto backup**. Nothing is written until the whole file has been read and checked.
+- **A restore replaces** this phone's caps, spends and closed periods, after a confirmation that says so: on a new phone there is nothing to merge with, and a merge of two sets of caps would double them. (Passo merges because a new phone has already counted steps by itself; Tetto has no data it did not get from the reader.) The catch-up runs right after.
+- **The CSV** (`CsvExport`, pure): one row per spend, a header row, ISO dates and times, the cap's name, the amount in the currency's major unit with a dot, the currency's code, the period's start and end.
+
+---
+
+## 6. Derived views (`core:domain`)
+
+- **`PeriodCalendar`**: a date and a rule → the period that contains it; a period → the next (§4.2).
+- **`Rollover`** and **`CatchUp`**: one period closed, a run folded, the plan of what a catch-up writes (pure; the repository applies it in one transaction) (§4.4). The most tested code of the app.
+- **`CapState`**, **`Pace`**: §4.6.
+- **`SpendPreview`** and **`MoneyInput`**: the numpad's arithmetic (§4.1, §4.6).
+- **`CapsSentence`**: the caps screen's sentence, and «In words»'s (§4.6).
+- **`ReminderSchedule`**: the next moment the reminder fires, from the time, today and now; across a daylight-saving change (as Passo's `EveningReminder`).
+- **`BackupCodec`**, **`CsvExport`**: §5.
+- **`GlanceFit`** (pure arithmetic, as the family's `GlanceLayout` / `AgendaFit`): given a card's granted size in dp and the text sizes measured in the system face, which form the card takes and how many caps fit; pinned by tests at the family's reference grants (one row ≈ 85 dp tall, two ≈ 189; widths 2 cells ≈ 159 dp, 3 ≈ 250, 4 ≈ 340).
+
+---
+
+## 7. Widgets (Glance)
+
+The family's pair (owner, 5 Nov 2026), on the family's card (Passo's ADR 0005, from Chiaro): its corner, insets, grounds, Chiaro's six colours (`WidgetPalette.kt`), opacity and ink rule. The details of each form are settled in Phase 5 with their ADR (`docs/adr/0003-widgets.md`); what follows binds them.
+
+### Configuration
+
+- `SizeMode.Exact`: every form is read off the size the launcher really granted.
+- Default placement 4×2 for «At a glance», 4×1 for «In words» (where Passo's ring card opens); minimum one cell; `resizeMode="horizontal|vertical"`; **no maximum** (Passo's ADR 0005).
+- `updatePeriodMillis = 0`. `configure` is the per-widget settings screen, `reconfigurable|configuration_optional`: the card is placed at once with sensible defaults.
+- `widgetCategory="home_screen"`.
+- Reference grants the layout tests measure against (the family's): one row ≈ 85 dp tall, two ≈ 189; two cells ≈ 159 dp wide, three ≈ 250, four ≈ 340.
+
+| «At a glance» form | When | Content |
+|---|---|---|
+| CELL | one cell | One cap: its icon and what is left |
+| ROW | one row | The caps side by side, as many as the width holds, each its icon, its left and a slim bar; the rest counted |
+| GRID | two rows and up | The caps in rows, each its icon, name, left and bar; "3 more" where they do not all fit |
+
+### «In words»: the family's ring card
+
+The owner asked (5 Nov 2026) that this card have **the ring of Passo's and Tempo's ring cards, at the same sizes for every size of card and every line of text**, so the three stand on a home screen as one set. So its geometry is not designed again: it is the family's, as Tempo's `WordsFit` writes it (Passo's row and tall card), **copied constant for constant** into Tetto's `GlanceFit`, and only the words are Tetto's. The type steps are the family's widget scale (`WidgetType`: title 22 sp, body 16 sp, label 13 sp), copied with it.
+
+| Form | When | The ring | The words |
+|---|---|---|---|
+| CELL | one cell wide | As large as the cell, up to 104 dp (56 dp at ease); the cap's icon inside | What is left under it where the cell is taller than wide (the label step, 18 to 28 dp of room) |
+| ROW | one row | At the leading edge, 44 to 56 dp, 12 dp from the words | What is left ("€12 left", 20 sp, Medium; 16 sp on a narrow row, down to 14) over the cap's name and its renewal ("Coffee · until Monday", 16 sp; 14, 13, 12 on a narrow row); the pace at the far edge where the words keep 120 dp |
+| TALL | two rows and up | In the top trailing corner, from 48 dp, 72 dp at ease, up to the larger of 104 dp and 45% of the card's inner height and width; the cap's name beside it where 56 dp are left | Hanging from the bottom leading corner: what is left (22 sp, down to 18 to stay on one line), "of €20 · until Monday" (16 sp), and the pace or the cap's sentence at the label step (13 sp, up to three lines) |
+
+- **The ring** is what was spent of the cap and its reserve: its track, and the arc in the accent; in the *attention* ink when spending runs ahead of the days; full past the cap, with "over" in the words ("€30 over"). It is a bitmap painted at the size shown, capped at 416 px a side, one per card (Passo's rule), with the cap's icon drawn in its middle.
+- Without a cap to show (the chosen one deleted, no caps at all) the card says so in the words' place and opens the app.
+- A gallery test draws «In words» beside the family's reference forms at the reference grants, and `WidgetFitTest` pins every size of the ring and every type step to the family's numbers: a change to them is a change to the family's, decided with the owner, never alone.
+
+### Rendering
+
+- **No scrolling container**: a Glance `Column`/`Row`, never `LazyColumn`. Glance drops the eleventh child of a container silently: caps go in groups of at most five, counted.
+- Inks resolved against the ground the card really has (`widgetInk`, Chiaro's rule), never left to the launcher's day/night resolution. Amounts in tabular figures where the system face has them.
+- A cap over its cap says "over" in words on the card too; never a colour alone.
+- Previews: a static `previewLayout`, and generated previews on Android 15+ (`providePreview`) from sample caps, once per version, as Tempo's.
+
+### Taps
+
+- **A cap**: `QuickAddActivity` on that cap: the numpad sheet over the home screen (a translucent activity, `excludeFromRecents`, its own task affinity). After Add, the sheet becomes one line, "€5.00 added to Coffee", with **Undo**, for a few seconds (longer with TalkBack), then closes by itself; a touch outside closes it at once.
+- **The rest of the card**: the caps screen.
+
+### Update strategy (battery-aware)
+
+- **A write** (a spend added, edited or deleted; a cap or a setting changed): the repository asks the cards to redraw once the transaction is committed.
+- **Midnight**: while a card is placed, one `AlarmManager.set(RTC, next local midnight)`, inexact and **non-wakeup**, armed after every render: delivered when the phone is next awake, which is when someone can see the card. The card's render runs the catch-up first.
+- **Clock, zone, language**: `TIME_SET`, `TIMEZONE_CHANGED`, `LOCALE_CHANGED`, exempt from the implicit-broadcast limits, received in the manifest.
+- **Boot and update**: the system sends the cards their update; the alarm is armed again from it.
+- Nothing else: no periodic work, no polling, no observer while nothing is shown.
+
+---
+
+## 8. Notifications and system surfaces
+
+- **Channel `reminder`** (default importance), the evening reminder, opt-in:
+  - turned on in Settings, where `POST_NOTIFICATIONS` is asked (never at the first run); denied, the switch says why and how to change it;
+  - one inexact alarm, `setAndAllowWhileIdle(RTC_WAKEUP, …)` at the reader's time (as Passo's evening reminder: no exact-alarm permission), armed again at every start of the process, every change of the setting, every clock or zone change, after a boot (`RECEIVE_BOOT_COMPLETED`) and an update (`MY_PACKAGE_REPLACED`), and at each firing;
+  - at its firing: the catch-up, then **nothing** if there is no cap or if a spend was added today (§4.3); else "Anything to add today?", whose touch opens the caps screen; it goes by itself at the end of the day (`setTimeoutAfter`);
+  - no alarm armed while the reminder's notifications cannot show (armed again when they can: the app's return, the system's block-state broadcasts), Passo's rule of 2 Nov 2026.
+- **No other notification**: no threshold alerts, no "over" alerts (VISION).
+- **Launcher shortcuts** (dynamic: a static one names its package, and the debug build's is another): the first four caps in the reader's order, each its icon and name, opening `QuickAddActivity` on that cap. Published again when the caps, their order or their names change, and when the app's language changes (Tempo's lesson of 30 Oct 2026).
+- **Pin request**: the first run's last page and Settings offer "Add a widget to the home screen" through `AppWidgetManager.requestPinAppWidget`, where the launcher supports it.
+
+---
+
+## 9. Battery rules (non-negotiable)
+
+1. No service, foreground or background. Tetto runs only when a screen of it is visible, when a card is being drawn, or when the reminder fires.
+2. No wakelocks of the app's own (WorkManager holds its own while Glance's work runs, as in the family).
+3. No exact alarms, no `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`, no periodic workers.
+4. Two alarms at most, each only while needed: the reminder's (inexact, one a day, only while on and allowed) and the cards' midnight redraw (inexact, non-wakeup, only while a card is placed).
+5. Periods close when read (§4.4), never on a timer. The midnight ticker lives in a visible page's lifecycle.
+6. A phase that touches an alarm ends with a check: `adb shell dumpsys alarm | grep tetto` (the alarms above and nothing else), `dumpsys batterystats --charged com.callbackdev.tetto`, Doze (`dumpsys deviceidle force-idle`).
+
+---
+
+## 10. Permissions and manifest
+
+| Permission / element | Type | Why |
+|---|---|---|
+| `POST_NOTIFICATIONS` | Runtime | The evening reminder, asked when the reader turns it on (Phase 4) |
+| `RECEIVE_BOOT_COMPLETED` | Normal | Arm the reminder again after a boot (also brought by WorkManager) |
+| `WAKE_LOCK`, `ACCESS_NETWORK_STATE`, `FOREGROUND_SERVICE` | Normal | Brought by WorkManager, which Glance runs its sessions on, as in the family. Without `INTERNET` nothing can leave the phone. Tetto's own code uses none of them |
+| `android:allowBackup="true"` + `dataExtractionRules` | Manifest | The database and the settings file only (§5) |
+
+**Forbidden:** `INTERNET`, `ACCESS_*_LOCATION`, `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`, `SCHEDULE_EXACT_ALARM`, `USE_EXACT_ALARM`, `CAMERA`, `RECORD_AUDIO`, `READ_SMS`, `RECEIVE_SMS`, `READ_CONTACTS`, `WRITE_CONTACTS`, `READ_CALENDAR`, `WRITE_CALENDAR`, `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`, `MANAGE_EXTERNAL_STORAGE`, `READ_MEDIA_*`, `QUERY_ALL_PACKAGES`, `ACTIVITY_RECOGNITION`, `HIGH_SAMPLING_RATE_SENSORS`, `BODY_SENSORS*`.
+
+The export, the restore and the CSV go through the Storage Access Framework (`ACTION_CREATE_DOCUMENT`, `ACTION_OPEN_DOCUMENT`), which needs no storage permission. The numpad's haptics go through the view's `performHapticFeedback`, which needs no `VIBRATE`.
+
+`checkForbiddenPermissions` (build-logic, `ForbiddenPermissionPatterns`) checks every variant's merged manifest, is wired to `check`, and runs in CI and in the release workflow. A library that adds one is removed or patched with `tools:node="remove"`.
+
+---
+
+## 11. Delivery phases
+
+Each phase ends with a merged PR, green CI and its acceptance criteria met. Phases 4 and 5 need **testing on a physical device**: the reminder's delivery, the launcher's grants and shortcuts, a backup restored on a clean install.
+
+**How to run a step** (the family's): one step is one session. Read CLAUDE.md, the step and the files it names; build it with its tests (the domain's first, for anything that decides a period, a reserve or an amount); run `spotlessApply`, `test`, `:app:lintDebug` and `:app:checkForbiddenPermissions`; look at the screenshots the step changes (`build/screenshots`); tick the step, record its decisions in §15, and add its line to `CHANGELOG.md`'s Unreleased section in the reader's words. A step that changes a decision already recorded says so, and the owner confirms it before anything is built.
+
+### Phase 0 — Foundations
+
+- [x] Create the repo; the owner's concept committed as `VISION.md` (`0ea1b66`, 5 Nov 2026)
+- [x] `VISION.md` from the owner's concept, with its corrections and open questions (draft, 5 Nov 2026)
+- [x] `PLANNING.md` and `CLAUDE.md` (5 Nov 2026)
+- [x] The owner's review of VISION.md and answers to its open questions (5 Nov 2026, recorded in §15)
+- [ ] `README.md` in the family's style (centred header, badges, What Tetto is, Screenshots, Features, Principles, Install with the fingerprint, Roadmap, Build, Tech stack, Project structure, Project documentation, The family, License; no em or en dashes), `LICENSE` (GPL-3.0 full text), `.gitignore` (the family's: `*.jks`, `*.keystore`, `*.p12`, `*.pfx` refused, `keystore/debug.keystore` allowed), `.editorconfig`, `CHANGELOG.md` (Keep a Changelog, an empty `[Unreleased]`)
+- [ ] Gradle setup from Tempo (Passo's build): version catalog at the latest stable versions, `build-logic` convention plugins renamed `tetto.*`, **with Passo's `AndroidRoomConventionPlugin` back** (`tetto.android.room`, the schema directory); the wrapper; `gradle/google-maven-mirror.init.gradle.kts`; `tetto.versionName` in `gradle.properties`, `versionCode` derived (major * 10000 + minor * 100 + patch)
+- [ ] The forbidden list of §10 in `ForbiddenPermissions.kt`, wired to `check`
+- [ ] Module skeleton (§2), each module joining with its first code
+- [ ] `:core:designsystem` from Tempo's: Chiaro's two generated dresses (`Scheme.kt`, never hand-edited), `Type.kt`, `Shape.kt`, `Motion.kt`, `PageWidth.kt`, `WidgetPalette.kt`, `DenseTargets.kt`, the settings rows, `StatusCard`, `RevealItem`; Google Sans and Inter with their licences; `TypographyTest`, `ContrastTest`. The semantic inks reduced to `attention` until a phase needs another (an over ink, if Phase 2 needs one, comes with its contrast test)
+- [ ] `:core:testing` from Tempo's (`assertAccessible()`, `walkPage()`)
+- [ ] Hilt, `MainActivity` edge to edge with the caps screen's empty state
+- [ ] `strings.xml` for `values/` (English) and `values-it/`; `locales_config.xml` for the per-app language
+- [ ] Launcher icon drawn by `tools/draw_launcher_icon.py`, from Saldo's script (the emblem in the same place): the family's ring (radius 21, stroke 10, on the warm white `#F7F4EE`), cut by Tetto's amber roof at the lower right, with the sisters' gap; the monochrome layer for themed icons; the ring's colours with the owner (§15, Open)
+- [ ] The crash page (`app/src/crashpage`), for debug builds and the debug-signed release, as Tempo's
+- [ ] CI: `android-ci.yml` (formatting, forbidden permissions, unit tests, lint, then the APKs and the R8 mapping) and the tag-triggered `release.yml` (the tag matches `tetto.versionName`; the same gates; the keystore decoded from the secrets; the signed APK; **the signature checked against the release key's fingerprint**; the SHA-256 file; the mapping; the body from `CHANGELOG.md`), as Tempo's
+- [ ] Tetto's own debug keystore (`keystore/debug.keystore`, alias `tetto-debug`, passwords `android`, RSA 2048, PKCS12), committed on purpose, with `keystore/README.md`; not a copy of a sister's
+- [x] The **release key**: created by the owner, kept outside the repo, in the four repository secrets `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` (set on 5 Nov 2026)
+- [ ] The release key's SHA-256 fingerprint from the owner, into `keystore/README.md`, the README's Install section and `release.yml`'s signature check
+- [ ] `docs/planning/README.md` and `tools/planning_index.py` from Tempo's (How it is made)
+- [ ] `docs/adr/0001-foundations.md`, `docs/adr/0002-design-language.md` (the family's language, Tetto's mark)
+
+**Acceptance:**
+- CI is green on GitHub.
+- The app launches and shows the caps screen's empty state in the family's dress, in English and Italian.
+- Adding `INTERNET` or `CAMERA` to any manifest fails `checkForbiddenPermissions`.
+
+### Phase 1 — The cap engine (highest risk)
+
+- [ ] `core:model`: `Money`, `AppCurrency`, `PeriodKind`, `PeriodRule`, `DateRange`, `Cap`, `Spend`, `ClosedPeriod`, `CapState`, `CapIcon`
+- [ ] `core:domain`, test first, every case of §4.7: `MoneyInput`, `PeriodCalendar`, `Rollover`, `CatchUp`, `CapState` (left, over, the bar, the mark for today, ahead of the days, the pace, the renewal), `SpendPreview`, `CapsSentence`
+- [ ] `core:data`: `TettoDatabase` version 1 (§5), DAOs, the schema exported; `CapsRepository` (the caps with their states as a `Flow`, the catch-up in one transaction before every read, add, edit, delete and undo of a spend, the changes of §4.5); `SettingsRepository`; `TodaySource` (today, its next midnight)
+- [ ] Repository tests under Robolectric on an in-memory database: the catch-up idempotent, a run of empty periods folded, a change of period moving the open spends and leaving the closed ones, the cascade on delete, undo by id
+
+**Acceptance:**
+- [ ] All engine tests pass, every §4.7 case named in a test.
+- [ ] A catch-up after 400 days without a read, on a daily cap, runs in one transaction, writes two rows and leaves the reserve at its limit.
+
+### Phase 2 — The caps screen and the numpad
+
+- [ ] The shell (Navigation 3): the caps screen, the cap's sheet, the editor, Settings' entry
+- [ ] The caps screen: the sentence, the tiles (two columns on a phone, one at large text sizes), the bar with the mark for today, the reserve's chip, the pace, the renewal, the states; live across midnight (§4.4); the last tile "New cap"; the order by dragging in an edit mode
+- [ ] The numpad sheet (`:core:designsystem` draws the keys, `:feature:caps` holds the sheet and its ViewModel): the keys, the locale's separator, delete and clear, the hardware keyboard, the preview, Add disabled until an amount; the haptics through Compose's `LocalHapticFeedback` (a keyboard tap per key, a confirm on Add, a reject at the digits' limit), following the phone's setting
+- [ ] After Add: the figure rolls, the snackbar with Undo (Material's accessible timing)
+- [ ] The cap's sheet: this period, its spends (edit, delete, undo), the last periods' lines, clear the reserve, edit, delete
+- [ ] The cap editor: name, amount, period, icon from `TettoIcons` (about two dozen Material Symbols drawn in code, Apache-2.0, credited in `licenses/`)
+- [ ] UI tests from states, never from a database, with `assertAccessible()` and `walkPage()` at twice the text size and on an open foldable; the screenshots looked at
+
+**Acceptance:**
+- [ ] From the caps screen, a spend is two touches and the amount; Undo puts the figure back.
+- [ ] TalkBack reads a tile as one sentence ("Coffee, €12 left of €20, until Monday") and the preview as it changes.
+- [ ] At twice the text size nothing is cut, and the tiles stand in one column.
+
+### Phase 3 — First run and Settings
+
+- [ ] Onboarding: welcome in the family's frame (no icon, three promises, Start); "What do you want to put a cap on?" (the areas' grid); the amounts (one row per area, the period, the currency from the phone's region, changeable there); "Start from nothing"
+- [ ] Settings: money (the currency from a searchable list of the phone's currencies, the month start day, the week start), appearance (the family's, applied by `MainActivity`), language (the system's per-app picker), about (the privacy statement, credits, the licence); the guide's entry, waiting for Phase 6
+- [ ] A change of currency rescales where the decimals differ and says it does not convert (§4.1); a change of month start or week start replaces the open periods of the caps of that kind (§4.5)
+
+**Acceptance:**
+- [ ] A first run ends on a caps screen shaped by the reader's picks.
+- [ ] Every setting changes what it says and survives a restart.
+
+### Phase 4 — Your data and the reminder
+
+- [ ] Android's backup: `data_extraction_rules.xml`, the allowlist of §5; checked with `bmgr` on a device
+- [ ] The backup file: `BackupCodec` with its tests (damaged, newer, not a Tetto backup, the round trip); export (`ACTION_CREATE_DOCUMENT`); restore (`ACTION_OPEN_DOCUMENT`, read whole and checked, replace after a confirmation, the catch-up after)
+- [ ] The CSV export (`CsvExport`, with its tests)
+- [ ] Erase everything, confirmed, back to the first run
+- [ ] The evening reminder (§8): the setting and its time, the permission when turned on, `:core:reminder` (the alarm, its re-arming, the receivers, the channel), "a spend today" at firing; `ReminderSchedule` tested across daylight saving
+- [ ] The privacy statement's words: "Tetto sends nothing", and what Android's backup does
+
+**Acceptance:**
+- [ ] An export restored on a clean install reproduces the caps, the reserves, the open spends and the closed periods exactly.
+- [ ] On the phone: the reminder arrives near its time on a day with no spend, and not on a day with one; with it off, `dumpsys alarm` shows no alarm of Tetto's.
+
+### Phase 5 — The widgets and the launcher's shortcuts
+
+- [ ] `GlanceFit` (pure, §6) with tests at the reference grants; the forms of §7; «In words»'s ring and type steps copied from the family's (`WordsFit`, `WidgetType`) and pinned by tests; `docs/adr/0003-widgets.md`
+- [ ] «At a glance» and «In words» in Glance on the family's card; the ring painted as the family's (a bitmap, 416 px at most); the per-widget settings screen with its live preview; the previews (static and generated)
+- [ ] `QuickAddActivity`: the numpad over the home screen, its confirmation line with Undo; from a card's cap and from a shortcut
+- [ ] The refresh (§7): after every write, the midnight alarm, the exempt broadcasts; the catch-up in `provideGlance`
+- [ ] The dynamic launcher shortcuts (§8)
+- [ ] The pin request, in the first run and in Settings
+- [ ] `WidgetGalleryTest` draws every form to `widget/build/screenshots`; `WidgetFitTest` fails on anything cut
+
+**Acceptance:**
+- [ ] On the owner's phone, beside the sisters' cards: the same card, the same colours; «In words» beside Passo's and Tempo's ring cards of the same size, its ring and its lines at their sizes.
+- [ ] From the home screen, a spend is two touches and the amount, and the card shows it at once.
+- [ ] With the screen off, `dumpsys alarm` shows no wake-up alarm of Tetto's but the reminder's.
+
+### Phase 6 — The guide, accessibility and polish
+
+- [ ] `feature:guide`, in the family's shape and style (owner, 5 Nov 2026), from Tempo's `GuideScreen` and the family's prose kit: the card first in Settings, as the sisters'; a first-day tip on the caps screen (once dismissed or followed, never again; a `DataStore` flag); short chapters (what the caps screen answers; a period, the reserve and forgiveness; the numpad and correcting a spend; the home screen; your data; what Tetto does not do, and what kind of app does: an expense tracker, never named, as no sister is in a string the app shows). It never teaches a control; the app's own components as examples, each captioned as one; no view model where nothing depends on the reader's settings. UI tests for every chapter, the dark theme, Italian, twice the text size, an open foldable; a README screenshot
+- [ ] The accessibility pass: contrast (`ContrastTest`), labels, targets, twice the text size, foldables, the numpad with TalkBack
+- [ ] README screenshots (`ReadmeScreenshots`, sample caps, English) and their table in the README
+- [ ] Start-up measured; a Baseline Profile if it is slow
+
+### Phase 7 — Release on GitHub (v1.0.0)
+
+- [ ] `CHANGELOG.md`'s 1.0.0 section; `tetto.versionName=1.0.0`; tag `v1.0.0`
+- [ ] The README's download link and the release key's fingerprint
+- [ ] The sister apps' READMEs name Tetto in "The family" (Chiaro, Passo, Tempo, Saldo)
+- [ ] The log archived, as How it is made says
+
+### Phase 8 — Google Play (optional, later)
+
+- [ ] As the family's: the same key, the store listing, the data safety form ("no data collected, no data shared").
+
+---
+
+## 12. Testing strategy
+
+- **Pure Kotlin first.** `MoneyInput`, `PeriodCalendar`, `Rollover`, `CatchUp`, `CapState`, `SpendPreview`, `CapsSentence`, `ReminderSchedule`, `BackupCodec`, `CsvExport` and `GlanceFit` are tested on the JVM with fixed dates, instants and zones, every §4.7 case named in a test.
+- **Room under Robolectric.** The repositories on an in-memory database: the catch-up's transaction, undo by id, the changes of §4.5, the cascade. Every migration with `MigrationTestHelper`, and an upgrade test from the first release's schema.
+- **Screens from states.** Compose UI tests draw a screen from a state, never from a database, with `assertAccessible()` and `walkPage()` (`:core:testing`), at twice the text size and on an open foldable; their screenshots land in each module's `build/screenshots` and are looked at.
+- **The widgets' forms.** Glance's test utilities for content; a gallery test that draws every form at the reference grants.
+- **On a device**, for what only a device can say: the reminder's delivery and its silence, the launcher's grants and shortcuts, the numpad over the home screen, Android's backup and a restore on a clean install.
+
+---
+
+## 13. Working with Claude Code
+
+`CLAUDE.md` holds the operating rules (commands, modules, invariants, design, signing). The workflow, as in the family:
+
+- Work one phase at a time, from its section in §11.
+- Write the domain test first for anything that decides a period, a reserve or an amount.
+- Tick the boxes as work lands; record every decision and deviation, with its reason, in §15, as a `###` section at the end of its log (and as an ADR in `docs/adr/` when it is architectural). The closed periods of the log are archived, frozen, in `docs/planning/` (How it is made, at the top).
+- Run `spotlessApply`, `test`, `:app:lintDebug` and `:app:checkForbiddenPermissions` before pushing.
+
+---
+
+## 14. Risks and mitigations
+
+| Risk | Mitigation |
+|---|---|
+| A period on the wrong dates (daylight saving, month ends, travel) | Local dates, never timestamps against a stored end (§4.2); tests in §4.7 |
+| A cent of drift | `Long` minor units everywhere; no `Double` in the model, the domain or the data |
+| A reserve that grows by itself after an absence | The reserve's limit; a run of empty periods folded (§4.4) |
+| A widget or the reminder reading a period that should have closed | The catch-up before every read, idempotent, in one transaction |
+| A number the reader cannot fix | The open period's spends editable; undo after every change |
+| Data lost by a migration | Exported schemas, migration tests, never destructive |
+| A damaged or foreign backup file | Read whole and checked before anything is written; replace only after a confirmation |
+| The reminder late or missing on a maker's aggressive battery saver | Inexact by design, said in the guide; no exemption asked |
+| A stale card after midnight | The non-wakeup midnight alarm and the catch-up in `provideGlance`; the card says dates, never hours |
+| Glance's eleventh-child limit | Caps in groups of five, a test that counts children |
+| A change of currency with different decimals | The rescale rule, tested, and said on screen |
+| Readers confusing Tetto with Saldo's budgets | VISION's border; the guide says what Tetto does not do |
+
+---
+
+## 15. Decisions log and open questions
+
+### Open
+
+What is still to decide or to do, in one place, besides the steps of the phases in §11 (which keep their boxes there): a box opens here, with the reference to the log entry it comes from, and closes here, with the one that closes it. A new question is written here and asked before it is built.
+
+- [ ] **The ring's colours** (Phase 0, with the owner; §15, 5 Nov 2026). The emblem is decided: Tetto's roof at the lower right, Saldo's place. The ring must stay clearly apart from Saldo's (its halves of sea green and soft brick), and from the other sisters' (Chiaro's sky, Passo's greens, Tempo's azure to cobalt), under deuteranopia too, as Saldo's review of 18 Oct 2026 checked its own. Few hues are free: Chiaro's ring already passes through a violet (`#6B4FC8`) and a deep indigo, Saldo's through a brick, and the amber is every emblem's. Proposal, to draw and compare with the owner: raspberry to deep plum (blue-reds, away from Saldo's orange-red brick and darker than Chiaro's violet), checked side by side with the four sisters' icons.
+
+---
+
+### Log since 5 Nov 2026
+
+### 5 Nov 2026 — The repository, the vision's review and this plan (owner)
+
+The owner created `fiorenzobrioni/tetto` with their concept as `VISION.md` (pushed as `0ea1b66`, the `main` branch), and asked for a candid review of it, a completion where it falls short, and a plan in the family's shape: the family's typography and UI, stack, repository structure, README style, this file's structure and archive rules, workflows and releases on GitHub; the developer and id `callbackdev`; the release key already made. Done, as a draft for the owner's review:
+
+- **The vision**, rewritten in English as the family's are, from the concept, which stands in its essentials (the question it answers, the independent periods, the reserve and forgiveness, the numpad and its preview, the curated icons, the first run, the reminder that stays quiet, no background work). Its changes, each with its reason, are VISION's «From the concept to this vision»; the six questions only the owner can settle are VISION's «Open questions» and §15's Open. The most important: the border with Saldo, which already has per-category budgets, a "spendable today" and a rollover on its roadmap.
+- **The repository** is `fiorenzobrioni/tetto`; package and applicationId `com.callbackdev.tetto` (debug `.debug`), as the family. License GPL-3.0.
+- **The build** is Tempo's (itself Passo's), with Passo's Room convention back: Tetto keeps tables. `minSdk 34`, the family's, pending VISION Open question 6.
+- **The engine's rules** (§4): money in `Long` minor units; periods in local dates; the concept's rollover formula, exact and bounded by a reserve's limit (pending Open question 3); periods closed by an idempotent catch-up before every read, not at launch alone; closed periods frozen; three tables instead of the concept's one.
+- **The forbidden list** (§10) is the family's, plus what a money app must never touch: camera, SMS, contacts, calendar, storage, the list of installed apps.
+- **Signing**: the release key is in the four secrets since 5 Nov 2026 (`gh secret list`); its fingerprint is asked of the owner (Open). The debug keystore is not in the repository yet: Phase 0 makes Tetto's own, as Tempo did, not a copy of a sister's.
+
+### 5 Nov 2026 — The owner's review of the vision (owner)
+
+The owner reviewed VISION.md the same day and accepted every change of «From the concept to this vision», every suggestion for what the concept lacked, and the six proposals of its open questions. VISION's open questions became «The owner's answers»; the Status line says "reviewed by the owner". What the review added or settled:
+
+- **Tetto and Saldo are two alternatives, two separate apps** (owner): the whole of one's finances in Saldo, a budget alone and at speed in Tetto; nothing stops a reader from keeping both, but most will choose one. They share the family's look and structure, so the apps are recognisable, and nothing else. **Tetto's decisions are never shaped by what Saldo does**: a choice is argued on Tetto's merits alone (VISION, «Tetto and Saldo»; CLAUDE.md). The reasons in VISION that leaned on Saldo were rewritten on Tetto's own. Nothing about Saldo's own plans is written in Tetto's documents (owner).
+- **Open question 2**: the open period's spends listed in the cap's sheet, editable and deletable; closed periods frozen; old spends kept for the CSV and the backup, never listed.
+- **Open question 3**: the reserve's limit is one period's cap (§4.4).
+- **Open question 4**: the widgets and the launcher's four shortcuts in v1. **«In words» is the family's ring card** (owner: "the circle as Tempo and Passo, with the same dimensions by the widget's size and the text shown, so they stay in line and homogeneous together on the home screen"): its forms, ring sizes and type steps are Tempo's `WordsFit` and `WidgetType` (Passo's row and tall card), copied constant for constant and pinned by tests; only the words are Tetto's (§7).
+- **Open question 5**: the caps screen in two columns of tiles on a phone.
+- **Open question 6**: `minSdk 34`, the family's.
+- **The guide** in the family's shape and style, from Tempo's (Phase 6).
+- **The mark**: the owner proposed Tetto's roof at the lower right, Saldo's place ("four o'clock"): the two money apps share it, and a reader most often installs one of them. Agreed, for a reason of its own besides: a roof at twelve o'clock over a ring reads as a house, the generic "home" glyph of launchers and smart-home apps, while a roof as an emblem on the ring reads as the app's mark, as the sisters' do. The price is that a reader with both money apps sees their emblems in one place, so the ring's colours must keep the two apart at a glance (§15, Open).
+- **Signing**: the owner asked where the sisters' release keys are and how to load Tetto's into the repository. They are not in any repository and must never be (CLAUDE.md, Signing): each is a `<app>-release.jks` in the owner's own keys folder outside the repositories, and reaches CI only through the four secrets of its repository, which `release.yml` decodes into the runner's temp folder. Tetto's is there (`tetto-release.jks`, alias `tetto`, made 5 Nov 2026) and already in Tetto's four secrets: nothing is to be loaded. What Phase 0 still needs is its public SHA-256 fingerprint, which the keystore keeps encrypted under its password (§15, Open). A local signed build needs the four `TETTO_KEYSTORE*` / `TETTO_KEY_*` lines in the owner's `~/.gradle/gradle.properties`, as some sisters have; optional, CI signs the releases. The keys folder needs its offline backup: a lost release key means no reader can update without uninstalling.
+
+### 5 Nov 2026 — The release key's fingerprint (owner)
+
+The owner read the release key's certificate with `keytool -list -v` and handed over its SHA-256 fingerprint, which closes the item of §15's Open:
+
+`28:A0:E8:60:45:9D:3C:24:06:BC:A7:6F:18:FA:1D:91:42:37:9F:A2:03:EA:85:1D:DE:4B:66:B2:55:19:9D:F1`
+
+It is public: Phase 0 writes it into `keystore/README.md` and the README's Install section, and pins it in `release.yml`, which refuses an APK signed by any other key (§11 Phase 0, its box ticked when those three files carry it).
