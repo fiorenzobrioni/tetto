@@ -53,9 +53,10 @@ constructor(
         phases.value = QuickAddPhase.Adding(typing.round)
         viewModelScope.launch {
             val spend = caps.addSpend(capId, amount)
+            // Heard before the sheet says so: whoever sees Added finds onAdded already done.
+            if (spend != null) onAdded()
             phases.value =
                 if (spend == null) QuickAddPhase.Typing(round = typing.round + 1) else QuickAddPhase.Added(spend)
-            if (spend != null) onAdded()
         }
     }
 
