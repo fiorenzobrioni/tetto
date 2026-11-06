@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import java.io.File
 import java.time.DayOfWeek
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -26,11 +27,17 @@ internal class TestDataStore(directory: File) {
     )
 }
 
-/** A clock the test sets: an instant and the zone in effect, both movable. */
+/**
+ * A clock the test sets: an instant and the zone in effect, both movable. With a [step], each
+ * reading moves it on by that much, as a real clock moves between two readings.
+ */
 internal class FakeToday(@Volatile var zone: ZoneId) : TodaySource {
     @Volatile var instant: Instant = Instant.EPOCH
 
-    override fun now(): Instant = instant
+    @Volatile var step: Duration = Duration.ZERO
+
+    @Synchronized
+    override fun now(): Instant = instant.also { instant = it + step }
 
     override fun zone(): ZoneId = zone
 
@@ -40,10 +47,10 @@ internal class FakeToday(@Volatile var zone: ZoneId) : TodaySource {
     }
 }
 
-/** A phone in the euro area whose weeks start on Monday. */
+/** A phone in the euro area whose weeks start on Monday, unless the test moves them (its language). */
 internal class FakePhone(
     private val currency: AppCurrency = AppCurrency("EUR", 2),
-    private val weekStart: DayOfWeek = DayOfWeek.MONDAY,
+    @Volatile var weekStart: DayOfWeek = DayOfWeek.MONDAY,
 ) : PhoneDefaults {
     override fun currency(): AppCurrency = currency
 

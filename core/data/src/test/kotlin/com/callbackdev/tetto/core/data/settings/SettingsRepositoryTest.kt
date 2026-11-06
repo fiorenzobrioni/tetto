@@ -141,6 +141,8 @@ class SettingsRepositoryTest {
                 reminderTime = LocalTime.of(21, 15),
                 askedNotifications = true,
                 capsTipSeen = true,
+                // The engine's note of the week the weekly caps now run on (PLANNING.md §4.5).
+                weekInForce = DayOfWeek.SUNDAY,
             ),
         )
         assertThat(repository.currency.first()).isEqualTo(AppCurrency("JPY", 0))

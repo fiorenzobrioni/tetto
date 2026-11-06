@@ -72,6 +72,7 @@ constructor(private val dataStore: DataStore<Preferences>) {
             reminderTime = prefs[Keys.REMINDER_TIME]?.let(::timeOrNull) ?: defaults.reminderTime,
             askedNotifications = prefs[Keys.ASKED_NOTIFICATIONS] ?: defaults.askedNotifications,
             capsTipSeen = prefs[Keys.CAPS_TIP_SEEN] ?: defaults.capsTipSeen,
+            weekInForce = prefs[Keys.WEEK_IN_FORCE]?.let { name -> DayOfWeek.entries.firstOrNull { it.name == name } },
         )
     }
 
@@ -90,6 +91,7 @@ constructor(private val dataStore: DataStore<Preferences>) {
         prefs.putOrRemove(Keys.REMINDER_TIME, settings.reminderTime.toString(), defaults.reminderTime.toString())
         prefs.putOrRemove(Keys.ASKED_NOTIFICATIONS, settings.askedNotifications, defaults.askedNotifications)
         prefs.putOrRemove(Keys.CAPS_TIP_SEEN, settings.capsTipSeen, defaults.capsTipSeen)
+        prefs.putOrRemove(Keys.WEEK_IN_FORCE, settings.weekInForce?.name, defaults.weekInForce?.name)
     }
 
     private fun <T> MutablePreferences.putOrRemove(key: Preferences.Key<T>, value: T?, default: T?) {
@@ -130,6 +132,9 @@ constructor(private val dataStore: DataStore<Preferences>) {
         val REMINDER_TIME = stringPreferencesKey("reminder_time")
         val ASKED_NOTIFICATIONS = booleanPreferencesKey("asked_notifications")
         val CAPS_TIP_SEEN = booleanPreferencesKey("caps_tip_seen")
+
+        /** The week the weekly caps' open periods were made by: the engine's note (§4.5). */
+        val WEEK_IN_FORCE = stringPreferencesKey("week_in_force")
     }
 
     companion object {

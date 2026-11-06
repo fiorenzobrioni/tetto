@@ -39,6 +39,7 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import java.io.File
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 
@@ -172,6 +173,25 @@ class BackupRepositoryTest {
     }
 
     @Test
+    fun `the week the open periods were made by travels, and a phone whose weeks start elsewhere moves them`() =
+        runTest {
+            // The reader's week follows the phone: Monday here, Sunday on the new phone.
+            val coffee = old.caps.addCap("Coffee", COFFEE, euros(20), WEEK)
+            old.caps.addSpend(coffee, euros(4))
+            val backup = old.data.backup("0.1.0")
+            assertThat(backup.settings.weekStart).isNull()
+            assertThat(backup.weekInForce).isEqualTo(DayOfWeek.MONDAY)
+
+            new.data.restore((BackupCodec.decode(BackupCodec.encode(backup)) as BackupRead.Ok).backup)
+
+            val state = new.caps.currentStates().single()
+            assertThat(state.period).isEqualTo(DateRange(LocalDate.of(2026, 11, 1), LocalDate.of(2026, 11, 8)))
+            assertThat(state.spent).isEqualTo(euros(4))
+            assertThat(new.preferences.current().weekStart).isNull()
+            assertThat(new.preferences.current().weekInForce).isEqualTo(DayOfWeek.SUNDAY)
+        }
+
+    @Test
     fun `a backup closes what has ended before it is taken`() = runTest {
         old.clock.at("2026-11-02T09:00")
         val coffee = old.caps.addCap("Coffee", COFFEE, euros(20), WEEK)
@@ -195,14 +215,17 @@ class BackupRepositoryTest {
 
         val states = new.caps.currentStates()
         assertThat(states.map { it.cap.name }).containsExactly("Coffee")
-        // The reader never chose a week start, so the new phone's Sunday weeks hold from the
-        // restore on: the week begun on Monday 26 Oct ended on Saturday 31, and closed today with
-        // €12 left over for the reserve; the open week is Sunday 1 Nov's.
+        // The week begun on Monday 26 Oct closes as the Monday week it was made as, with €12 left
+        // over for the reserve. The reader never chose a week start, so the new phone's Sunday
+        // weeks hold from then on, as a change in Settings would make them hold: the open week,
+        // begun on Monday 2 Nov after a closed one, runs to the Sunday week's end, and the next is
+        // whole.
         val closed = new.caps.closedPeriods(states.single().cap.id).single()
-        assertThat(closed.range).isEqualTo(DateRange(date(2026, 10, 26), date(2026, 11, 1)))
+        assertThat(closed.range).isEqualTo(DateRange(date(2026, 10, 26), date(2026, 11, 2)))
         assertThat(closed.spent).isEqualTo(euros(8))
         assertThat(states.single().cap.reserve).isEqualTo(euros(12))
-        assertThat(states.single().period).isEqualTo(DateRange(date(2026, 11, 1), date(2026, 11, 8)))
+        assertThat(states.single().period).isEqualTo(DateRange(date(2026, 11, 2), date(2026, 11, 8)))
+        assertThat(new.preferences.current().weekInForce).isEqualTo(DayOfWeek.SUNDAY)
     }
 
     @Test
@@ -221,7 +244,9 @@ class BackupRepositoryTest {
 
         assertThat(failure).isNotNull()
         assertThat(new.everything()).isEqualTo(before)
-        assertThat(new.preferences.current()).isEqualTo(UserSettings(currency = "CHF", onboardingCompleted = true))
+        assertThat(new.preferences.current()).isEqualTo(
+            UserSettings(currency = "CHF", onboardingCompleted = true, weekInForce = DayOfWeek.SUNDAY),
+        )
     }
 
     @Test
@@ -263,7 +288,10 @@ class BackupRepositoryTest {
         assertThat(old.caps.currentStates()).isEmpty()
         assertThat(old.database.capsDao().spendCount()).isEqualTo(0)
         assertThat(old.database.capsDao().allClosedPeriods()).isEmpty()
-        assertThat(old.preferences.current()).isEqualTo(UserSettings(askedNotifications = true, capsTipSeen = true))
+        // The week noted by the read after the erase is the engine's, not the reader's.
+        assertThat(old.preferences.current()).isEqualTo(
+            UserSettings(askedNotifications = true, capsTipSeen = true, weekInForce = DayOfWeek.MONDAY),
+        )
         // An id is never given twice: a cap made after the erase is a new one.
         assertThat(old.caps.addCap("Coffee", COFFEE, euros(20), WEEK)).isGreaterThan(lastId)
     }

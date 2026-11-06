@@ -38,4 +38,16 @@ class SpendPreviewTest {
         assertThat(SpendPreview.of(left = -euros(30), typed = Money.ZERO))
             .isEqualTo(SpendPreview(Kind.STILL_OVER, euros(30)))
     }
+
+    @Test
+    fun `a refund grows what is left, and may bring a cap back under`() {
+        assertThat(
+            SpendPreview.ofRefund(euros(16), euros(4)),
+        ).isEqualTo(SpendPreview(SpendPreview.Kind.FITS, euros(20)))
+        assertThat(SpendPreview.ofRefund(-euros(10), euros(4)))
+            .isEqualTo(SpendPreview(SpendPreview.Kind.STILL_OVER, euros(6)))
+        assertThat(
+            SpendPreview.ofRefund(-euros(10), euros(12)),
+        ).isEqualTo(SpendPreview(SpendPreview.Kind.FITS, euros(2)))
+    }
 }

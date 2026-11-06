@@ -25,6 +25,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.callbackdev.tetto.core.designsystem.format.MoneyFormat
 import com.callbackdev.tetto.core.designsystem.format.rememberMoneyFormat
+import kotlinx.coroutines.flow.collectLatest
 import com.callbackdev.tetto.core.designsystem.R as DesignR
 
 /**
@@ -44,6 +45,7 @@ fun CapsRoute(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val sheet by viewModel.sheet.collectAsStateWithLifecycle()
     val numpad by viewModel.numpad.collectAsStateWithLifecycle()
+    val numpadAmounts by viewModel.numpadAmounts.collectAsStateWithLifecycle()
     val current = state ?: return
     val format = rememberMoneyFormat(current.currency)
     val snackbars = remember { SnackbarHostState() }
@@ -51,7 +53,10 @@ fun CapsRoute(
     var confirmingDelete by rememberSaveable { mutableStateOf<Long?>(null) }
 
     LaunchedEffect(viewModel, format, resources) {
-        viewModel.notices.collect { notice ->
+        // The latest notice replaces the one on screen, never waits behind it: three spends added
+        // in a row offer the third's Undo at once (owner, 6 Nov 2026). The one replaced is
+        // dismissed as its wait is cancelled.
+        viewModel.notices.collectLatest { notice ->
             val result = snackbars.showSnackbar(
                 message = noticeWords(notice, format, resources),
                 actionLabel = if (notice.undoable) resources.getString(R.string.action_undo) else null,
@@ -99,6 +104,7 @@ fun CapsRoute(
                     onEditCap(sheetCap.cap.id)
                 },
                 onDeleteCap = { confirmingDelete = sheetCap.cap.id },
+                onRefund = { viewModel.openRefund(sheetCap.cap.id) },
             ),
             onDismiss = viewModel::closeSheet,
         )
@@ -110,11 +116,14 @@ fun CapsRoute(
         NumpadSheet(
             state = numpadCap,
             currency = current.currency,
-            correcting = target.correcting?.amount,
+            correcting = target.correcting?.size,
+            refund = target.refund,
+            amounts = numpadAmounts,
             onConfirm = { amount -> viewModel.confirmNumpad(target, amount) },
             onDismiss = viewModel::closeNumpad,
-            // From the numpad's header to the cap's sheet; not while correcting, which came from it.
-            onOpenCap = if (target.correcting == null) {
+            // From the numpad's header to the cap's sheet; not while correcting or refunding, which
+            // came from it.
+            onOpenCap = if (target.correcting == null && !target.refund) {
                 {
                     viewModel.closeNumpad()
                     viewModel.openSheet(target.capId)
@@ -150,13 +159,17 @@ private val CapsNotice.undoable: Boolean
 
 /** A notice's words, outside composition: the snackbar is shown from a coroutine. */
 internal fun noticeWords(notice: CapsNotice, format: MoneyFormat, resources: Resources): String = when (notice) {
-    is CapsNotice.Added -> resources.getString(R.string.notice_added, format.full(notice.spend.amount), notice.capName)
+    is CapsNotice.Added -> resources.getString(
+        if (notice.spend.refund) R.string.notice_refunded else R.string.notice_added,
+        format.full(notice.spend.size),
+        notice.capName,
+    )
 
     is CapsNotice.Corrected -> resources.getString(R.string.notice_corrected, format.full(notice.amount))
 
     is CapsNotice.Deleted -> resources.getString(
-        R.string.notice_deleted,
-        format.full(notice.spend.amount),
+        if (notice.spend.refund) R.string.notice_refund_deleted else R.string.notice_deleted,
+        format.full(notice.spend.size),
         notice.capName,
     )
 

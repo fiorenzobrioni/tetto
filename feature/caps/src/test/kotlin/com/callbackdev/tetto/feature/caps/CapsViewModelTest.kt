@@ -109,6 +109,40 @@ class CapsViewModelTest {
     }
 
     @Test
+    fun `a second Add from the same numpad adds nothing`() = runBlocking<Unit> {
+        val coffee = caps.addCap("Coffee", CapIcon.COFFEE, euros(20), PeriodKind.WEEK)
+        awaitLeft(coffee, 2_000)
+
+        viewModel.openNumpad(coffee)
+        val target = checkNotNull(viewModel.numpad.value)
+        // Two touches in one frame, or Enter held on a keyboard: the numpad is still drawn.
+        viewModel.confirmNumpad(target, euros(5))
+        viewModel.confirmNumpad(target, euros(5))
+
+        withTimeout(TIMEOUT) { viewModel.notices.first() }
+        awaitLeft(coffee, 1_500)
+        assertThat(caps.openSpends(coffee)).hasSize(1)
+    }
+
+    @Test
+    fun `a refund from the cap's sheet, with Undo`() = runBlocking<Unit> {
+        val coffee = caps.addCap("Coffee", CapIcon.COFFEE, euros(20), PeriodKind.WEEK)
+        caps.addSpend(coffee, euros(8))
+        awaitLeft(coffee, 1_200)
+
+        viewModel.openRefund(coffee)
+        val target = checkNotNull(viewModel.numpad.value)
+        assertThat(target.refund).isTrue()
+        viewModel.confirmNumpad(target, euros(3))
+        val notice = withTimeout(TIMEOUT) { viewModel.notices.first() } as CapsNotice.Added
+        assertThat(notice.spend.refund).isTrue()
+        awaitLeft(coffee, 1_500)
+
+        viewModel.undo(notice)
+        awaitLeft(coffee, 1_200)
+    }
+
+    @Test
     fun `a spend corrected and deleted from the cap's sheet, each with Undo`() = runBlocking<Unit> {
         val coffee = caps.addCap("Coffee", CapIcon.COFFEE, euros(20), PeriodKind.WEEK)
         val spend = checkNotNull(caps.addSpend(coffee, euros(5)))

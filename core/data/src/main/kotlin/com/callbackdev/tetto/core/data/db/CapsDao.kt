@@ -12,14 +12,18 @@ import androidx.room.Update
  */
 @Dao
 interface CapsDao {
-    /** Every cap in the reader's order, with what its open period spent and its last closed end. */
+    /**
+     * Every cap in the reader's order, with what its open period spent and its last closed end.
+     * What a period spent is its spends less its refunds, never below nothing (§4.3): a refund
+     * whose spend was deleted after it gives no money that was never spent.
+     */
     @Query(
         """
         SELECT c.*,
-            COALESCE(
+            MAX(0, COALESCE(
                 (SELECT SUM(s.amount) FROM spends s WHERE s.cap_id = c.id AND s.period_start = c.open_start),
                 0
-            ) AS spent,
+            )) AS spent,
             (SELECT MAX(p.end_exclusive) FROM closed_periods p WHERE p.cap_id = c.id) AS last_closed_end
         FROM caps c
         ORDER BY c.position, c.id
@@ -65,15 +69,31 @@ interface CapsDao {
     @Query("SELECT * FROM spends WHERE cap_id = :capId AND period_start = :periodStart ORDER BY added_at DESC, id DESC")
     suspend fun spends(capId: Long, periodStart: Long): List<SpendEntity>
 
+    /** The amounts of the cap's last [limit] spends, of any period, newest first: the numpad's habits. */
+    @Query("SELECT amount FROM spends WHERE cap_id = :capId ORDER BY added_at DESC, id DESC LIMIT :limit")
+    suspend fun lastAmounts(capId: Long, limit: Int): List<Long>
+
     @Query("UPDATE spends SET amount = :amount WHERE id = :id")
     suspend fun setSpendAmount(id: Long, amount: Long): Int
 
     @Query("DELETE FROM spends WHERE id = :id")
     suspend fun deleteSpend(id: Long): Int
 
-    /** Moves the open period's spends into the period that replaces it (§4.5). */
-    @Query("UPDATE spends SET period_start = :to WHERE cap_id = :capId AND period_start = :from")
-    suspend fun moveSpends(capId: Long, from: Long, to: Long): Int
+    /**
+     * Moves the open period's spends added at [since] or after (epoch milliseconds) into the
+     * period that replaces it (§4.5): all of them where the new period holds the old one's days,
+     * those of its own days where it starts later.
+     */
+    @Query(
+        "UPDATE spends SET period_start = :to WHERE cap_id = :capId AND period_start = :from AND added_at >= :since",
+    )
+    suspend fun moveSpends(capId: Long, from: Long, to: Long, since: Long): Int
+
+    /** What the open period's spends added before [until] (epoch milliseconds) come to: the days kept (§4.5). */
+    @Query(
+        "SELECT COALESCE(SUM(amount), 0) FROM spends WHERE cap_id = :capId AND period_start = :from AND added_at < :until",
+    )
+    suspend fun spentBefore(capId: Long, from: Long, until: Long): Long
 
     /** Whether any spend was added within `[from, until)`, in epoch milliseconds. */
     @Query("SELECT EXISTS(SELECT 1 FROM spends WHERE added_at >= :from AND added_at < :until)")
@@ -89,6 +109,10 @@ interface CapsDao {
     /** A cap's closed periods, the latest first. */
     @Query("SELECT * FROM closed_periods WHERE cap_id = :capId ORDER BY start DESC")
     suspend fun closedPeriods(capId: Long): List<ClosedPeriodEntity>
+
+    /** The cap's closed line that ends on [endExclusive], if one does: the period that renewed. */
+    @Query("SELECT * FROM closed_periods WHERE cap_id = :capId AND end_exclusive = :endExclusive")
+    suspend fun closedEnding(capId: Long, endExclusive: Long): ClosedPeriodEntity?
 
     @Query("SELECT MAX(end_exclusive) FROM closed_periods WHERE cap_id = :capId")
     suspend fun lastClosedEnd(capId: Long): Long?

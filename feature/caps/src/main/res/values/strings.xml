@@ -24,6 +24,10 @@
     </plurals>
     <string name="sentence_over_every">Every cap is over. %1$s starts again %2$s.</string>
     <string name="sentence_renewed_one">%1$s starts again today: %2$s %3$s.</string>
+    <string name="sentence_renewed_forgiven">%1$s starts again today: %2$s %3$s. It was %4$s over: forgiven, a clean start.</string>
+    <string name="sentence_renewed_covered">%1$s starts again today: %2$s %3$s. The reserve covered %4$s over.</string>
+    <string name="sentence_renewed_saved">%1$s starts again today: %2$s %3$s, with %4$s more in reserve.</string>
+    <string name="sentence_renewed_full">%1$s starts again today: %2$s %3$s, with its reserve full.</string>
     <plurals name="sentence_renewed_some">
         <item quantity="one">%1$s and %2$d other cap start again today.</item>
         <item quantity="other">%1$s and %2$d other caps start again today.</item>
@@ -53,6 +57,8 @@
     <string name="tile_over">%s over</string>
     <string name="tile_detail">of %1$s · %2$s</string>
     <string name="tile_detail_over">of %1$s · starts again %2$s</string>
+    <string name="tile_of">of %s</string>
+    <string name="tile_again">starts again %s</string>
     <string name="tile_pace">about %s a day</string>
     <string name="tile_reserve">+%s reserve</string>
     <string name="tile_description_left">%1$s, %2$s left of %3$s, %4$s</string>
@@ -66,6 +72,8 @@
     <string name="notice_added">%1$s added to %2$s</string>
     <string name="notice_corrected">Corrected to %s</string>
     <string name="notice_deleted">%1$s deleted from %2$s</string>
+    <string name="notice_refunded">%1$s refunded to %2$s</string>
+    <string name="notice_refund_deleted">Refund of %1$s deleted from %2$s</string>
     <string name="notice_reserve_cleared">%s’s reserve cleared</string>
     <string name="notice_cap_deleted">%s deleted</string>
     <string name="notice_period_closed">That period has closed: its spends no longer change.</string>
@@ -77,9 +85,14 @@
     <string name="numpad_save">Save</string>
     <string name="numpad_save_amount">Save %s</string>
     <string name="numpad_correcting">Correcting a spend</string>
+    <string name="numpad_refund">Refund</string>
+    <string name="numpad_refund_amount">Refund %s</string>
+    <string name="numpad_refunding">A refund · %s spent this period</string>
+    <string name="numpad_correcting_refund">Correcting a refund</string>
     <string name="preview_left">%s left</string>
     <string name="preview_over">%s over</string>
     <string name="preview_still_over">Still %s over</string>
+    <string name="preview_refund_most">At most %s, what this period spent</string>
     <string name="numpad_open_cap">Open %s</string>
 
     <!-- A cap's sheet. -->
@@ -88,11 +101,18 @@
     <string name="sheet_reserve">Reserve</string>
     <string name="sheet_spent">Spent</string>
     <string name="sheet_left">Left</string>
-    <string name="sheet_pace">To stay under, a day</string>
-    <string name="sheet_pace_value">about %s</string>
     <string name="sheet_over">Over</string>
+    <string name="sheet_pace_line">To stay under, about %s a day</string>
+    <string name="sheet_receipt_cap">%s cap</string>
+    <string name="sheet_receipt_reserve">plus %s in reserve</string>
+    <string name="sheet_receipt_spent">less %s spent</string>
+    <string name="sheet_receipt_left">%s left</string>
+    <string name="sheet_receipt_over">%s over</string>
+    <string name="sheet_receipt_sentence">%1$s: %2$s</string>
     <string name="sheet_spends">This period’s spends</string>
     <string name="sheet_no_spends">Nothing spent in this period yet.</string>
+    <string name="sheet_refund">Add a refund</string>
+    <string name="spend_refund">Refund</string>
     <string name="spend_correct">Correct</string>
     <string name="spend_delete">Delete</string>
     <string name="sheet_last_periods">The last periods</string>

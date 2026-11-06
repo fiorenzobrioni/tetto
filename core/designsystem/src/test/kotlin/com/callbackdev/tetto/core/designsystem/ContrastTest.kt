@@ -47,6 +47,8 @@ class ContrastTest {
             expect(dress, "onPrimary on primary", s.onPrimary, s.primary)
             expect(dress, "onPrimaryContainer on primaryContainer", s.onPrimaryContainer, s.primaryContainer)
             expect(dress, "onSecondaryContainer on secondaryContainer", s.onSecondaryContainer, s.secondaryContainer)
+            // A tile's reserve chip (owner, 6 Nov 2026).
+            expect(dress, "onTertiaryContainer on tertiaryContainer", s.onTertiaryContainer, s.tertiaryContainer)
             expect(dress, "onErrorContainer on errorContainer", s.onErrorContainer, s.errorContainer)
             expect(dress, "inverseOnSurface on inverseSurface", s.inverseOnSurface, s.inverseSurface)
         }

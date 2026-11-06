@@ -64,10 +64,12 @@ fun QuickAddRoute(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val phase by viewModel.phase.collectAsStateWithLifecycle()
+    val amounts by viewModel.amounts.collectAsStateWithLifecycle()
     val current = state ?: return
     QuickAddSheet(
         state = current,
         phase = phase,
+        amounts = amounts,
         onAdd = { viewModel.add(it, onAdded) },
         onUndo = viewModel::undo,
         onClose = onClose,
@@ -80,6 +82,7 @@ fun QuickAddRoute(
 fun QuickAddSheet(
     state: QuickAddUiState,
     phase: QuickAddPhase,
+    amounts: List<Money>,
     onAdd: (Money) -> Unit,
     onUndo: () -> Unit,
     onClose: () -> Unit,
@@ -89,7 +92,7 @@ fun QuickAddSheet(
     val scope = rememberCoroutineScope()
     val close: () -> Unit = { scope.launch { sheet.hide() }.invokeOnCompletion { onClose() } }
     ModalBottomSheet(onDismissRequest = onClose, sheetState = sheet) {
-        QuickAddContent(state, phase, onAdd, onUndo, close, onOpenApp)
+        QuickAddContent(state, phase, onAdd, onUndo, close, onOpenApp, amounts)
     }
 }
 
@@ -102,6 +105,7 @@ internal fun QuickAddContent(
     onUndo: () -> Unit,
     onClose: () -> Unit,
     onOpenApp: () -> Unit,
+    amounts: List<Money> = emptyList(),
 ) {
     val cap = state.cap
     val format = rememberMoneyFormat(state.currency)
@@ -128,6 +132,7 @@ internal fun QuickAddContent(
                     onConfirm = { if (phase is QuickAddPhase.Typing) onAdd(it) },
                     onOpenCap = onOpenApp,
                     initial = (phase as? QuickAddPhase.Typing)?.initial,
+                    amounts = amounts,
                 )
             }
         }

@@ -38,10 +38,14 @@ data class CapsUiState(
 data class CapSheetData(val capId: Long, val spends: List<Spend>, val lines: List<ClosedPeriod>)
 
 /**
- * The numpad, open on [capId]: adding a spend, or correcting [correcting], a spend of the cap's
- * open period.
+ * The numpad, open on [capId]: adding a spend, or a [refund] (owner, 6 Nov 2026), or correcting
+ * [correcting], a spend or a refund of the cap's open period.
  */
-data class NumpadTarget(val capId: Long, val correcting: Spend? = null)
+data class NumpadTarget(
+    val capId: Long,
+    val correcting: Spend? = null,
+    val refund: Boolean = correcting?.refund == true,
+)
 
 /** What the screen says after a change, with Undo where it can be undone. */
 sealed interface CapsNotice {

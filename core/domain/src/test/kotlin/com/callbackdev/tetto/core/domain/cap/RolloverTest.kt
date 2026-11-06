@@ -56,8 +56,9 @@ class RolloverTest {
 
     @Test
     fun `the limit after a change of amount is the new cap`() {
-        // A €100 cap with €80 in reserve, lowered to €20 mid-period: the reserve stays until the
-        // close, which bounds it by the new cap.
+        // A €100 cap with €80 in reserve, lowered to €20 mid-period: the editor holds the reserve
+        // to €20 at once (CapChanges.heldReserve); a reserve read from an older store is still
+        // bounded by the new cap at the close.
         val outcome = Rollover.close(cap = euros(20), reserve = euros(80), spent = euros(10))
         assertThat(outcome.reserveAfter).isEqualTo(euros(20))
         // Spending into the old reserve still draws on it before the close.
@@ -69,5 +70,17 @@ class RolloverTest {
     fun `cents stay exact`() {
         val outcome = Rollover.close(euros(20), reserve = euros(0, 10), spent = euros(19, 80))
         assertThat(outcome.reserveAfter).isEqualTo(euros(0, 30))
+    }
+
+    @Test
+    fun `days cut short close on their share, held to the cap that runs on`() {
+        // Three days of a €20 week (€8.57), €4 spent, a €10 reserve, turned into a €3 day: €14.57
+        // left over, held to €3.
+        val outcome = Rollover.close(cap = euros(8, 57), reserve = euros(10), spent = euros(4), limit = euros(3))
+        assertThat(outcome.reserveAfter).isEqualTo(euros(3))
+        assertThat(outcome.forgiven).isEqualTo(Money.ZERO)
+        val over = Rollover.close(cap = euros(8, 57), reserve = euros(1), spent = euros(12), limit = euros(3))
+        assertThat(over.reserveAfter).isEqualTo(Money.ZERO)
+        assertThat(over.forgiven).isEqualTo(euros(2, 43))
     }
 }

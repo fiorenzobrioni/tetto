@@ -25,6 +25,10 @@
     </plurals>
     <string name="sentence_over_every">Tutti i tetti sono sotto. %1$s riparte %2$s.</string>
     <string name="sentence_renewed_one">%1$s riparte oggi: %2$s %3$s.</string>
+    <string name="sentence_renewed_forgiven">%1$s riparte oggi: %2$s %3$s. Era sotto di %4$s: condonato, si riparte da zero.</string>
+    <string name="sentence_renewed_covered">%1$s riparte oggi: %2$s %3$s. La riserva ha coperto %4$s di sforamento.</string>
+    <string name="sentence_renewed_saved">%1$s riparte oggi: %2$s %3$s, con %4$s in più di riserva.</string>
+    <string name="sentence_renewed_full">%1$s riparte oggi: %2$s %3$s, con la riserva al completo.</string>
     <plurals name="sentence_renewed_some">
         <item quantity="one">%1$s e %2$d altro tetto ripartono oggi.</item>
         <item quantity="many">%1$s e altri %2$d tetti ripartono oggi.</item>
@@ -55,6 +59,8 @@
     <string name="tile_over">sotto di %s</string>
     <string name="tile_detail">su %1$s · %2$s</string>
     <string name="tile_detail_over">su %1$s · riparte %2$s</string>
+    <string name="tile_of">su %s</string>
+    <string name="tile_again">riparte %s</string>
     <string name="tile_pace">circa %s al giorno</string>
     <string name="tile_reserve">+%s di riserva</string>
     <string name="tile_description_left">%1$s, ancora %2$s su %3$s, %4$s</string>
@@ -68,6 +74,8 @@
     <string name="notice_added">Spesa di %1$s aggiunta a %2$s</string>
     <string name="notice_corrected">Spesa corretta: %s</string>
     <string name="notice_deleted">Spesa di %1$s tolta da %2$s</string>
+    <string name="notice_refunded">Rimborso di %1$s su %2$s</string>
+    <string name="notice_refund_deleted">Rimborso di %1$s eliminato da %2$s</string>
     <string name="notice_reserve_cleared">Riserva di %s azzerata</string>
     <string name="notice_cap_deleted">Tetto eliminato: %s</string>
     <string name="notice_period_closed">Quel periodo si è chiuso: le sue spese non cambiano più.</string>
@@ -79,9 +87,14 @@
     <string name="numpad_save">Salva</string>
     <string name="numpad_save_amount">Salva %s</string>
     <string name="numpad_correcting">Correzione di una spesa</string>
+    <string name="numpad_refund">Rimborsa</string>
+    <string name="numpad_refund_amount">Rimborsa %s</string>
+    <string name="numpad_refunding">Un rimborso · %s spesi in questo periodo</string>
+    <string name="numpad_correcting_refund">Correzione di un rimborso</string>
     <string name="preview_left">Ancora %s</string>
     <string name="preview_over">Sotto di %s</string>
     <string name="preview_still_over">Ancora sotto di %s</string>
+    <string name="preview_refund_most">Al massimo %s, quanto speso in questo periodo</string>
     <string name="numpad_open_cap">Apri %s</string>
 
     <!-- Il foglio di un tetto. -->
@@ -90,11 +103,18 @@
     <string name="sheet_reserve">Riserva</string>
     <string name="sheet_spent">Speso</string>
     <string name="sheet_left">Residuo</string>
-    <string name="sheet_pace">Per restare sotto, al giorno</string>
-    <string name="sheet_pace_value">circa %s</string>
     <string name="sheet_over">Sotto di</string>
+    <string name="sheet_pace_line">Per restare sotto, circa %s al giorno</string>
+    <string name="sheet_receipt_cap">tetto di %s</string>
+    <string name="sheet_receipt_reserve">più %s di riserva</string>
+    <string name="sheet_receipt_spent">meno %s spesi</string>
+    <string name="sheet_receipt_left">restano %s</string>
+    <string name="sheet_receipt_over">sotto di %s</string>
+    <string name="sheet_receipt_sentence">%1$s: %2$s</string>
     <string name="sheet_spends">Le spese di questo periodo</string>
     <string name="sheet_no_spends">Ancora nessuna spesa in questo periodo.</string>
+    <string name="sheet_refund">Aggiungi un rimborso</string>
+    <string name="spend_refund">Rimborso</string>
     <string name="spend_correct">Correggi</string>
     <string name="spend_delete">Elimina</string>
     <string name="sheet_last_periods">Gli ultimi periodi</string>

@@ -12,10 +12,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -30,9 +32,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -42,16 +47,18 @@ import com.callbackdev.tetto.core.designsystem.components.CapBadge
 import com.callbackdev.tetto.core.designsystem.components.CapBar
 import com.callbackdev.tetto.core.designsystem.components.GroupDivider
 import com.callbackdev.tetto.core.designsystem.components.GroupHeader
-import com.callbackdev.tetto.core.designsystem.components.InfoRow
 import com.callbackdev.tetto.core.designsystem.components.SettingsGroup
 import com.callbackdev.tetto.core.designsystem.format.MoneyFormat
 import com.callbackdev.tetto.core.designsystem.format.rememberMoneyFormat
 import com.callbackdev.tetto.core.designsystem.icons.TettoIcons
 import com.callbackdev.tetto.core.designsystem.icons.symbol
+import com.callbackdev.tetto.core.designsystem.theme.GroupShape
 import com.callbackdev.tetto.core.designsystem.theme.ScreenMargin
+import com.callbackdev.tetto.core.designsystem.theme.TettoTheme
 import com.callbackdev.tetto.core.designsystem.theme.tabular
 import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.CapState
+import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.Spend
 import java.time.LocalDate
 
@@ -89,6 +96,7 @@ class CapSheetActions(
     val onClearReserve: () -> Unit,
     val onEdit: () -> Unit,
     val onDeleteCap: () -> Unit,
+    val onRefund: () -> Unit = {},
 )
 
 @Composable
@@ -134,29 +142,27 @@ internal fun CapSheetContent(
             modifier = Modifier.padding(horizontal = ScreenMargin),
         )
 
+        // One rule for the sheet's figures, the receipt's and the spends': cents on every one as
+        // soon as one has them, so a column reads as a column ("€20.00", "€3.20"), and none where
+        // none has ("€20", "€8") (owner, 6 Nov 2026).
+        val unit = format.currency.unit.minor
+        val cents = (
+            listOf(state.cap.amount, state.cap.reserve, state.spent, state.left) +
+                data.spends.map { it.amount }
+            )
+            .any { it.minor % unit != 0L }
+        val figure: (Money) -> String = if (cents) format::full else format::short
+
         GroupHeader(stringResource(R.string.sheet_this_period))
-        SettingsGroup {
-            InfoRow(stringResource(R.string.sheet_cap), format.short(state.cap.amount))
-            if (state.cap.reserve.isPositive) {
-                GroupDivider()
-                InfoRow(stringResource(R.string.sheet_reserve), format.short(state.cap.reserve))
-            }
-            GroupDivider()
-            InfoRow(stringResource(R.string.sheet_spent), format.short(state.spent))
-            GroupDivider()
-            if (state.over) {
-                InfoRow(stringResource(R.string.sheet_over), format.short(state.overBy))
-            } else {
-                InfoRow(stringResource(R.string.sheet_left), format.short(state.left))
-            }
-            // The tile's pace, here too: the list's rows leave it out.
-            state.pace?.let { pace ->
-                GroupDivider()
-                InfoRow(
-                    stringResource(R.string.sheet_pace),
-                    stringResource(R.string.sheet_pace_value, format.short(pace)),
-                )
-            }
+        Receipt(state, figure)
+        // The tile's pace, here too: the list's rows leave it out.
+        state.pace?.let { pace ->
+            Text(
+                stringResource(R.string.sheet_pace_line, format.short(pace)),
+                style = MaterialTheme.typography.bodyMedium.tabular(),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = ScreenMargin + 16.dp).padding(top = 8.dp),
+            )
         }
 
         GroupHeader(stringResource(R.string.sheet_spends))
@@ -171,8 +177,19 @@ internal fun CapSheetContent(
             SettingsGroup {
                 data.spends.forEachIndexed { index, spend ->
                     if (index > 0) GroupDivider()
-                    key(spend.id) { SpendRow(spend, format, actions) }
+                    key(spend.id) { SpendRow(spend, figure, actions) }
                 }
+            }
+        }
+        // Money back (owner, 6 Nov 2026): only where something was spent to give back.
+        if (state.spent.isPositive) {
+            TextButton(
+                onClick = actions.onRefund,
+                modifier = Modifier.padding(horizontal = ScreenMargin - 12.dp).padding(top = 4.dp),
+            ) {
+                Icon(TettoIcons.Renew, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.sheet_refund))
             }
         }
 
@@ -210,7 +227,7 @@ internal fun CapSheetContent(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SpendRow(spend: Spend, format: MoneyFormat, actions: CapSheetActions) {
+private fun SpendRow(spend: Spend, figure: (Money) -> String, actions: CapSheetActions) {
     val correctLabel = stringResource(R.string.spend_correct)
     val deleteLabel = stringResource(R.string.spend_delete)
     val dismiss = rememberSwipeToDismissBoxState()
@@ -248,11 +265,25 @@ private fun SpendRow(spend: Spend, format: MoneyFormat, actions: CapSheetActions
                 .testTag(CapsTags.spend(spend.id)),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                format.full(spend.amount),
-                style = MaterialTheme.typography.bodyLarge.tabular(),
-                modifier = Modifier.weight(1f),
-            )
+            Column(Modifier.weight(1f)) {
+                // A refund reads as money back: its size after a minus, and the word under it.
+                Text(
+                    if (spend.refund) MINUS + figure(spend.size) else figure(spend.size),
+                    style = MaterialTheme.typography.bodyLarge.tabular(),
+                    color = if (spend.refund) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
+                )
+                if (spend.refund) {
+                    Text(
+                        stringResource(R.string.spend_refund),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
             Text(
                 momentWords(spend.addedAt),
                 style = MaterialTheme.typography.bodyMedium,
@@ -261,3 +292,84 @@ private fun SpendRow(spend: Spend, format: MoneyFormat, actions: CapSheetActions
         }
     }
 }
+
+/**
+ * This period's figures as a receipt (owner, 6 Nov 2026): the cap, plus the reserve, less what was
+ * spent, and under a rule what is left, or how far over, in the figure's size; a column of
+ * tabular figures, signs apart, so the sum reads at a glance. TalkBack reads it as the one
+ * sentence it is: "€20 cap, plus €4 in reserve, less €8 spent: €16 left".
+ */
+@Composable
+private fun Receipt(state: CapState, figure: (Money) -> String) {
+    val parts = listOfNotNull(
+        stringResource(R.string.sheet_receipt_cap, figure(state.cap.amount)),
+        state.cap.reserve.takeIf { it.isPositive }?.let { stringResource(R.string.sheet_receipt_reserve, figure(it)) },
+        stringResource(R.string.sheet_receipt_spent, figure(state.spent)),
+    )
+    val result = if (state.over) {
+        stringResource(R.string.sheet_receipt_over, figure(state.overBy))
+    } else {
+        stringResource(R.string.sheet_receipt_left, figure(state.left))
+    }
+    val sentence = stringResource(R.string.sheet_receipt_sentence, parts.joinToString(", "), result)
+    Column(
+        Modifier
+            .padding(horizontal = ScreenMargin)
+            .fillMaxWidth()
+            .clip(GroupShape)
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .testTag(CapsTags.RECEIPT)
+            .clearAndSetSemantics { contentDescription = sentence },
+    ) {
+        ReceiptLine(null, stringResource(R.string.sheet_cap), figure(state.cap.amount))
+        if (state.cap.reserve.isPositive) {
+            ReceiptLine(PLUS, stringResource(R.string.sheet_reserve), figure(state.cap.reserve))
+        }
+        ReceiptLine(MINUS, stringResource(R.string.sheet_spent), figure(state.spent))
+        HorizontalDivider(
+            Modifier.padding(vertical = 8.dp),
+            color = MaterialTheme.colorScheme.outlineVariant,
+        )
+        val ink = if (state.over) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                stringResource(if (state.over) R.string.sheet_over else R.string.sheet_left),
+                style = MaterialTheme.typography.titleMedium,
+                color = ink,
+                modifier = Modifier.weight(1f).padding(start = SIGN_WIDTH),
+            )
+            Text(
+                figure(if (state.over) state.overBy else state.left),
+                style = TettoTheme.type.readingValue,
+                color = ink,
+            )
+        }
+    }
+}
+
+/** A line of the receipt: its sign in a column of its own, its word, its figure at the end. */
+@Composable
+private fun ReceiptLine(sign: String?, label: String, amount: String) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            sign.orEmpty(),
+            style = MaterialTheme.typography.bodyLarge.tabular(),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.width(SIGN_WIDTH),
+        )
+        Text(
+            label,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f),
+        )
+        Text(amount, style = MaterialTheme.typography.bodyLarge.tabular())
+    }
+}
+
+private const val PLUS = "+"
+
+/** The minus sign, not a hyphen: the same width as the plus in tabular figures. */
+private const val MINUS = "\u2212"
+private val SIGN_WIDTH = 20.dp

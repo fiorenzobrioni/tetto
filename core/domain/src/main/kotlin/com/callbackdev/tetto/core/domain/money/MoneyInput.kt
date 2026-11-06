@@ -97,7 +97,26 @@ class MoneyInput private constructor(val currency: AppCurrency, val whole: Strin
         /** Up to 999,999,999 whole units: far inside a `Long`, sums included (§4.1). */
         const val MAX_WHOLE_DIGITS = 9
 
+        private const val MAX_WHOLE = 999_999_999L
+
         fun empty(currency: AppCurrency): MoneyInput = MoneyInput(currency, "", null)
+
+        /**
+         * The largest amount the numpad can type in [currency]: nine nines and every decimal. A
+         * cap's amount and a spend are typed back ([of]), so none is ever larger (§4.1).
+         */
+        fun largest(currency: AppCurrency): Money = Money(largestMinor(currency.fractionDigits))
+
+        /** [largest] in minor units, for a currency of [digits] decimals. */
+        fun largestMinor(digits: Int): Long {
+            require(digits in 0..AppCurrency.MAX_FRACTION_DIGITS) { "Unsupported decimals: $digits" }
+            var unit = 1L
+            repeat(digits) { unit *= 10 }
+            return MAX_WHOLE * unit + unit - 1
+        }
+
+        /** Whether [amount] can be typed back on the numpad in [currency]. */
+        fun canType(amount: Money, currency: AppCurrency): Boolean = !amount.isNegative && amount <= largest(currency)
 
         /**
          * The buffer that types [amount] back (a spend to correct, a spend undone over the home

@@ -11,14 +11,14 @@ import com.callbackdev.tetto.core.model.Money
  * - `forgiven = max(0, spent − cap − reserve)`: the overspend the reserve could not cover is
  *   dropped. A new period never starts in debt.
  *
- * The limit is the cap in force when the period closes: a cap lowered mid-period keeps its
- * reserve until then, and the new limit applies at the close (§4.5).
+ * The limit is one period's cap, the cap in force when the period closes. Where a period is cut
+ * short by a change (§4.5) its own cap is its share of the days, and the [limit] is the cap that
+ * runs on after it, the one the reserve is held to from then on.
  */
 object Rollover {
     data class Outcome(val reserveAfter: Money, val forgiven: Money)
 
-    fun close(cap: Money, reserve: Money, spent: Money): Outcome {
-        val limit = cap
+    fun close(cap: Money, reserve: Money, spent: Money, limit: Money = cap): Outcome {
         val carried = reserve + cap - spent
         val reserveAfter = minOf(limit, maxOf(Money.ZERO, carried))
         val forgiven = maxOf(Money.ZERO, spent - cap - reserve)

@@ -111,26 +111,34 @@ a ledger** (history screens, statistics, accounts, income). Its speed comes from
   again. Computed from the caps alone. Two lines where a small step down of its size is enough.
 - **One tile per cap**, in two columns on a phone (one at large text sizes; the family's centred
   column on an open foldable), so eight caps fit one screen: the cap's icon and name; **what is left**
-  in the family's figure style (tabular, so the digits do not wobble as they change), on a line of
-  its own with its word small beside it, "€12 / left" or, past the cap, "€30 / over" ("ancora /
-  12 €" in Italian, the word first); the cap and when it renews ("of €200 · until Sunday"); the
-  reserve as a small chip, "+€30 reserve", only while there is one. Or, the reader's choice in
+  in the family's figure style (tabular, so the digits do not wobble as they change), with its
+  word small beside it on the same line, "€12 left" or, past the cap, "€30 over" ("ancora 12 €"
+  in Italian, the word first); the cap and, on a line of its own, when it renews ("of €200",
+  "until Sunday"), so every tile has the same lines and the bars of a row stand level; the
+  reserve as a small chip at the tile's foot, "+€30 reserve", only while there is one, in a
+  colour that is never the attention ink (owner, 6 Nov 2026). Or, the reader's choice in
   Settings, **one row per cap** across the page, shorter, for many caps: the icon, the name and
   "€12 left" on one line, the cap and its day, the bar; the pace and the reserve in the cap's
   sheet (owner, 6 Nov 2026).
 - **A bar of what was spent**, with a thin mark where today falls in the period: a reader sees at
   once whether spending runs ahead of the days. The bar is drawn in the accent; it takes the
-  family's *attention* ink when spending runs ahead of the period, and an over state that is
-  also a shape and words, never a colour alone. No traffic lights.
+  family's *attention* ink when spending runs ahead of the period, past a little room that is a
+  step of the period on its first day (a day of a week, a week of a month) and nothing on its
+  last, so a big shop early in a month is not a warning (owner, 6 Nov 2026); and an over state
+  that is also a shape and words, never a colour alone. No traffic lights.
 - **The pace**, where it helps: for a cap of a week or longer with days left, "about €4 a day
   until Monday".
-- **Touch a cap**: the numpad opens on it. **Long press** (or the numpad's header, or TalkBack's
-  action): the cap's own sheet.
+- **Touch a cap**: the numpad opens on it. **The arrow by its name**, a long press, the numpad's
+  header or TalkBack's action: the cap's own sheet (the arrow, owner, 6 Nov 2026).
 - **A last tile, "New cap"**; the caps' order is the reader's, changed by dragging in an edit
   mode.
 - **Live while visible**: a page open across midnight closes the periods that end and starts the
   new ones, without a restart.
-- **States**: no cap yet (one line and "New cap"), every cap over, a cap just renewed.
+- **States**: no cap yet (one line and "New cap"), every cap over, a cap just renewed. The day
+  a cap renews, the sentence says how its last period ended, forgiveness first: "Shopping starts
+  again today: €100 until 30 Nov. It was €30 over: forgiven, a clean start."; or that the reserve
+  covered an overspend, or what went to the reserve, or that it was full (owner, 6 Nov 2026). The
+  moment Tetto is kind is said when it happens, not left to a line in the cap's sheet.
 - **No total of the caps.** Caps with different periods do not add up; a sum of a weekly and a
   yearly cap would mean nothing, and a sum of what is left would undo the envelopes.
 - **Your month**, last on the page, under the caps (owner, 6 Nov 2026): what was added to the
@@ -146,6 +154,10 @@ a ledger** (history screens, statistics, accounts, income). Its speed comes from
 - **The amount**, large and tabular, with a caret; under it **the preview**, in words, updated
   at each key: "€15 left" while it fits; "€30 over" in the over state once it does not; "Still
   €30 over" when the cap was over already.
+- **The cap's habits** (owner, 6 Nov 2026): once a cap has spends, its most used amounts (of its
+  last twenty spends, at most three, smallest first) wait between the preview and the keys, each
+  added in one touch, with the same Undo; they fade, keeping their room, as soon as a key is
+  pressed, and are not offered while a spend is corrected. Amounts only: no date, no count.
 - **The keys**: 0 to 9, the locale's decimal separator (absent for a currency with no decimals),
   delete (a long press clears). Large, airy, borderless, each with a short tick of the phone's
   keyboard haptics; a hardware keyboard types too.
@@ -154,17 +166,24 @@ a ledger** (history screens, statistics, accounts, income). Its speed comes from
   changes under the thumb.
 - **After adding**: the sheet closes, the cap's figure rolls to its new value, and a snackbar says
   "€5.00 added to Coffee" with **Undo**. Undo stays as long as Material's accessible timing
-  requires (longer with TalkBack).
+  requires (longer with TalkBack); the next change replaces it rather than waiting behind it.
 - **Caps** on the amount: up to nine digits before the separator. No dates (a spend counts
   now), no notes, no category picker (the cap was chosen by the touch that opened the sheet).
 
 ### A cap's sheet
 
-- **This period**: its dates ("27 Oct – 2 Nov"), the cap, the reserve, what was spent, what is
-  left.
+- **This period**: its dates ("27 Oct – 2 Nov") and its figures as a receipt: the cap, plus the
+  reserve, less what was spent, and under a rule what is left (or how far over). The sheet's
+  figures, the receipt's and the spends', share one rule: cents on every one as soon as one has
+  them (owner, 6 Nov 2026).
 - **This period's spends**, newest first (amount, day and time). A touch edits the amount, a
   swipe deletes it, with undo. Spends of closed periods cannot be changed: a closed period is
   frozen, so the reserve never changes behind the reader's back.
+- **A refund** (owner, 6 Nov 2026): money that comes back (a return, a friend's share), from
+  "Add a refund" under the spends, shown only where something was spent. The numpad says so in
+  its header and its button ("Refund €4.00"); a refund gives back at most what the period spent,
+  so a period never spends less than nothing, and is listed as "−€4.00, Refund", correctable and
+  deletable as a spend is.
 - **The last periods, one line each**, the reserve's story: "Week of 20 Oct: €18 of €20, +€2 to
   the reserve"; "October: €230 of €200, €30 forgiven". Not a history to browse: the few lines
   that explain the chip.
@@ -177,8 +196,12 @@ a ledger** (history screens, statistics, accounts, income). Its speed comes from
   curated palette of about two dozen Material Symbols, so the screen keeps one look.
 - A week starts on the locale's first day of the week, a month on the day set in Settings (the
   1st by default; "from the 27th" for a reader paid on the 27th), a year on that day of January.
-- A change of amount applies to the open period at once. A change of period keeps the reserve
-  and moves this period's spends into the new period that contains today (PLANNING §4.5).
+- A change of amount applies to the open period at once, and a reserve larger than the new amount
+  comes down to it. A change of period replaces the open period by the new one that contains
+  today: where it holds this period's days, this period's spends move into it; where it starts
+  later, the days already past close as a line of their own, on their share of the cap, and only
+  what is spent from its first day counts in it. The reserve is held to the new cap (owner,
+  6 Nov 2026; PLANNING §4.5).
 
 ### First run
 
@@ -280,14 +303,23 @@ sisters' «At a glance» and «In words»:
 - An app lock or PIN in v1 (a later idea); Wear OS; a tablet layout beyond the family's centred
   column; ads, analytics, crash reporting over the network.
 
+### After 1.0: approved, to build (owner, 6 Nov 2026)
+
+- A one-off cap that does not renew ("Lisbon trip: €800"), with its dates: no reserve, no
+  renewal, a closed line at its end.
+- Hiding the amounts on a home-screen card (bars and words stay), and an app lock with the
+  system's biometric prompt, no new dependency.
+- An automatic backup into a folder the reader picks once (the Storage Access Framework, no
+  permission): written when Tetto is opened and the last one is a week old, never in the
+  background.
+
 ### Possible post-1.0 ideas (not committed)
 
-- A one-off cap that does not renew ("Lisbon trip: €800"), with an end date.
-- A refund (a negative spend), from the cap's sheet.
-- Pausing a cap (holidays) without its reserve growing.
-- A Quick Settings tile that opens the numpad on a chosen cap.
-- An app lock (PIN and biometrics) and hiding the amounts on the widgets.
-- A period of two weeks, for a fortnightly pay.
+- A period of two weeks, for a fortnightly pay (to evaluate: common in the US, the UK and Canada,
+  rare in Italy).
+- Pausing a cap (holidays) without its reserve growing; a Quick Settings tile that opens the
+  numpad on a chosen cap. Both advised against in the review of 6 Nov 2026: the reserve's limit
+  already bounds a holiday, and the tile is a third door to what the cards and shortcuts open.
 - Publication on Google Play.
 
 ## From the concept to this vision

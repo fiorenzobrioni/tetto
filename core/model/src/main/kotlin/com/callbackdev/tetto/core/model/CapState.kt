@@ -12,10 +12,13 @@ import java.time.LocalDate
  * @property daysLeft the days from today to the period's end, today counted: at least 1.
  * @property bar what was spent of the cap and its reserve, held to 0..1; [over] says the rest.
  * @property todayMark where today falls in the period, today counted; none for a day.
- * @property aheadOfDays spending runs ahead of the days: not over, and the bar past the mark.
+ * @property aheadOfDays spending runs ahead of the days: not over, and the bar past the mark by
+ *   more than a step of the period that fades by its end (PLANNING.md §4.6).
  * @property pace about how much a day is left until the end, in whole units of the currency;
  *   none for a day, when over, on the last day, or under one unit.
  * @property renewedToday a period closed today and this one began with it.
+ * @property renewal how the period that closed today ended, said on the day it renews (owner,
+ *   6 Nov 2026); null on any other day.
  */
 data class CapState(
     val cap: Cap,
@@ -28,6 +31,7 @@ data class CapState(
     val aheadOfDays: Boolean,
     val pace: Money?,
     val renewedToday: Boolean,
+    val renewal: Renewal? = null,
 ) {
     val over: Boolean get() = left.isNegative
 
@@ -68,4 +72,28 @@ enum class NearDay {
 
     /** A week or more ahead, or behind today: a date. */
     DATE,
+}
+
+/**
+ * How a period ended, said the day the next one begins (owner, 6 Nov 2026): the moment Tetto is
+ * kind, said when it happens rather than left to a line in the cap's sheet. One [kind], the one
+ * that matters most, and its [amount].
+ */
+data class Renewal(val kind: Kind, val amount: Money) {
+    enum class Kind {
+        /** Past the cap and the reserve: [amount] forgiven, a clean start. */
+        FORGIVEN,
+
+        /** Over the cap, and the reserve covered [amount] of it. */
+        COVERED,
+
+        /** Under the cap: [amount] went to the reserve. */
+        SAVED,
+
+        /** Under the cap, with the reserve already at its limit: nothing more to keep. */
+        RESERVE_FULL,
+
+        /** Right on the cap. */
+        EVEN,
+    }
 }

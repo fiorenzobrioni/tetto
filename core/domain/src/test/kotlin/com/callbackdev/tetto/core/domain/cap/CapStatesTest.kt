@@ -63,13 +63,45 @@ class CapStatesTest {
     }
 
     @Test
-    fun `ahead of the days, the bar past the mark`() {
-        // 4/7 of the week gone: €11.43 is the mark on a €20 cap.
-        assertThat(CapStates.of(week, euros(11, 42), rule(WEEK), today, EUR).aheadOfDays).isFalse()
-        assertThat(CapStates.of(week, euros(11, 43), rule(WEEK), today, EUR).aheadOfDays).isTrue()
-        // Exactly on the mark is not ahead: €80 of a €140 cap is 4/7.
-        val exact = week.copy(amount = euros(140))
-        assertThat(CapStates.of(exact, euros(80), rule(WEEK), today, EUR).aheadOfDays).isFalse()
+    fun `ahead of the days, the bar past the mark and its fading slack`() {
+        // Thursday, 4/7 of the week gone, 4 days left: the line is 4/7 + 1/7 × 4/7 = 32/49, €13.06
+        // of a €20 cap; the mark alone (€11.43) is no longer enough.
+        assertThat(CapStates.of(week, euros(12), rule(WEEK), today, EUR).aheadOfDays).isFalse()
+        assertThat(CapStates.of(week, euros(13, 6), rule(WEEK), today, EUR).aheadOfDays).isFalse()
+        assertThat(CapStates.of(week, euros(13, 7), rule(WEEK), today, EUR).aheadOfDays).isTrue()
+        // Exactly on the line is not ahead: €32 of a €49 cap is 32/49.
+        val exact = week.copy(amount = euros(49))
+        assertThat(CapStates.of(exact, euros(32), rule(WEEK), today, EUR).aheadOfDays).isFalse()
+        assertThat(CapStates.of(exact, euros(32, 1), rule(WEEK), today, EUR).aheadOfDays).isTrue()
+    }
+
+    @Test
+    fun `a week's first day forgives a day's worth, its last almost nothing`() {
+        val monday = date(2026, 11, 2)
+        // Monday: the line is 2/7, €5.71 of €20.
+        assertThat(CapStates.of(week, euros(5, 71), rule(WEEK), monday, EUR).aheadOfDays).isFalse()
+        assertThat(CapStates.of(week, euros(5, 72), rule(WEEK), monday, EUR).aheadOfDays).isTrue()
+        // Sunday: 7/7 and a forty-ninth: a cap not over is never ahead on its last day.
+        val sunday = date(2026, 11, 8)
+        assertThat(CapStates.of(week, euros(20), rule(WEEK), sunday, EUR).aheadOfDays).isFalse()
+    }
+
+    @Test
+    fun `a month's big shop on its first days is not a warning, a month nearly spent still is`() {
+        val month = cap(MONTH, openStart = date(2026, 11, 1), amount = euros(300))
+        // The 5th, 26 days left: the line is 5/30 + 7/30 × 26/30, about 37%; €96.40 is 32%.
+        val fifth = date(2026, 11, 5)
+        assertThat(CapStates.of(month, euros(96, 40), rule(MONTH), fifth, EUR).aheadOfDays).isFalse()
+        // A week's shop on the first day is not one either, where the mark alone said so for a week;
+        // twice that still is, for six days instead of twelve.
+        val first = date(2026, 11, 1)
+        assertThat(CapStates.of(month, euros(75), rule(MONTH), first, EUR).aheadOfDays).isFalse()
+        assertThat(CapStates.of(month, euros(150), rule(MONTH), first, EUR).aheadOfDays).isTrue()
+        assertThat(CapStates.of(month, euros(120), rule(MONTH), date(2026, 11, 7), EUR).aheadOfDays).isFalse()
+        // The 24th, 7 days left: the line is about 85%; 90% spent is ahead.
+        val late = date(2026, 11, 24)
+        assertThat(CapStates.of(month, euros(270), rule(MONTH), late, EUR).aheadOfDays).isTrue()
+        assertThat(CapStates.of(month, euros(240), rule(MONTH), late, EUR).aheadOfDays).isFalse()
     }
 
     @Test

@@ -17,7 +17,8 @@ import java.util.Locale
  *
  * The header is fixed English identifiers, the same in every language, so a formula written once
  * keeps working: `date` and `time` (when it was added, in [ZoneId] the phone is in now, 24-hour),
- * `cap` (its name), `amount` (in the currency's whole unit, a dot for decimals: `12.50`, `13` for
+ * `cap` (its name), `amount` (in the currency's whole unit, a dot for decimals, a minus for a
+ * refund: `12.50`, `-4.00`, `13` for
  * the yen), `currency` (the ISO code), `period_start` and `period_end` (the period it counts in,
  * its first and last day, both included, as the cap's sheet says them).
  *
@@ -55,7 +56,8 @@ object CsvExport {
                 val fields = listOf(
                     added.toLocalDate().toString(),
                     TIME.format(added),
-                    row.cap,
+                    // A name is text, never a formula; an amount below zero (a refund) is a number.
+                    asText(row.cap),
                     BigDecimal.valueOf(row.spend.amount.minor, decimals).toPlainString(),
                     backup.currency.code,
                     row.spend.periodStart.toString(),
@@ -76,11 +78,14 @@ object CsvExport {
         else -> closed.firstOrNull { it.range.start == start }?.range ?: closed.firstOrNull { start in it.range }?.range
     }
 
-    /** A field as RFC 4180 wants it, and never a formula. */
+    /** A name a spreadsheet must show, never run: a leading formula sign written as text. */
+    private fun asText(value: String): String =
+        if (value.isNotEmpty() && value[0] in FORMULA_STARTS) "'$value" else value
+
+    /** A field as RFC 4180 wants it. */
     private fun field(value: String): String {
-        val safe = if (value.isNotEmpty() && value[0] in FORMULA_STARTS) "'$value" else value
-        val quoted = safe.any { it == ',' || it == '"' || it == '\n' || it == '\r' }
-        return if (quoted) "\"" + safe.replace("\"", "\"\"") + "\"" else safe
+        val quoted = value.any { it == ',' || it == '"' || it == '\n' || it == '\r' }
+        return if (quoted) "\"" + value.replace("\"", "\"\"") + "\"" else value
     }
 
     private data class Row(val order: Int, val cap: String, val spend: BackupSpend, val period: DateRange?)

@@ -1,6 +1,8 @@
 package com.callbackdev.tetto.feature.caps
 
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.assertContentDescriptionContains
+import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -13,10 +15,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.callbackdev.tetto.core.designsystem.format.rememberMoneyFormat
 import com.callbackdev.tetto.core.designsystem.theme.TettoTheme
 import com.callbackdev.tetto.core.model.CapState
+import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.Spend
 import com.callbackdev.tetto.core.testing.assertAccessible
 import com.callbackdev.tetto.core.testing.walkPage
 import com.callbackdev.tetto.core.testing.writeScreenshot
+import com.callbackdev.tetto.feature.caps.CapsSample.euros
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -36,6 +40,7 @@ class CapSheetTest {
     private var cleared = 0
     private var edited = 0
     private var deletedCap = 0
+    private var refunds = 0
 
     private fun draw(
         state: CapState = CapsSample.coffee,
@@ -65,6 +70,7 @@ class CapSheetTest {
                         onClearReserve = { cleared++ },
                         onEdit = { edited++ },
                         onDeleteCap = { deletedCap++ },
+                        onRefund = { refunds++ },
                     ),
                 )
             }
@@ -75,11 +81,12 @@ class CapSheetTest {
     fun `this period, its spends, the last periods, and what can be done`() {
         draw()
         compose.onNodeWithText("Coffee").assertExists()
-        compose.onNodeWithText("€16").assertExists()
+        // The receipt, read as one sentence; its figures share their cents with the spends'.
+        compose.onNodeWithTag(CapsTags.RECEIPT)
+            .assertContentDescriptionEquals("€20.00 cap, plus €4.00 in reserve, less €8.00 spent: €16.00 left")
         compose.onNodeWithText("€3.20").assertExists()
         // The tile's pace, which the list's rows leave out.
-        compose.onNodeWithText("To stay under, a day").assertExists()
-        compose.onNodeWithText("about €4").assertExists()
+        compose.onNodeWithText("To stay under, about €4 a day").assertExists()
         compose.onNodeWithText("The last periods").performScrollTo()
         compose.onNodeWithText("Clear the reserve").performScrollTo().performClick()
         compose.onNodeWithText("Edit").performScrollTo().performClick()
@@ -110,14 +117,35 @@ class CapSheetTest {
         compose.onNodeWithText("Nothing spent in this period yet.").assertExists()
         compose.onNodeWithText("Clear the reserve").assertDoesNotExist()
         compose.onNodeWithText("The last periods").assertDoesNotExist()
-        compose.onNodeWithText("To stay under, a day").assertExists()
+        compose.onNodeWithText("To stay under, about", substring = true).assertExists()
+        // One figure with cents gives every figure its cents; no reserve, none said.
+        compose.onNodeWithTag(
+            CapsTags.RECEIPT,
+        ).assertContentDescriptionEquals("€300.00 cap, less €96.40 spent: €203.60 left")
+    }
+
+    @Test
+    fun `a refund reads as money back, and the sheet offers one where something was spent`() {
+        val refund = CapsSample.coffeeSpends[0].copy(id = 9, amount = -euros(1, 50))
+        draw(spends = listOf(refund) + CapsSample.coffeeSpends)
+        compose.onNodeWithText("\u2212€1.50").assertExists()
+        compose.onNodeWithText("Refund").assertExists()
+        compose.onNodeWithText("Add a refund").performScrollTo().performClick()
+        assertThat(refunds).isEqualTo(1)
+        compose.assertAccessible()
+        compose.writeScreenshot("cap-sheet-refund")
+    }
+
+    @Test
+    fun `nothing spent, no refund offered`() {
+        draw(state = CapsSample.groceries.copy(spent = Money.ZERO), spends = emptyList())
+        compose.onNodeWithText("Add a refund").assertDoesNotExist()
     }
 
     @Test
     fun `over, it says how far`() {
         draw(state = CapsSample.shopping, spends = emptyList())
-        compose.onNodeWithText("Over").assertExists()
-        compose.onNodeWithText("€30").assertExists()
+        compose.onNodeWithTag(CapsTags.RECEIPT).assertContentDescriptionContains("€30 over", substring = true)
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.callbackdev.tetto.core.domain.backup
 
+import com.callbackdev.tetto.core.domain.money.MoneyInput
 import com.callbackdev.tetto.core.domain.money.Rescale
 import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.AppFont
@@ -120,6 +121,7 @@ private fun Backup.toFile() = BackupFile(
         reminderOn = settings.reminderOn,
         reminderTime = settings.reminderTime.withSecond(0).withNano(0).toString(),
     ),
+    weekInForce = weekInForce?.name,
     caps = caps.map { cap ->
         CapDto(
             name = cap.name,
@@ -160,6 +162,9 @@ private fun BackupFile.toBackup(): Backup {
     require(fileDigits in 0..AppCurrency.MAX_FRACTION_DIGITS) { "Decimals: $fileDigits" }
     fun money(minor: Long): Money = Rescale.amount(Money(minor), fileDigits, currency.fractionDigits)
 
+    // What the numpad typed, held to what it can type back, as a change of currency holds it.
+    fun typed(minor: Long): Money = Rescale.typed(Money(minor), fileDigits, currency.fractionDigits)
+
     val defaults = UserSettings()
     require(settings.monthStartDay in 1..31) { "Month start: ${settings.monthStartDay}" }
     val settings = UserSettings(
@@ -181,16 +186,22 @@ private fun BackupFile.toBackup(): Backup {
         require(dto.name.isNotBlank()) { "A cap without a name" }
         val kind = requireNotNull(enumOrNull<PeriodKind>(dto.period)) { "Period: ${dto.period}" }
         val openStart = LocalDate.parse(dto.openStart)
-        val amount = money(dto.amount)
+        val amount = typed(dto.amount)
         require(amount.isPositive) { "A cap of nothing" }
-        val reserve = money(dto.reserve)
+        // The editor types a cap's amount back, the numpad a spend's: one it cannot type is no
+        // amount Tetto wrote (PLANNING.md §4.1).
+        require(MoneyInput.canType(amount, currency)) { "A cap past the numpad's digits" }
+        val reserve = typed(dto.reserve)
         require(!reserve.isNegative) { "A negative reserve" }
         val spends = dto.spends.map { spend ->
             val periodStart = LocalDate.parse(spend.periodStart)
             // A spend counts in the open period or in one before it, never in one to come.
             require(periodStart <= openStart) { "A spend after the open period" }
-            val spent = money(spend.amount)
-            require(spent.isPositive) { "A spend of nothing" }
+            val spent = typed(spend.amount)
+            // Below zero is a refund (owner, 6 Nov 2026); nothing is no spend at all.
+            require(spent != Money.ZERO) { "A spend of nothing" }
+            val size = if (spent.isNegative) -spent else spent
+            require(MoneyInput.canType(size, currency)) { "A spend past the numpad's digits" }
             BackupSpend(spent, Instant.ofEpochMilli(spend.addedAtMillis), periodStart)
         }
         val closed = dto.closed.map { line ->
@@ -240,6 +251,7 @@ private fun BackupFile.toBackup(): Backup {
         currency = currency,
         settings = settings,
         caps = caps,
+        weekInForce = weekInForce?.let { requireNotNull(enumOrNull<DayOfWeek>(it)) { "Week in force: $it" } },
     )
 }
 
