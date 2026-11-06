@@ -77,6 +77,7 @@
     <string name="widget_gone_title">This cap is no longer here</string>
     <string name="widget_gone_hint">Choose another in this card’s settings</string>
     <string name="widget_unavailable_title">The caps could not be read</string>
+    <string name="widget_failure_title">This card could not be drawn</string>
     <string name="widget_unavailable_hint">Touch to open Tetto</string>
 
     <!-- The card's settings screen (PLANNING.md §7): the family's, with Tetto's content. -->

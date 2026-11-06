@@ -7,6 +7,7 @@ import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.AppFont
 import com.callbackdev.tetto.core.model.AppPalette
 import com.callbackdev.tetto.core.model.CapDraft
+import com.callbackdev.tetto.core.model.CapsLayout
 import com.callbackdev.tetto.core.model.ThemeMode
 import com.callbackdev.tetto.core.model.UserSettings
 import kotlinx.coroutines.flow.Flow
@@ -60,6 +61,10 @@ constructor(
 
     suspend fun setFont(font: AppFont) {
         preferences.update { it.copy(font = font) }
+    }
+
+    suspend fun setCapsLayout(layout: CapsLayout) {
+        preferences.update { it.copy(capsLayout = layout) }
     }
 
     suspend fun setDynamicColor(on: Boolean) {

@@ -45,5 +45,16 @@
     <string name="cap_icon_subscriptions">Abbonamenti</string>
     <string name="cap_icon_hobbies">Hobby</string>
     <string name="cap_icon_education">Istruzione</string>
+    <string name="cap_icon_takeaway">Asporto e domicilio</string>
+    <string name="cap_icon_drinks">Aperitivi e serate</string>
+    <string name="cap_icon_games">Videogiochi</string>
+    <string name="cap_icon_events">Cinema ed eventi</string>
+    <string name="cap_icon_bank">Banca e prestiti</string>
+    <string name="cap_icon_rent">Affitto e condominio</string>
     <string name="cap_icon_other">Altro</string>
+
+    <!-- La parola che accompagna la cifra di un tetto: "ancora / 12 €", "sotto di / 30 €". -->
+    <string name="cap_word_left">ancora</string>
+    <string name="cap_word_over">sotto di</string>
+    <bool name="cap_word_first">true</bool>
 </resources>

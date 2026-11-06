@@ -59,6 +59,26 @@ class CapsSentenceTest {
     }
 
     @Test
+    fun `with nothing spent on any cap, none is named the closest`() {
+        val fuel = state(1, euros(200), Money.ZERO, kind = MONTH)
+        val coffee = state(2, euros(100), Money.ZERO, kind = MONTH)
+        assertThat(CapsSentence.of(listOf(fuel, coffee))).isEqualTo(CapsSentence.NothingSpent(caps = 2))
+    }
+
+    @Test
+    fun `one spend anywhere and the closest is named again`() {
+        val fuel = state(1, euros(200), Money.ZERO, kind = MONTH)
+        val coffee = state(2, euros(100), euros(1), kind = MONTH)
+        assertThat(CapsSentence.of(listOf(fuel, coffee))).isEqualTo(CapsSentence.AllUnder(coffee, caps = 2))
+    }
+
+    @Test
+    fun `a single cap with nothing spent is still said with its left and its day`() {
+        val fuel = state(1, euros(200), Money.ZERO, kind = MONTH)
+        assertThat(CapsSentence.of(listOf(fuel))).isEqualTo(CapsSentence.AllUnder(fuel, caps = 1))
+    }
+
+    @Test
     fun `ties for the closest go to the first in the reader's order`() {
         val first = state(1, euros(20), euros(10))
         val second = state(2, euros(40), euros(20))

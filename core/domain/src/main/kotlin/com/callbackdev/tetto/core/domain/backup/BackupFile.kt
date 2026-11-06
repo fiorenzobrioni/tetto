@@ -30,6 +30,8 @@ internal data class SettingsDto(
     val theme: String? = null,
     val palette: String? = null,
     val font: String? = null,
+    /** Absent in a file written before the setting was: the tiles stand in. */
+    val capsLayout: String? = null,
     val dynamicColor: Boolean = false,
     val reminderOn: Boolean = false,
     val reminderTime: String? = null,

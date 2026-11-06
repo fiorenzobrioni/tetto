@@ -5,6 +5,7 @@ import com.callbackdev.tetto.core.domain.euros
 import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.AppPalette
 import com.callbackdev.tetto.core.model.CapIcon
+import com.callbackdev.tetto.core.model.CapsLayout
 import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.UserSettings
 import com.google.common.truth.Truth.assertThat
@@ -115,6 +116,13 @@ class BackupCodecTest {
         val read = ok(edited("\"icon\": \"coffee\"", "\"icon\": \"teapot\"").replace("\"PAPER\"", "\"NEON\""))
         assertThat(read.caps[0].icon).isEqualTo(CapIcon.OTHER)
         assertThat(read.settings.palette).isEqualTo(AppPalette.VIVID)
+    }
+
+    @Test
+    fun `a file from before the caps' layout was a setting opens on the tiles`() {
+        val read = ok(edited("\"capsLayout\": \"LIST\",", ""))
+        assertThat(read.settings.capsLayout).isEqualTo(CapsLayout.TILES)
+        assertThat(read.copy(settings = read.settings.copy(capsLayout = CapsLayout.LIST))).isEqualTo(sampleBackup())
     }
 
     @Test

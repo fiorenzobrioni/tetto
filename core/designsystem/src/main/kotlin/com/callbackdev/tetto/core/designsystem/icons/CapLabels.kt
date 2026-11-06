@@ -37,6 +37,12 @@ val CapIcon.labelRes: Int
         CapIcon.SUBSCRIPTIONS -> R.string.cap_icon_subscriptions
         CapIcon.HOBBIES -> R.string.cap_icon_hobbies
         CapIcon.EDUCATION -> R.string.cap_icon_education
+        CapIcon.TAKEAWAY -> R.string.cap_icon_takeaway
+        CapIcon.DRINKS -> R.string.cap_icon_drinks
+        CapIcon.GAMES -> R.string.cap_icon_games
+        CapIcon.EVENTS -> R.string.cap_icon_events
+        CapIcon.BANK -> R.string.cap_icon_bank
+        CapIcon.RENT -> R.string.cap_icon_rent
         CapIcon.OTHER -> R.string.cap_icon_other
     }
 

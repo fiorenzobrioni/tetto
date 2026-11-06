@@ -51,9 +51,9 @@ constructor(
         combine(
             days.days().flatMapLatest { caps.states },
             settings.currency,
-            settings.settings.map { it.capsTipSeen }.distinctUntilChanged(),
-        ) { states, currency, tipSeen ->
-            CapsUiState(clock.today(), currency, states, CapsSentence.of(states), tipSeen)
+            settings.settings.map { it.capsTipSeen to it.capsLayout }.distinctUntilChanged(),
+        ) { states, currency, (tipSeen, layout) ->
+            CapsUiState(clock.today(), currency, states, CapsSentence.of(states), tipSeen, layout)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), null)
 
     private val sheetCap = MutableStateFlow<Long?>(null)

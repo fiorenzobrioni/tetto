@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.callbackdev.tetto.core.designsystem.theme.TettoTheme
 import com.callbackdev.tetto.core.model.CapIcon
+import com.callbackdev.tetto.core.model.CapsLayout
 import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.PeriodKind
 import com.callbackdev.tetto.core.testing.assertAccessible
@@ -64,6 +65,11 @@ class CapsScreenTest {
         }
     }
 
+    private fun sentenceHeight(part: String): Float {
+        val node = compose.onNodeWithText(part, substring = true).fetchSemanticsNode()
+        return node.boundsInRoot.height / node.layoutInfo.density.density
+    }
+
     private fun description(tag: String): String =
         compose.onNodeWithTag(tag).fetchSemanticsNode().config[SemanticsProperties.ContentDescription].single()
 
@@ -96,6 +102,14 @@ class CapsScreenTest {
         compose.onNodeWithText("Thursday 5 November", substring = true).assertIsDisplayed()
         compose.assertAccessible()
         compose.writeScreenshot("caps")
+    }
+
+    @Test
+    fun `with nothing spent on any cap, the sentence names none`() {
+        val fuel = CapsSample.state(8, "Fuel", CapIcon.FUEL, euros(200), PeriodKind.MONTH, Money.ZERO)
+        val coffee = CapsSample.state(9, "Coffee", CapIcon.COFFEE, euros(100), PeriodKind.MONTH, Money.ZERO)
+        draw(CapsSample.ui(listOf(fuel, coffee)))
+        compose.onNodeWithText("All under your caps.").assertIsDisplayed()
     }
 
     @Test
@@ -241,6 +255,77 @@ class CapsScreenTest {
             "Coffee, ancora 16 € su 20 €, fino a domenica, circa 4 € al giorno, con 4 € di riserva",
         )
         compose.writeScreenshot("caps-it")
+    }
+
+    @Test
+    @Config(qualifiers = "it-rIT-w393dp-h851dp-xxhdpi")
+    fun `the sentence steps down to two lines where that is enough`() {
+        val fuel = CapsSample.state(8, "Benzina", CapIcon.FUEL, euros(250), PeriodKind.MONTH, euros(50))
+        val coffee = CapsSample.state(9, "Caffè e Bar", CapIcon.COFFEE, euros(100), PeriodKind.MONTH, euros(10))
+        draw(CapsSample.ui(listOf(fuel, coffee)))
+        // Three lines at the headline's 24 sp; two at 20 sp, its smallest step, 26.7 dp each.
+        assertThat(sentenceHeight("Il più vicino è Benzina")).isLessThan(60f)
+    }
+
+    @Test
+    @Config(qualifiers = "it-rIT-w393dp-h851dp-xxhdpi")
+    fun `a sentence two lines cannot hold keeps the headline's size`() {
+        draw(CapsSample.ui(CapsSample.underCaps))
+        // "Restaurants" would need 18 sp for two lines: three lines, then, at 24 sp, never shrunk for nothing.
+        assertThat(sentenceHeight("Il più vicino è Restaurants")).isWithin(1f).of(96f)
+    }
+
+    @Test
+    fun `as a list, a row per cap, shorter than a tile, with the same words and touches`() {
+        draw(CapsSample.ui(CapsSample.underCaps + CapsSample.shopping, layout = CapsLayout.LIST))
+        val first = compose.onNodeWithTag(CapsTags.tile(1)).fetchSemanticsNode()
+        val second = compose.onNodeWithTag(CapsTags.tile(2)).fetchSemanticsNode().boundsInRoot
+        val density = first.layoutInfo.density.density
+        assertThat(second.left).isEqualTo(first.boundsInRoot.left)
+        assertThat(second.top).isGreaterThan(first.boundsInRoot.bottom)
+        assertThat(first.boundsInRoot.height / density).isLessThan(100f)
+        assertThat(description(CapsTags.tile(1)))
+            .isEqualTo("Coffee, €16 left of €20, until Sunday, about €4 a day, with €4 in reserve")
+        compose.onNodeWithTag(CapsTags.tile(1)).performClick()
+        compose.onNodeWithTag(CapsTags.tile(1)).performSemanticsAction(SemanticsActions.OnLongClick)
+        assertThat(added).containsExactly(1L)
+        assertThat(opened).containsExactly(1L)
+        compose.onNodeWithText("New cap").performClick()
+        assertThat(newCap).isEqualTo(1)
+        compose.assertAccessible()
+        compose.writeScreenshot("caps-list")
+    }
+
+    @Test
+    @Config(qualifiers = "it-rIT-w393dp-h851dp-xxhdpi")
+    fun `as a list, in Italian`() {
+        draw(CapsSample.ui(CapsSample.underCaps + CapsSample.shopping, layout = CapsLayout.LIST))
+        compose.onNodeWithText("Nuovo tetto").assertIsDisplayed()
+        compose.writeScreenshot("caps-list-it")
+    }
+
+    @Test
+    fun `as a list, dark`() {
+        draw(CapsSample.ui(CapsSample.underCaps + CapsSample.shopping, layout = CapsLayout.LIST), dark = true)
+        compose.assertAccessible()
+        compose.writeScreenshot("caps-list-dark")
+    }
+
+    @Test
+    @Config(qualifiers = "en-rGB-w411dp-h891dp-xxhdpi", fontScale = 2f)
+    fun `as a list at twice the text size, nothing is cut`() {
+        draw(CapsSample.ui(CapsSample.underCaps + CapsSample.shopping, layout = CapsLayout.LIST))
+        compose.walkPage(hasTestTag(CapsTags.PAGE), "caps-list-large-text")
+    }
+
+    @Test
+    @Config(qualifiers = "en-rGB-w841dp-h701dp-xxhdpi")
+    fun `as a list on an open foldable, a centred column`() {
+        draw(CapsSample.ui(CapsSample.underCaps + CapsSample.shopping, layout = CapsLayout.LIST))
+        val page = compose.onNodeWithTag(CapsTags.PAGE).fetchSemanticsNode().boundsInRoot
+        val first = compose.onNodeWithTag(CapsTags.tile(1)).fetchSemanticsNode().boundsInRoot
+        assertThat((page.right - first.right)).isWithin(4f).of(first.left - page.left)
+        compose.walkPage(hasTestTag(CapsTags.PAGE), "caps-list-foldable")
     }
 
     @Test

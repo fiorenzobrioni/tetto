@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  A card whose drawing failed (WidgetFailure.kt): Tetto's words in the default dress, in place of
+  Glance's blank error box. The whole card opens the app; the next redraw draws the card again.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_failure"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_preview_card"
+    android:gravity="center_vertical"
+    android:orientation="vertical"
+    android:paddingHorizontal="14dp"
+    android:paddingVertical="6dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-medium"
+        android:maxLines="2"
+        android:text="@string/widget_failure_title"
+        android:textColor="@color/widget_preview_ink"
+        android:textSize="14sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLines="2"
+        android:text="@string/widget_unavailable_hint"
+        android:textColor="@color/widget_preview_ink_dim"
+        android:textSize="12sp" />
+</LinearLayout>

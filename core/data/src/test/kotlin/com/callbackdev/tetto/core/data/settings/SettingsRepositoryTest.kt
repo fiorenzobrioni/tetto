@@ -15,6 +15,7 @@ import com.callbackdev.tetto.core.model.AppFont
 import com.callbackdev.tetto.core.model.AppPalette
 import com.callbackdev.tetto.core.model.CapDraft
 import com.callbackdev.tetto.core.model.CapIcon
+import com.callbackdev.tetto.core.model.CapsLayout
 import com.callbackdev.tetto.core.model.PeriodKind
 import com.callbackdev.tetto.core.model.ThemeMode
 import com.callbackdev.tetto.core.model.UserSettings
@@ -116,6 +117,7 @@ class SettingsRepositoryTest {
         repository.setTheme(ThemeMode.DARK)
         repository.setPalette(AppPalette.PAPER)
         repository.setFont(AppFont.SYSTEM)
+        repository.setCapsLayout(CapsLayout.LIST)
         repository.setDynamicColor(true)
         repository.setReminder(true)
         repository.setReminderTime(LocalTime.of(21, 15))
@@ -132,6 +134,7 @@ class SettingsRepositoryTest {
                 theme = ThemeMode.DARK,
                 palette = AppPalette.PAPER,
                 font = AppFont.SYSTEM,
+                capsLayout = CapsLayout.LIST,
                 dynamicColor = true,
                 onboardingCompleted = true,
                 reminderOn = true,

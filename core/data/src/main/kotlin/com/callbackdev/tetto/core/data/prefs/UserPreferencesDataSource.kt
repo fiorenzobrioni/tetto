@@ -65,6 +65,7 @@ constructor(private val dataStore: DataStore<Preferences>) {
             theme = enumOr(prefs[Keys.THEME], defaults.theme),
             palette = enumOr(prefs[Keys.PALETTE], defaults.palette),
             font = enumOr(prefs[Keys.FONT], defaults.font),
+            capsLayout = enumOr(prefs[Keys.CAPS_LAYOUT], defaults.capsLayout),
             dynamicColor = prefs[Keys.DYNAMIC_COLOR] ?: defaults.dynamicColor,
             onboardingCompleted = prefs[Keys.ONBOARDING_COMPLETED] ?: defaults.onboardingCompleted,
             reminderOn = prefs[Keys.REMINDER_ON] ?: defaults.reminderOn,
@@ -82,6 +83,7 @@ constructor(private val dataStore: DataStore<Preferences>) {
         prefs.putOrRemove(Keys.THEME, settings.theme.name, defaults.theme.name)
         prefs.putOrRemove(Keys.PALETTE, settings.palette.name, defaults.palette.name)
         prefs.putOrRemove(Keys.FONT, settings.font.name, defaults.font.name)
+        prefs.putOrRemove(Keys.CAPS_LAYOUT, settings.capsLayout.name, defaults.capsLayout.name)
         prefs.putOrRemove(Keys.DYNAMIC_COLOR, settings.dynamicColor, defaults.dynamicColor)
         prefs.putOrRemove(Keys.ONBOARDING_COMPLETED, settings.onboardingCompleted, defaults.onboardingCompleted)
         prefs.putOrRemove(Keys.REMINDER_ON, settings.reminderOn, defaults.reminderOn)
@@ -119,6 +121,7 @@ constructor(private val dataStore: DataStore<Preferences>) {
         val THEME = stringPreferencesKey("theme")
         val PALETTE = stringPreferencesKey("palette")
         val FONT = stringPreferencesKey("font")
+        val CAPS_LAYOUT = stringPreferencesKey("caps_layout")
         val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val REMINDER_ON = booleanPreferencesKey("reminder_on")

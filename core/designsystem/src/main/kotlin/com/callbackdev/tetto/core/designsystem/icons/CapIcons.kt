@@ -45,6 +45,12 @@ private fun pathFor(icon: CapIcon): String = when (icon) {
     CapIcon.SUBSCRIPTIONS -> SymbolPaths.SUBSCRIPTIONS
     CapIcon.HOBBIES -> SymbolPaths.PALETTE
     CapIcon.EDUCATION -> SymbolPaths.SCHOOL
+    CapIcon.TAKEAWAY -> SymbolPaths.TAKEOUT_DINING
+    CapIcon.DRINKS -> SymbolPaths.LOCAL_BAR
+    CapIcon.GAMES -> SymbolPaths.SPORTS_ESPORTS
+    CapIcon.EVENTS -> SymbolPaths.LOCAL_ACTIVITY
+    CapIcon.BANK -> SymbolPaths.ACCOUNT_BALANCE
+    CapIcon.RENT -> SymbolPaths.APARTMENT
     CapIcon.OTHER -> SymbolPaths.CATEGORY
 }
 

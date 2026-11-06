@@ -180,7 +180,6 @@ internal fun TilesSample(sample: GuideSample, format: MoneyFormat) {
 
 @Composable
 private fun SampleTile(state: CapState, name: String, lastDay: String, format: MoneyFormat, modifier: Modifier) {
-    val left = stringResource(R.string.guide_sample_left, format.short(state.left))
     val pace = state.pace?.let { stringResource(R.string.guide_sample_pace, format.short(it)) }
     val reserve = state.cap.reserve.takeIf { it.isPositive }
     val description = listOfNotNull(
@@ -198,8 +197,8 @@ private fun SampleTile(state: CapState, name: String, lastDay: String, format: M
     CapTile(
         icon = state.cap.icon.symbol,
         name = name,
-        left = left,
-        leftValue = state.left.minor,
+        figure = format.short(state.left),
+        figureValue = state.left.minor,
         detail = stringResource(R.string.guide_sample_detail, format.short(state.cap.amount), lastDay),
         bar = state.bar,
         mark = state.todayMark,

@@ -73,6 +73,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.callbackdev.tetto.core.data.widget.HomeCard
+import com.callbackdev.tetto.core.designsystem.components.CapRow
 import com.callbackdev.tetto.core.designsystem.components.CapTile
 import com.callbackdev.tetto.core.designsystem.components.CurrencyPickerDialog
 import com.callbackdev.tetto.core.designsystem.components.DENSE_TARGETS_TAG
@@ -101,6 +102,7 @@ import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.AppFont
 import com.callbackdev.tetto.core.model.AppPalette
 import com.callbackdev.tetto.core.model.CapIcon
+import com.callbackdev.tetto.core.model.CapsLayout
 import com.callbackdev.tetto.core.model.DateRange
 import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.PeriodKind
@@ -187,6 +189,7 @@ fun SettingsRoute(
             setTheme = viewModel::setTheme,
             setPalette = viewModel::setPalette,
             setFont = viewModel::setFont,
+            setCapsLayout = viewModel::setCapsLayout,
             setDynamicColor = viewModel::setDynamicColor,
             // Turned on, the reminder asks for the permission where Android still lets it ask;
             // where it does not, the card over the group says so, and opens the page that fixes it.
@@ -222,6 +225,7 @@ class SettingsActions(
     val setTheme: (ThemeMode) -> Unit = {},
     val setPalette: (AppPalette) -> Unit = {},
     val setFont: (AppFont) -> Unit = {},
+    val setCapsLayout: (CapsLayout) -> Unit = {},
     val setDynamicColor: (Boolean) -> Unit = {},
     val setReminder: (Boolean) -> Unit = {},
     val setReminderTime: (LocalTime) -> Unit = {},
@@ -299,6 +303,7 @@ private enum class Dialog {
     THEME,
     PALETTE,
     FONT,
+    CAPS_LAYOUT,
     REMINDER_TIME,
 }
 
@@ -369,9 +374,16 @@ private fun SettingsList(
         }
 
         item { GroupHeader(stringResource(R.string.settings_group_appearance)) }
-        item { AppearancePreview(state.currency) }
+        item { AppearancePreview(state.currency, settings.capsLayout) }
         item {
             SettingsGroup {
+                ValueRow(
+                    label = stringResource(R.string.settings_caps_layout),
+                    value = capsLayoutLabel(settings.capsLayout),
+                    onClick = { dialog = Dialog.CAPS_LAYOUT },
+                    modifier = Modifier.testTag(SettingsTags.CAPS_LAYOUT),
+                )
+                GroupDivider()
                 ValueRow(
                     label = stringResource(R.string.settings_theme),
                     value = themeLabel(settings.theme),
@@ -561,6 +573,18 @@ private fun SettingsList(
             onSelect = { font ->
                 dialog = null
                 actions.setFont(font)
+            },
+            onDismiss = close,
+        )
+
+        Dialog.CAPS_LAYOUT -> RadioDialog(
+            title = stringResource(R.string.settings_caps_layout),
+            explanation = stringResource(R.string.settings_caps_layout_note),
+            options = CapsLayout.entries.map { it to capsLayoutLabel(it) },
+            selected = settings.capsLayout,
+            onSelect = { layout ->
+                dialog = null
+                actions.setCapsLayout(layout)
             },
             onDismiss = close,
         )
@@ -804,13 +828,13 @@ private fun DayChoice(number: String, selected: Boolean, modifier: Modifier, onC
 }
 
 /**
- * The appearance as the caps screen will wear it: two tiles, one under its cap in the accent and
- * one over it in the over ink, captioned as an example so no sample reads as the reader's money.
- * Every choice below changes it the moment it is made. A picture, silent to a screen reader: the
- * rows say every choice in words.
+ * The appearance as the caps screen will wear it: two caps, one under its cap in the accent and
+ * one over it in the over ink, as tiles or as rows ([layout]), captioned as an example so no
+ * sample reads as the reader's money. Every choice below changes it the moment it is made. A
+ * picture, silent to a screen reader: the rows say every choice in words.
  */
 @Composable
-private fun AppearancePreview(currency: AppCurrency) {
+private fun AppearancePreview(currency: AppCurrency, layout: CapsLayout) {
     val format = rememberMoneyFormat(currency)
     val unit = currency.unit.minor
     val oneColumn = LocalDensity.current.fontScale >= LARGE_TEXT
@@ -829,6 +853,25 @@ private fun AppearancePreview(currency: AppCurrency) {
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            if (layout == CapsLayout.LIST) {
+                PreviewRow(
+                    icon = CapIcon.COFFEE,
+                    name = stringResource(R.string.settings_preview_under_name),
+                    figure = format.short(Money(12 * unit)),
+                    detail = stringResource(R.string.settings_preview_detail, format.short(Money(20 * unit))),
+                    bar = Share(8, 20),
+                    over = false,
+                )
+                PreviewRow(
+                    icon = CapIcon.SHOPPING,
+                    name = stringResource(R.string.settings_preview_over_name),
+                    figure = format.short(Money(30 * unit)),
+                    detail = stringResource(R.string.settings_preview_detail_over, format.short(Money(100 * unit))),
+                    bar = Share(130, 100),
+                    over = true,
+                )
+                return@Column
+            }
             Row(
                 Modifier.fillMaxWidth().height(IntrinsicSize.Min),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -836,7 +879,7 @@ private fun AppearancePreview(currency: AppCurrency) {
                 PreviewTile(
                     icon = CapIcon.COFFEE,
                     name = stringResource(R.string.settings_preview_under_name),
-                    left = stringResource(R.string.settings_preview_left, format.short(Money(12 * unit))),
+                    figure = format.short(Money(12 * unit)),
                     detail = stringResource(R.string.settings_preview_detail, format.short(Money(20 * unit))),
                     bar = Share(8, 20),
                     over = false,
@@ -846,7 +889,7 @@ private fun AppearancePreview(currency: AppCurrency) {
                     PreviewTile(
                         icon = CapIcon.SHOPPING,
                         name = stringResource(R.string.settings_preview_over_name),
-                        left = stringResource(R.string.settings_preview_over, format.short(Money(30 * unit))),
+                        figure = format.short(Money(30 * unit)),
                         detail = stringResource(R.string.settings_preview_detail_over, format.short(Money(100 * unit))),
                         bar = Share(130, 100),
                         over = true,
@@ -862,7 +905,7 @@ private fun AppearancePreview(currency: AppCurrency) {
 private fun PreviewTile(
     icon: CapIcon,
     name: String,
-    left: String,
+    figure: String,
     detail: String,
     bar: Share,
     over: Boolean,
@@ -871,8 +914,8 @@ private fun PreviewTile(
     CapTile(
         icon = icon.symbol,
         name = name,
-        left = left,
-        leftValue = 0,
+        figure = figure,
+        figureValue = 0,
         detail = detail,
         bar = bar,
         mark = Share(4, 7),
@@ -884,6 +927,28 @@ private fun PreviewTile(
         onClick = {},
         onLongClick = {},
         modifier = modifier,
+        enabled = false,
+    )
+}
+
+@Composable
+private fun PreviewRow(icon: CapIcon, name: String, figure: String, detail: String, bar: Share, over: Boolean) {
+    CapRow(
+        icon = icon.symbol,
+        name = name,
+        figure = figure,
+        figureValue = 0,
+        detail = detail,
+        bar = bar,
+        mark = Share(4, 7),
+        over = over,
+        ahead = false,
+        description = "",
+        clickLabel = "",
+        longClickLabel = "",
+        onClick = {},
+        onLongClick = {},
+        modifier = Modifier.fillMaxWidth(),
         enabled = false,
     )
 }
@@ -982,6 +1047,12 @@ private fun paletteLabel(palette: AppPalette): String = when (palette) {
 }
 
 @Composable
+private fun capsLayoutLabel(layout: CapsLayout): String = when (layout) {
+    CapsLayout.TILES -> stringResource(R.string.settings_caps_layout_tiles)
+    CapsLayout.LIST -> stringResource(R.string.settings_caps_layout_list)
+}
+
+@Composable
 private fun fontLabel(font: AppFont): String = when (font) {
     AppFont.GOOGLE_SANS -> stringResource(R.string.settings_font_google_sans)
     AppFont.INTER -> stringResource(R.string.settings_font_inter)
@@ -1032,6 +1103,7 @@ object SettingsTags {
     const val MONTH_START = "settings_month_start"
     const val MONTH_DAYS = "settings_month_days"
     const val WEEK_START = "settings_week_start"
+    const val CAPS_LAYOUT = "settings_caps_layout"
     const val THEME = "settings_theme"
     const val DYNAMIC_COLOR = "settings_dynamic_color"
     const val PREVIEW = "settings_preview"

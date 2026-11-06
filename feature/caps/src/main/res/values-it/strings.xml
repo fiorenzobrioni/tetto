@@ -15,6 +15,7 @@
 
     <!-- La frase in cima: prima un tetto sforato, poi uno rinnovato oggi, poi tutti sotto. -->
     <string name="sentence_one_under">%1$s: ancora %2$s %3$s.</string>
+    <string name="sentence_nothing_spent">Tutti sotto il tetto.</string>
     <string name="sentence_all_under">Tutti sotto il tetto. Il più vicino è %1$s: ancora %2$s %3$s.</string>
     <string name="sentence_over_one">%1$s è sotto di %2$s. Riparte %3$s.</string>
     <plurals name="sentence_over_some">
@@ -79,6 +80,8 @@
     <string name="sheet_reserve">Riserva</string>
     <string name="sheet_spent">Speso</string>
     <string name="sheet_left">Residuo</string>
+    <string name="sheet_pace">Per restare sotto, al giorno</string>
+    <string name="sheet_pace_value">circa %s</string>
     <string name="sheet_over">Sotto di</string>
     <string name="sheet_spends">Le spese di questo periodo</string>
     <string name="sheet_no_spends">Ancora nessuna spesa in questo periodo.</string>

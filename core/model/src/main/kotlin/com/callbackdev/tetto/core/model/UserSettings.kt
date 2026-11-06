@@ -15,6 +15,7 @@ import java.time.LocalTime
  * @property theme light, dark, or the phone's.
  * @property palette the dress the app wears when it does not take the wallpaper's colours.
  * @property font the typeface.
+ * @property capsLayout the caps screen's tiles or list (owner, 6 Nov 2026).
  * @property dynamicColor Material's roles from the wallpaper instead of the dress.
  * @property onboardingCompleted the first run is over: the shell shows the caps screen.
  * @property reminderOn the evening reminder (PLANNING.md §8), off until the reader turns it on.
@@ -35,6 +36,7 @@ data class UserSettings(
     val theme: ThemeMode = ThemeMode.SYSTEM,
     val palette: AppPalette = AppPalette.VIVID,
     val font: AppFont = AppFont.GOOGLE_SANS,
+    val capsLayout: CapsLayout = CapsLayout.TILES,
     val dynamicColor: Boolean = false,
     val onboardingCompleted: Boolean = false,
     val reminderOn: Boolean = false,

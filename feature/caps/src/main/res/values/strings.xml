@@ -15,6 +15,7 @@
 
     <!-- The sentence on top (PLANNING.md §4.6): a cap over first, then one renewed today, then all under. -->
     <string name="sentence_one_under">%1$s: %2$s left %3$s.</string>
+    <string name="sentence_nothing_spent">All under your caps.</string>
     <string name="sentence_all_under">All under your caps. %1$s is the closest: %2$s left %3$s.</string>
     <string name="sentence_over_one">%1$s is %2$s over. It starts again %3$s.</string>
     <plurals name="sentence_over_some">
@@ -77,6 +78,8 @@
     <string name="sheet_reserve">Reserve</string>
     <string name="sheet_spent">Spent</string>
     <string name="sheet_left">Left</string>
+    <string name="sheet_pace">To stay under, a day</string>
+    <string name="sheet_pace_value">about %s</string>
     <string name="sheet_over">Over</string>
     <string name="sheet_spends">This period’s spends</string>
     <string name="sheet_no_spends">Nothing spent in this period yet.</string>

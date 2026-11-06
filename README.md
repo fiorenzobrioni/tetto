@@ -69,6 +69,7 @@ What 1.0 will do ([VISION.md](./VISION.md) has the full scope):
 - 👀 **What is left, first**: one sentence on top ("All under your caps. Restaurants is the
   closest: €12 left until 30 Nov."), then a tile per cap with what is left, the cap, its last
   day, and a bar with a mark for today, so you see at once whether spending runs ahead of the days.
+  With many caps, a list fits more of them on a screen: one shorter row per cap.
 - 🔢 **Two touches and the amount**: a numpad that shows what will be left before you add, and an
   undo after every change. Any spend of the current period can be corrected or deleted.
 - 🛟 **Kind by design**: what a period leaves over becomes a reserve (up to one period's cap); an
@@ -82,7 +83,8 @@ What 1.0 will do ([VISION.md](./VISION.md) has the full scope):
 - ⚡ **Launcher shortcuts**: a long press on the icon, and your first four caps go straight to the numpad.
 - 🌙 **An evening reminder**, if you want one, that stays quiet on a day you already added a spend.
 - 💾 **Your data**: a backup file to export and restore, a CSV, and everything erased in one place.
-- 🎨 **Appearance**: light or dark, two palettes, three typefaces, the same as the family's.
+- 🎨 **Appearance**: light or dark, two palettes, three typefaces, the same as the family's; the
+  caps as tiles or as a list.
 - 📖 **The guide**: what each part of the screen is for, the reserve and forgiveness shown with the
   app's own tiles and bars, in your currency; a tip on the first day leads there.
 - ♿ **For every reader**: TalkBack reads each cap as one sentence and every key of the numpad with

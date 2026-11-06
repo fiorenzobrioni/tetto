@@ -38,6 +38,10 @@
 
     <!-- L'aspetto, quello della famiglia. -->
     <string name="settings_group_appearance">Aspetto</string>
+    <string name="settings_caps_layout">Tetti</string>
+    <string name="settings_caps_layout_tiles">Schede</string>
+    <string name="settings_caps_layout_list">Elenco</string>
+    <string name="settings_caps_layout_note">Le schede, due per riga, mostrano anche quanto al giorno e la riserva di ogni tetto. L’elenco mette un tetto per riga, più bassa, così ne stanno di più sullo schermo: quanto al giorno e la riserva sono nel foglio del tetto.</string>
     <string name="settings_theme">Tema</string>
     <string name="settings_theme_system">Come il telefono</string>
     <string name="settings_theme_light">Chiaro</string>
@@ -57,8 +61,6 @@
     <string name="settings_preview_caption">Esempio</string>
     <string name="settings_preview_under_name">Caffè</string>
     <string name="settings_preview_over_name">Shopping</string>
-    <string name="settings_preview_left">ancora %s</string>
-    <string name="settings_preview_over">sotto di %s</string>
     <string name="settings_preview_detail">su %s · fino a domenica</string>
     <string name="settings_preview_detail_over">su %s · riparte lunedì</string>
 
