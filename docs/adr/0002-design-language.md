@@ -54,6 +54,24 @@ keeps one drawing of each thing in the family.
    plum, and **fuchsia to wine** (`FF9AD5` to `E0218A` to `7A0B4E`), the owner's choice (5 Nov
    2026). The monochrome layer restates the same shapes for themed icons. The
    first run shows no icon (the family's onboarding frame).
+
+   **Redrawn on 6 Nov 2026** (owner: the ring's colour and the roof's drawing did not convince).
+   The emblem is now **a house with a four-pane window**, at the same place: walls, a gable at
+   42°, a chimney on the right-hand slope, the window cut out of its front as the hands are cut
+   out of Tempo's clock face, its corners round (1.5 units), its edge at 31.6 of the safe circle's 33.
+   Among the sisters' filled, nearly round emblems the roof alone, as strokes or as a solid
+   slab, read as a caret; a house is as compact as they are, weighs what they weigh (213 square
+   units against their 211 to 222) and still reads at 36 px, and the window, where a door would
+   be, keeps it from reading as a launcher's home key. The ring is now **slate** (`A4C2DC` to
+   `58769D` to `273857`), chosen from nine rings drawn beside the sisters' marks (the owner set
+   the purples aside): nearly opposite the amber, so the house is the brightest thing in the
+   mark, and with the sisters' lightness (Oklab L 0.57 on average against their 0.56 to 0.66),
+   so the five marks weigh the same on a home screen. Its price, said with it: it is the
+   family's quietest ring, its hue is Tempo's and Chiaro's blue made grey, and under
+   deuteranopia it is close to Saldo's upper half (Saldo's two halves still set the two apart).
+   The status-bar icon is the house alone, its window cut out. The README's badges take the
+   ring's deep end, `273857`. The app shows its mark nowhere inside itself; the roof glyph of
+   the tip and the guide (`TettoIcons.Roof`) names a cap, not the app, and stays a roof.
 6. **Tests carried over**: `TypographyTest` (every Material role follows the typeface setting),
    `ContrastTest` (every text ink at 4.5:1 on every ground, in both dresses and themes),
    `PageWidthTest` (the column's gutter), and the shared UI checks of `:core:testing`

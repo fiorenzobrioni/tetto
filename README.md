@@ -8,14 +8,14 @@ A private, instant Android budget: a cap for each thing you spend on, each with 
 what is left said first, and a spend added in two touches and the amount, in the app or from the
 home screen. Free, no account, no ads, no tracking, and no permission to use the internet at all.
 
-![Platform](https://img.shields.io/badge/platform-Android-7A0B4E?labelColor=FCFAF6)
-![Release](https://img.shields.io/github/v/release/fiorenzobrioni/tetto?label=release&labelColor=FCFAF6&color=7A0B4E)
-![CI](https://img.shields.io/github/actions/workflow/status/fiorenzobrioni/tetto/android-ci.yml?branch=main&label=CI&labelColor=FCFAF6&color=7A0B4E)
+![Platform](https://img.shields.io/badge/platform-Android-273857?labelColor=FCFAF6)
+![Release](https://img.shields.io/github/v/release/fiorenzobrioni/tetto?label=release&labelColor=FCFAF6&color=273857)
+![CI](https://img.shields.io/github/actions/workflow/status/fiorenzobrioni/tetto/android-ci.yml?branch=main&label=CI&labelColor=FCFAF6&color=273857)
 ![License](https://img.shields.io/badge/license-GPL--3.0-007DB6?labelColor=FCFAF6)
 ![minSdk](https://img.shields.io/badge/minSdk-34-70569C?labelColor=FCFAF6)
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.4-F1A000?labelColor=FCFAF6)
 ![Compose](https://img.shields.io/badge/UI-Compose%20Material%203-007DB6?labelColor=FCFAF6)
-![Internet](https://img.shields.io/badge/INTERNET%20permission-none-7A0B4E?labelColor=FCFAF6)
+![Internet](https://img.shields.io/badge/INTERNET%20permission-none-273857?labelColor=FCFAF6)
 
 [**⬇️ Download the latest release**](https://github.com/fiorenzobrioni/tetto/releases/latest)
 

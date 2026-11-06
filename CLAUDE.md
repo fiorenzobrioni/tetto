@@ -188,10 +188,12 @@ figures; the hero size is kept for one number per screen. The semantic inks are 
 (spending ahead of the days) and, only if a phase needs it, one for over, each with its contrast
 test. Icons are `TettoIcons`, drawn in code: the cap palette is a curated set of Material
 Symbols (Apache-2.0, credited in `licenses/`), never the whole library. The launcher icon (the
-family's ring in fuchsia to wine, cut by Tetto's amber roof at the lower right, Saldo's place:
-owner, 5 Nov 2026) and the reminder's status-bar icon (the roof alone, `ic_stat_tetto`) are
-written by `tools/draw_launcher_icon.py`: change the script and re-run it, never the XML. The
-first run shows no icon (the family's onboarding frame).
+family's ring in slate, cut by Tetto's amber house with a four-pane window at the lower right,
+Saldo's place: owner, 5 and 6 Nov 2026) and the reminder's status-bar icon (the house alone,
+`ic_stat_tetto`) are written by `tools/draw_launcher_icon.py`: change the script and re-run it,
+never the XML. The app shows its mark nowhere inside itself: the first run shows no icon (the
+family's onboarding frame), and the roof glyph (`TettoIcons.Roof`, the tip and the guide) names a
+cap, not the app, so it stays a roof.
 
 **The guide** (Phase 6) is in the family's shape and style (owner, 5 Nov 2026), from Tempo's
 `GuideScreen`: its card first in Settings, a first-day tip on the caps screen, short chapters.

@@ -212,8 +212,10 @@ object TettoIcons {
     }
 
     /**
-     * The mark's roof: two slopes from the ridge and a chimney standing on the right one, the
-     * status-bar icon's centrelines at the line icons' weight. A cap, where a glyph names caps.
+     * A roof: two slopes from the ridge and a chimney standing on the right one, at the line
+     * icons' weight. A cap, where a glyph names caps (the caps screen's tip, the guide's chapter
+     * on it): a cap is a tetto, a roof. It stays a roof while the app's mark is a house (owner,
+     * 6 Nov 2026): it names a cap, not the app.
      */
     val Roof: ImageVector by lazy {
         icon("roof") {
