@@ -27,7 +27,7 @@
     <string name="guide_period_reserve_title">The reserve</string>
     <string name="guide_period_reserve_body">What a period leaves over goes to the cap’s reserve, up to one period’s cap, so a few quiet weeks never turn a cap into a budget of its own. The reserve counts in what is left, and its chip on the tile says how much there is.</string>
     <string name="guide_period_forgiven_title">Forgiveness</string>
-    <string name="guide_period_forgiven_body">An overspend takes from the reserve first. What the reserve cannot cover is forgiven when the period ends: the next period starts at its full cap, never in debt. A bad week stays one bad week.</string>
+    <string name="guide_period_forgiven_body">An overspend takes from the reserve first. What the reserve cannot cover is forgiven when the period ends: the next period starts at its full cap, never in debt. A bad week stays one bad week. The day a period starts again, the sentence on top says how the last one ended: forgiven, covered by the reserve, or what it left to it.</string>
     <string name="guide_period_calendar_title">Your weeks and months</string>
     <string name="guide_period_calendar_body">A week starts on your phone’s first day of the week, a month on the 1st, a year on that day of January. Both can change in Settings: a month from the 27th, say, for a salary paid on the 27th.</string>
     <string name="guide_period_change_title">Changing a cap</string>
@@ -46,7 +46,7 @@
     <string name="guide_numpad_undo_title">Undo, and later too</string>
     <string name="guide_numpad_undo_body">After a spend is added, the figure rolls to its new value and a message offers to undo it, for as long as your phone’s accessibility settings ask. A wrong amount noticed later can still be fixed: every spend of the period under way is in the cap’s sheet, to correct or to delete.</string>
     <string name="guide_numpad_sheet_title">A cap’s sheet</string>
-    <string name="guide_numpad_sheet_body">Behind the arrow by a cap’s name, or a long press on its tile: this period’s figures as a receipt, its spends with the day and time of each, the last periods in one line each, and the cap itself, to change or delete. Clearing the reserve there starts a cap afresh.</string>
+    <string name="guide_numpad_sheet_body">Behind the arrow by a cap’s name, or a long press on its tile: this period’s figures as a receipt, its spends with the day and time of each, a refund for money that comes back (a return, a friend’s share), the last periods in one line each, and the cap itself, to change or delete. A refund gives back at most what the period spent. Clearing the reserve there starts a cap afresh.</string>
     <string name="guide_numpad_keys_title">Keys like your keyboard</string>
     <string name="guide_numpad_keys_body">The decimal key is your language’s, and a currency without cents has none. Each key ticks as your phone’s keyboard does; your phone’s own touch feedback setting turns it off.</string>
 

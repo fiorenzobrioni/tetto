@@ -78,9 +78,7 @@ constructor(
 
     /** The amounts the open numpad offers, one touch each; none while it corrects a spend. */
     val numpadAmounts: StateFlow<List<Money>> = numpadTarget.flatMapLatest { target ->
-        if (target == null ||
-            target.correcting != null
-        ) {
+        if (target == null || target.correcting != null || target.refund) {
             flowOf(emptyList())
         } else {
             caps.observeRecentAmounts(target.capId)
@@ -103,6 +101,11 @@ constructor(
         numpadTarget.value = NumpadTarget(capId, correcting)
     }
 
+    /** The numpad, for money back on the cap [capId] (owner, 6 Nov 2026). */
+    fun openRefund(capId: Long) {
+        numpadTarget.value = NumpadTarget(capId, refund = true)
+    }
+
     fun closeNumpad() {
         numpadTarget.value = null
     }
@@ -113,7 +116,16 @@ constructor(
         // keyboard) arrives after the first has closed it, and must not add the spend again.
         if (!numpadTarget.compareAndSet(target, null)) return
         val correcting = target.correcting
-        if (correcting == null) addSpend(target.capId, amount) else correctSpend(correcting, amount)
+        when {
+            correcting != null -> correctSpend(correcting, amount)
+            target.refund -> addRefund(target.capId, amount)
+            else -> addSpend(target.capId, amount)
+        }
+    }
+
+    private fun addRefund(capId: Long, amount: Money) = launch {
+        val refund = caps.addRefund(capId, amount) ?: return@launch
+        noticeChannel.send(CapsNotice.Added(refund, nameOf(capId)))
     }
 
     private fun addSpend(capId: Long, amount: Money) = launch {

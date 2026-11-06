@@ -51,4 +51,11 @@ class RescaleTest {
         assertThat(Rescale.typed(Money(1_000_000_000_00), fromDigits = 2, toDigits = 2))
             .isEqualTo(Money(1_000_000_000_00))
     }
+
+    @Test
+    fun `a refund rescales as its size does`() {
+        assertThat(Rescale.amount(Money(-1250), fromDigits = 2, toDigits = 0)).isEqualTo(Money(-13))
+        assertThat(Rescale.amount(Money(-40), fromDigits = 2, toDigits = 0)).isEqualTo(Money(-1))
+        assertThat(Rescale.typed(Money(-999_999_999_500), fromDigits = 3, toDigits = 0)).isEqualTo(Money(-999_999_999))
+    }
 }

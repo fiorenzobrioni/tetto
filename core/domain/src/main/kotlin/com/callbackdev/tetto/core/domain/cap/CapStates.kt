@@ -4,6 +4,7 @@ import com.callbackdev.tetto.core.domain.period.PeriodCalendar
 import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.Cap
 import com.callbackdev.tetto.core.model.CapState
+import com.callbackdev.tetto.core.model.ClosedPeriod
 import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.PeriodKind
 import com.callbackdev.tetto.core.model.PeriodRule
@@ -35,6 +36,7 @@ object CapStates {
         today: LocalDate,
         currency: AppCurrency,
         lastClosedEnd: LocalDate? = null,
+        lastClosed: ClosedPeriod? = null,
     ): CapState {
         val period = PeriodCalendar.openPeriod(cap.openStart, rule)
         val length = period.length
@@ -61,6 +63,7 @@ object CapStates {
             null
         }
 
+        val renewedToday = lastClosedEnd == today && period.start == today
         return CapState(
             cap = cap,
             period = period,
@@ -71,7 +74,8 @@ object CapStates {
             todayMark = todayMark,
             aheadOfDays = aheadOfDays,
             pace = pace,
-            renewedToday = lastClosedEnd == today && period.start == today,
+            renewedToday = renewedToday,
+            renewal = lastClosed?.takeIf { renewedToday && it.range.endExclusive == today }?.let(Renewals::of),
         )
     }
 

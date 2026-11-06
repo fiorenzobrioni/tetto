@@ -20,6 +20,8 @@ import java.math.RoundingMode
 object Rescale {
     fun amount(amount: Money, fromDigits: Int, toDigits: Int): Money {
         if (fromDigits == toDigits) return amount
+        // A refund is stored below zero: rescaled as its size is, so it rounds as a spend does.
+        if (amount.isNegative) return -amount(-amount, fromDigits, toDigits)
         val rescaled = BigDecimal.valueOf(amount.minor)
             .movePointLeft(fromDigits)
             .setScale(toDigits, RoundingMode.HALF_UP)
@@ -34,6 +36,7 @@ object Rescale {
      */
     fun typed(amount: Money, fromDigits: Int, toDigits: Int): Money {
         if (fromDigits == toDigits) return amount
+        if (amount.isNegative) return -typed(-amount, fromDigits, toDigits)
         return minOf(amount(amount, fromDigits, toDigits), Money(MoneyInput.largestMinor(toDigits)))
     }
 }

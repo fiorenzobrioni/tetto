@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -95,6 +96,7 @@ class CapSheetActions(
     val onClearReserve: () -> Unit,
     val onEdit: () -> Unit,
     val onDeleteCap: () -> Unit,
+    val onRefund: () -> Unit = {},
 )
 
 @Composable
@@ -179,6 +181,17 @@ internal fun CapSheetContent(
                 }
             }
         }
+        // Money back (owner, 6 Nov 2026): only where something was spent to give back.
+        if (state.spent.isPositive) {
+            TextButton(
+                onClick = actions.onRefund,
+                modifier = Modifier.padding(horizontal = ScreenMargin - 12.dp).padding(top = 4.dp),
+            ) {
+                Icon(TettoIcons.Renew, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.sheet_refund))
+            }
+        }
 
         if (data.lines.isNotEmpty()) {
             GroupHeader(stringResource(R.string.sheet_last_periods))
@@ -252,11 +265,25 @@ private fun SpendRow(spend: Spend, figure: (Money) -> String, actions: CapSheetA
                 .testTag(CapsTags.spend(spend.id)),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                figure(spend.amount),
-                style = MaterialTheme.typography.bodyLarge.tabular(),
-                modifier = Modifier.weight(1f),
-            )
+            Column(Modifier.weight(1f)) {
+                // A refund reads as money back: its size after a minus, and the word under it.
+                Text(
+                    if (spend.refund) MINUS + figure(spend.size) else figure(spend.size),
+                    style = MaterialTheme.typography.bodyLarge.tabular(),
+                    color = if (spend.refund) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
+                )
+                if (spend.refund) {
+                    Text(
+                        stringResource(R.string.spend_refund),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
             Text(
                 momentWords(spend.addedAt),
                 style = MaterialTheme.typography.bodyMedium,

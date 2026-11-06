@@ -15,10 +15,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.callbackdev.tetto.core.designsystem.format.rememberMoneyFormat
 import com.callbackdev.tetto.core.designsystem.theme.TettoTheme
 import com.callbackdev.tetto.core.model.CapState
+import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.Spend
 import com.callbackdev.tetto.core.testing.assertAccessible
 import com.callbackdev.tetto.core.testing.walkPage
 import com.callbackdev.tetto.core.testing.writeScreenshot
+import com.callbackdev.tetto.feature.caps.CapsSample.euros
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -38,6 +40,7 @@ class CapSheetTest {
     private var cleared = 0
     private var edited = 0
     private var deletedCap = 0
+    private var refunds = 0
 
     private fun draw(
         state: CapState = CapsSample.coffee,
@@ -67,6 +70,7 @@ class CapSheetTest {
                         onClearReserve = { cleared++ },
                         onEdit = { edited++ },
                         onDeleteCap = { deletedCap++ },
+                        onRefund = { refunds++ },
                     ),
                 )
             }
@@ -118,6 +122,24 @@ class CapSheetTest {
         compose.onNodeWithTag(
             CapsTags.RECEIPT,
         ).assertContentDescriptionEquals("€300.00 cap, less €96.40 spent: €203.60 left")
+    }
+
+    @Test
+    fun `a refund reads as money back, and the sheet offers one where something was spent`() {
+        val refund = CapsSample.coffeeSpends[0].copy(id = 9, amount = -euros(1, 50))
+        draw(spends = listOf(refund) + CapsSample.coffeeSpends)
+        compose.onNodeWithText("\u2212€1.50").assertExists()
+        compose.onNodeWithText("Refund").assertExists()
+        compose.onNodeWithText("Add a refund").performScrollTo().performClick()
+        assertThat(refunds).isEqualTo(1)
+        compose.assertAccessible()
+        compose.writeScreenshot("cap-sheet-refund")
+    }
+
+    @Test
+    fun `nothing spent, no refund offered`() {
+        draw(state = CapsSample.groceries.copy(spent = Money.ZERO), spends = emptyList())
+        compose.onNodeWithText("Add a refund").assertDoesNotExist()
     }
 
     @Test

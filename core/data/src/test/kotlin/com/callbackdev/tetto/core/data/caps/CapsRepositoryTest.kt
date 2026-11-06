@@ -23,6 +23,7 @@ import com.callbackdev.tetto.core.model.PeriodKind.DAY
 import com.callbackdev.tetto.core.model.PeriodKind.MONTH
 import com.callbackdev.tetto.core.model.PeriodKind.WEEK
 import com.callbackdev.tetto.core.model.PeriodKind.YEAR
+import com.callbackdev.tetto.core.model.Renewal
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -458,6 +459,54 @@ class CapsRepositoryTest {
         spend(coffee, euros(1, 50))
         // Yesterday's spend counts though its period has closed; the other cap's does not.
         assertThat(repository.recentAmounts(coffee)).containsExactly(euros(1, 20), euros(1, 50)).inOrder()
+    }
+
+    @Test
+    fun `a refund lowers what the period spent, never below nothing`() = runTest {
+        val shoes = repository.addCap("Clothes", COFFEE, euros(100), MONTH)
+        spend(shoes, euros(60))
+        // More than this period spent is refused: no money that was never spent.
+        assertThat(repository.addRefund(shoes, euros(61))).isNull()
+        val refund = checkNotNull(repository.addRefund(shoes, euros(25)))
+        assertThat(refund.refund).isTrue()
+        assertThat(refund.size).isEqualTo(euros(25))
+        assertThat(repository.currentStates().single().spent).isEqualTo(euros(35))
+        assertThat(repository.currentStates().single().left).isEqualTo(euros(65))
+
+        // A correction keeps it a refund.
+        assertThat(repository.editSpend(refund.id, euros(30))).isEqualTo(euros(25))
+        assertThat(repository.currentStates().single().spent).isEqualTo(euros(30))
+
+        // Its spend deleted after it, the period spent nothing, not less.
+        repository.deleteSpend(repository.openSpends(shoes).single { !it.refund }.id)
+        assertThat(repository.currentStates().single().spent).isEqualTo(Money.ZERO)
+        assertThat(repository.currentStates().single().left).isEqualTo(euros(100))
+    }
+
+    @Test
+    fun `a refund is undone by its id, and the month counts it off`() = runTest {
+        val shoes = repository.addCap("Clothes", COFFEE, euros(100), MONTH)
+        spend(shoes, euros(60))
+        val refund = checkNotNull(repository.addRefund(shoes, euros(20)))
+        assertThat(repository.currentMonth().added).isEqualTo(euros(40))
+        assertThat(repository.undoAdd(refund)).isTrue()
+        assertThat(repository.currentStates().single().spent).isEqualTo(euros(60))
+    }
+
+    @Test
+    fun `the day a week renews, it says how the last one ended`() = runTest {
+        clock.at("2026-10-27T09:00")
+        repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        repository.addCap("Shopping", GROCERIES, euros(50), WEEK)
+        val (coffee, shopping) = repository.currentStates().map { it.cap.id }
+        spend(coffee, euros(16))
+        spend(shopping, euros(58))
+        clock.at("2026-11-02T08:00")
+        val (coffeeState, shoppingState) = repository.currentStates()
+        assertThat(coffeeState.renewal).isEqualTo(Renewal(Renewal.Kind.SAVED, euros(4)))
+        assertThat(shoppingState.renewal).isEqualTo(Renewal(Renewal.Kind.FORGIVEN, euros(8)))
+        clock.at("2026-11-03T08:00")
+        assertThat(repository.currentStates().map { it.renewal }).containsExactly(null, null)
     }
 
     @Test

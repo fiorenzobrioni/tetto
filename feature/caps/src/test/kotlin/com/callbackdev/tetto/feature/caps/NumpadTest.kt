@@ -53,12 +53,13 @@ class NumpadTest {
         correcting: Money? = null,
         dark: Boolean = false,
         amounts: List<Money> = emptyList(),
+        refund: Boolean = false,
     ) {
         compose.setContent {
             TettoTheme(darkTheme = dark) {
                 Numpad(state, currency, onConfirm = {
                     confirmed += it
-                }, onOpenCap = { openedCap++ }, correcting = correcting, amounts = amounts)
+                }, onOpenCap = { openedCap++ }, correcting = correcting, amounts = amounts, refund = refund)
             }
         }
     }
@@ -100,6 +101,26 @@ class NumpadTest {
         compose.onNodeWithContentDescription("Add €1.20").assertDoesNotExist()
         // The keys stay where the finger found them.
         assertThat(compose.onNodeWithText("1").fetchSemanticsNode().boundsInRoot).isEqualTo(keysBefore)
+    }
+
+    @Test
+    fun `a refund grows what is left, and gives back at most what was spent`() {
+        // Coffee: €8 spent, €16 left.
+        draw(refund = true, amounts = listOf(euros(1, 20)))
+        compose.onNodeWithText("A refund · €8.00 spent this period").assertExists()
+        compose.onNodeWithContentDescription("Add €1.20").assertDoesNotExist()
+        compose.onNodeWithTag(CapsTags.CONFIRM).assertIsNotEnabled().assertTextEquals("Refund")
+        type("3")
+        preview().assertTextEquals("€19 left")
+        compose.onNodeWithTag(CapsTags.CONFIRM).assertIsEnabled().assertTextEquals("Refund €3.00")
+        compose.assertAccessible()
+        compose.writeScreenshot("numpad-refund")
+        type("0")
+        preview().assertTextEquals("At most €8.00, what this period spent")
+        compose.onNodeWithTag(CapsTags.CONFIRM).assertIsNotEnabled().assertTextEquals("Refund")
+        compose.onNodeWithContentDescription("Delete").performClick()
+        compose.onNodeWithTag(CapsTags.CONFIRM).performClick()
+        assertThat(confirmed).containsExactly(euros(3))
     }
 
     @Test

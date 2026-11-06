@@ -134,7 +134,11 @@ a ledger** (history screens, statistics, accounts, income). Its speed comes from
   mode.
 - **Live while visible**: a page open across midnight closes the periods that end and starts the
   new ones, without a restart.
-- **States**: no cap yet (one line and "New cap"), every cap over, a cap just renewed.
+- **States**: no cap yet (one line and "New cap"), every cap over, a cap just renewed. The day
+  a cap renews, the sentence says how its last period ended, forgiveness first: "Shopping starts
+  again today: €100 until 30 Nov. It was €30 over: forgiven, a clean start."; or that the reserve
+  covered an overspend, or what went to the reserve, or that it was full (owner, 6 Nov 2026). The
+  moment Tetto is kind is said when it happens, not left to a line in the cap's sheet.
 - **No total of the caps.** Caps with different periods do not add up; a sum of a weekly and a
   yearly cap would mean nothing, and a sum of what is left would undo the envelopes.
 - **Your month**, last on the page, under the caps (owner, 6 Nov 2026): what was added to the
@@ -175,6 +179,11 @@ a ledger** (history screens, statistics, accounts, income). Its speed comes from
 - **This period's spends**, newest first (amount, day and time). A touch edits the amount, a
   swipe deletes it, with undo. Spends of closed periods cannot be changed: a closed period is
   frozen, so the reserve never changes behind the reader's back.
+- **A refund** (owner, 6 Nov 2026): money that comes back (a return, a friend's share), from
+  "Add a refund" under the spends, shown only where something was spent. The numpad says so in
+  its header and its button ("Refund €4.00"); a refund gives back at most what the period spent,
+  so a period never spends less than nothing, and is listed as "−€4.00, Refund", correctable and
+  deletable as a spend is.
 - **The last periods, one line each**, the reserve's story: "Week of 20 Oct: €18 of €20, +€2 to
   the reserve"; "October: €230 of €200, €30 forgiven". Not a history to browse: the few lines
   that explain the chip.
@@ -294,14 +303,23 @@ sisters' «At a glance» and «In words»:
 - An app lock or PIN in v1 (a later idea); Wear OS; a tablet layout beyond the family's centred
   column; ads, analytics, crash reporting over the network.
 
+### After 1.0: approved, to build (owner, 6 Nov 2026)
+
+- A one-off cap that does not renew ("Lisbon trip: €800"), with its dates: no reserve, no
+  renewal, a closed line at its end.
+- Hiding the amounts on a home-screen card (bars and words stay), and an app lock with the
+  system's biometric prompt, no new dependency.
+- An automatic backup into a folder the reader picks once (the Storage Access Framework, no
+  permission): written when Tetto is opened and the last one is a week old, never in the
+  background.
+
 ### Possible post-1.0 ideas (not committed)
 
-- A one-off cap that does not renew ("Lisbon trip: €800"), with an end date.
-- A refund (a negative spend), from the cap's sheet.
-- Pausing a cap (holidays) without its reserve growing.
-- A Quick Settings tile that opens the numpad on a chosen cap.
-- An app lock (PIN and biometrics) and hiding the amounts on the widgets.
-- A period of two weeks, for a fortnightly pay.
+- A period of two weeks, for a fortnightly pay (to evaluate: common in the US, the UK and Canada,
+  rare in Italy).
+- Pausing a cap (holidays) without its reserve growing; a Quick Settings tile that opens the
+  numpad on a chosen cap. Both advised against in the review of 6 Nov 2026: the reserve's limit
+  already bounds a holiday, and the tile is a third door to what the cards and shortcuts open.
 - Publication on Google Play.
 
 ## From the concept to this vision

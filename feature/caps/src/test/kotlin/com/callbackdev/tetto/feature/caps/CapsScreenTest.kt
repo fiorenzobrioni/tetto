@@ -23,6 +23,7 @@ import com.callbackdev.tetto.core.model.CapIcon
 import com.callbackdev.tetto.core.model.CapsLayout
 import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.PeriodKind
+import com.callbackdev.tetto.core.model.Renewal
 import com.callbackdev.tetto.core.testing.assertAccessible
 import com.callbackdev.tetto.core.testing.walkPage
 import com.callbackdev.tetto.core.testing.writeScreenshot
@@ -233,6 +234,49 @@ class CapsScreenTest {
         ).let { it.copy(renewedToday = true) }
         draw(CapsSample.ui(listOf(CapsSample.coffee, renewed)))
         compose.onNodeWithText("Books starts again today: €30 until 30 Nov.").assertIsDisplayed()
+    }
+
+    @Test
+    fun `the day a cap renews, it says how the last period ended, forgiveness first`() {
+        fun renewed(renewal: Renewal) = CapsSample.ui(
+            listOf(
+                CapsSample.coffee,
+                CapsSample.state(7, "Books", CapIcon.BOOKS, euros(30), PeriodKind.MONTH, Money.ZERO)
+                    .copy(renewedToday = true, renewal = renewal),
+            ),
+        )
+        val start = "Books starts again today: €30 until 30 Nov"
+        val said = listOf(
+            Renewal(Renewal.Kind.FORGIVEN, euros(12)) to "$start. It was €12 over: forgiven, a clean start.",
+            Renewal(Renewal.Kind.COVERED, euros(5)) to "$start. The reserve covered €5 over.",
+            Renewal(Renewal.Kind.SAVED, euros(4)) to "$start, with €4 more in reserve.",
+            Renewal(Renewal.Kind.RESERVE_FULL, euros(30)) to "$start, with its reserve full.",
+            Renewal(Renewal.Kind.EVEN, euros(30)) to "$start.",
+        )
+        var shown by mutableStateOf(renewed(said.first().first))
+        compose.setContent {
+            TettoTheme {
+                CapsScreen(
+                    state = shown,
+                    onAddSpend = {},
+                    onOpenCap = {},
+                    onNewCap = {},
+                    onChangeOrder = {},
+                    onOpenSettings = {},
+                    onOpenGuide = {},
+                    onDismissTip = {},
+                )
+            }
+        }
+        for ((renewal, words) in said) {
+            shown = renewed(renewal)
+            compose.waitForIdle()
+            // The sentence keeps a date's words together with a no-break space: read it plain.
+            val text = compose.onNodeWithText("Books starts again today", substring = true)
+                .fetchSemanticsNode().config[SemanticsProperties.Text].joinToString { it.text }
+            assertThat(text.replace('\u00A0', ' ')).isEqualTo(words)
+            if (renewal.kind == Renewal.Kind.FORGIVEN) compose.writeScreenshot("caps-renewed-forgiven")
+        }
     }
 
     @Test

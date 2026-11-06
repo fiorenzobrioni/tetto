@@ -139,7 +139,8 @@ class BackupCodecTest {
             edited("\"period\": \"WEEK\"", "\"period\": \"FORTNIGHT\""),
             edited("\"openStart\": \"2026-11-02\"", "\"openStart\": \"2 Nov\""),
             edited("\"amount\": 2000", "\"amount\": 0"),
-            edited("\"amount\": 130", "\"amount\": -130"),
+            // A spend of nothing (below zero is a refund, and reads).
+            edited("\"amount\": 130", "\"amount\": 0"),
             edited("\"reserve\": 400", "\"reserve\": -400"),
             edited("\"name\": \"Coffee\"", "\"name\": \"  \""),
             edited("\"monthStartDay\": 27", "\"monthStartDay\": 32"),
@@ -221,5 +222,16 @@ class BackupCodecTest {
     @Test
     fun `the file name is dated`() {
         assertThat(BackupCodec.fileName(LocalDate.of(2026, 11, 5))).isEqualTo("tetto-backup-2026-11-05.json")
+    }
+
+    @Test
+    fun `a refund travels, a spend of nothing does not`() {
+        val backup = sampleBackup()
+        val coffee = backup.caps[0]
+        val refund = coffee.spends[2].copy(amount = -euros(1, 30))
+        val withRefund = backup.copy(caps = listOf(coffee.copy(spends = coffee.spends.dropLast(1) + refund)))
+        assertThat(ok(BackupCodec.encode(withRefund)).caps[0].spends.last().amount).isEqualTo(-euros(1, 30))
+        val nothing = backup.copy(caps = listOf(coffee.copy(spends = listOf(refund.copy(amount = Money.ZERO)))))
+        assertThat(BackupCodec.decode(BackupCodec.encode(nothing))).isEqualTo(BackupRead.Damaged)
     }
 }

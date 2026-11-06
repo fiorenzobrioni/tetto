@@ -17,6 +17,7 @@ import com.callbackdev.tetto.core.model.ClosedPeriod
 import com.callbackdev.tetto.core.model.DateRange
 import com.callbackdev.tetto.core.model.NearDay
 import com.callbackdev.tetto.core.model.PeriodKind
+import com.callbackdev.tetto.core.model.Renewal
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -94,11 +95,22 @@ internal fun sentenceWords(sentence: CapsSentence, format: MoneyFormat, today: L
     is CapsSentence.Renewed -> {
         val first = sentence.first
         if (sentence.others == 0) {
+            // How the period that ended went, said the day it happens (owner, 6 Nov 2026):
+            // forgiveness above all, the moment Tetto is kind.
+            val renewal = first.renewal
+            val words = when (renewal?.kind) {
+                Renewal.Kind.FORGIVEN -> R.string.sentence_renewed_forgiven
+                Renewal.Kind.COVERED -> R.string.sentence_renewed_covered
+                Renewal.Kind.SAVED -> R.string.sentence_renewed_saved
+                Renewal.Kind.RESERVE_FULL -> R.string.sentence_renewed_full
+                Renewal.Kind.EVEN, null -> R.string.sentence_renewed_one
+            }
             stringResource(
-                R.string.sentence_renewed_one,
+                words,
                 first.cap.name,
                 format.short(first.left),
                 untilWords(first.lastDay, today),
+                format.short(renewal?.amount ?: first.left),
             )
         } else {
             pluralStringResource(R.plurals.sentence_renewed_some, sentence.others, first.cap.name, sentence.others)

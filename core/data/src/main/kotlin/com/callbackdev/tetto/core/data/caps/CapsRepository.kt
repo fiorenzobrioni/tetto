@@ -149,9 +149,10 @@ constructor(
         )
     }
 
+    /** What was added between the range's first instants, refunds taken off, never below nothing. */
     private suspend fun added(range: DateRange, zone: ZoneId): Money {
         val (from, until) = Days.instantsOf(range, zone)
-        return Money(dao.addedBetween(from.toEpochMilli(), until.toEpochMilli()))
+        return Money(maxOf(0, dao.addedBetween(from.toEpochMilli(), until.toEpochMilli())))
     }
 
     /** The caps' states once, for a card's render, the reminder, the numpad over the home screen. */
@@ -167,6 +168,10 @@ constructor(
                 today = today,
                 currency = currency,
                 lastClosedEnd = row.lastClosedEnd?.let(LocalDate::ofEpochDay),
+                // Read only on the day a period renews: the line the sentence speaks of.
+                lastClosed = row.lastClosedEnd
+                    ?.takeIf { it == today.toEpochDay() }
+                    ?.let { dao.closedEnding(cap.id, it)?.toModel() },
             )
         }
     }
@@ -231,15 +236,37 @@ constructor(
     }
 
     /**
-     * Corrects the amount of the spend [spendId]; the amount it had, for Undo, or null when it is
-     * gone or its period has closed.
+     * Adds a refund of [amount] to the cap [capId], now, in its open period (§4.3; owner, 6 Nov
+     * 2026): money back, stored as a spend below zero. At most what the open period spent, so a
+     * period never spends less than nothing; the refund added, for Undo, or null when the cap is
+     * gone or the amount is past what was spent.
+     */
+    suspend fun addRefund(capId: Long, amount: Money): Spend? {
+        require(amount.isPositive) { "A refund is an amount above zero" }
+        return afterCatchUp { _, moment ->
+            val cap = dao.cap(capId) ?: return@afterCatchUp null
+            val spent = dao.spentBefore(cap.id, cap.openStart, Long.MAX_VALUE)
+            if (amount.minor > spent) return@afterCatchUp null
+            val refund = SpendEntity(
+                capId = capId,
+                amount = -amount.minor,
+                addedAt = moment.now.toEpochMilli(),
+                periodStart = cap.openStart,
+            )
+            refund.copy(id = dao.insertSpend(refund)).toModel()
+        }
+    }
+
+    /**
+     * Corrects the spend [spendId] to [amount], as the reader typed it, above zero: a refund stays
+     * a refund. The amount it had, for Undo, or null when it is gone or its period has closed.
      */
     suspend fun editSpend(spendId: Long, amount: Money): Money? {
         require(amount.isPositive) { "A spend is an amount above zero" }
         return afterCatchUp { _, _ ->
             val spend = openSpend(spendId) ?: return@afterCatchUp null
-            dao.setSpendAmount(spendId, amount.minor)
-            Money(spend.amount)
+            dao.setSpendAmount(spendId, if (spend.amount < 0) -amount.minor else amount.minor)
+            Money(if (spend.amount < 0) -spend.amount else spend.amount)
         }
     }
 
@@ -437,7 +464,7 @@ constructor(
         if (start == cap.openStart && newRule.kind == cap.kind && newAmount == cap.amount) return
         val from = cap.openStart.toEpochDay()
         val cut = Days.instantsOf(start, moment.zone).first.toEpochMilli()
-        val spentBefore = if (start > cap.openStart) Money(dao.spentBefore(cap.id, from, cut)) else Money.ZERO
+        val spentBefore = if (start > cap.openStart) Money(maxOf(0, dao.spentBefore(cap.id, from, cut))) else Money.ZERO
         val plan = CapChanges.replace(cap, oldRule, start, newAmount, spentBefore)
         plan.closed?.let { dao.insertClosedPeriods(listOf(it.toEntity())) }
         dao.moveSpends(cap.id, from, start.toEpochDay(), since = if (plan.closed != null) cut else Long.MIN_VALUE)

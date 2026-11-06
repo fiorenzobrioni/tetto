@@ -17,6 +17,15 @@ data class SpendPreview(val kind: Kind, val amount: Money) {
     }
 
     companion object {
+        /**
+         * What a refund of [typed] would leave (owner, 6 Nov 2026): what is left grows by it; a cap
+         * over may come back under ([Kind.FITS]) or stay over by less ([Kind.STILL_OVER]).
+         */
+        fun ofRefund(left: Money, typed: Money): SpendPreview {
+            val after = left + typed
+            return if (after.isNegative) SpendPreview(Kind.STILL_OVER, -after) else SpendPreview(Kind.FITS, after)
+        }
+
         fun of(left: Money, typed: Money): SpendPreview {
             val after = left - typed
             return when {

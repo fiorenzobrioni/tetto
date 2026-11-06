@@ -63,6 +63,8 @@ class CsvExportTest {
         assertThat(one(KWD, 1250)).isEqualTo("1.250")
         assertThat(one(EUR, 5)).isEqualTo("0.05")
         assertThat(one(EUR, 123_456_789_00)).isEqualTo("123456789.00")
+        // A refund is a number below zero, never written as text.
+        assertThat(one(EUR, -400)).isEqualTo("-4.00")
     }
 
     @Test

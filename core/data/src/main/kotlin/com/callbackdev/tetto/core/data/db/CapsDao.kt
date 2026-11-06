@@ -12,14 +12,18 @@ import androidx.room.Update
  */
 @Dao
 interface CapsDao {
-    /** Every cap in the reader's order, with what its open period spent and its last closed end. */
+    /**
+     * Every cap in the reader's order, with what its open period spent and its last closed end.
+     * What a period spent is its spends less its refunds, never below nothing (§4.3): a refund
+     * whose spend was deleted after it gives no money that was never spent.
+     */
     @Query(
         """
         SELECT c.*,
-            COALESCE(
+            MAX(0, COALESCE(
                 (SELECT SUM(s.amount) FROM spends s WHERE s.cap_id = c.id AND s.period_start = c.open_start),
                 0
-            ) AS spent,
+            )) AS spent,
             (SELECT MAX(p.end_exclusive) FROM closed_periods p WHERE p.cap_id = c.id) AS last_closed_end
         FROM caps c
         ORDER BY c.position, c.id
@@ -105,6 +109,10 @@ interface CapsDao {
     /** A cap's closed periods, the latest first. */
     @Query("SELECT * FROM closed_periods WHERE cap_id = :capId ORDER BY start DESC")
     suspend fun closedPeriods(capId: Long): List<ClosedPeriodEntity>
+
+    /** The cap's closed line that ends on [endExclusive], if one does: the period that renewed. */
+    @Query("SELECT * FROM closed_periods WHERE cap_id = :capId AND end_exclusive = :endExclusive")
+    suspend fun closedEnding(capId: Long, endExclusive: Long): ClosedPeriodEntity?
 
     @Query("SELECT MAX(end_exclusive) FROM closed_periods WHERE cap_id = :capId")
     suspend fun lastClosedEnd(capId: Long): Long?

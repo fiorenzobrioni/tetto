@@ -198,8 +198,10 @@ private fun BackupFile.toBackup(): Backup {
             // A spend counts in the open period or in one before it, never in one to come.
             require(periodStart <= openStart) { "A spend after the open period" }
             val spent = typed(spend.amount)
-            require(spent.isPositive) { "A spend of nothing" }
-            require(MoneyInput.canType(spent, currency)) { "A spend past the numpad's digits" }
+            // Below zero is a refund (owner, 6 Nov 2026); nothing is no spend at all.
+            require(spent != Money.ZERO) { "A spend of nothing" }
+            val size = if (spent.isNegative) -spent else spent
+            require(MoneyInput.canType(size, currency)) { "A spend past the numpad's digits" }
             BackupSpend(spent, Instant.ofEpochMilli(spend.addedAtMillis), periodStart)
         }
         val closed = dto.closed.map { line ->

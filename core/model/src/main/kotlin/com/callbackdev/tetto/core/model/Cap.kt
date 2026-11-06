@@ -20,11 +20,18 @@ data class Cap(
 )
 
 /**
- * A spend (PLANNING.md §4.3): an amount above zero, added to a cap at [addedAt], counting in the
- * period that starts on [periodStart], fixed when it was added: a later change of zone never
- * moves it.
+ * A spend (PLANNING.md §4.3): an amount added to a cap at [addedAt], counting in the period that
+ * starts on [periodStart], fixed when it was added: a later change of zone never moves it. Above
+ * zero, or below it for a [refund] (owner, 6 Nov 2026): money back, which lowers what the period
+ * spent, never below nothing.
  */
-data class Spend(val id: Long, val capId: Long, val amount: Money, val addedAt: Instant, val periodStart: LocalDate)
+data class Spend(val id: Long, val capId: Long, val amount: Money, val addedAt: Instant, val periodStart: LocalDate) {
+    /** Money back: a return, a friend's share paid back. */
+    val refund: Boolean get() = amount.isNegative
+
+    /** The amount as the reader typed it and reads it, above zero either way. */
+    val size: Money get() = if (refund) -amount else amount
+}
 
 /**
  * One line of a cap's story (PLANNING.md §4.4): a period closed, or a run of [periods] empty ones
