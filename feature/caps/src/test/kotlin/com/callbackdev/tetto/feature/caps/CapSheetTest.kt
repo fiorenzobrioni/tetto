@@ -77,6 +77,9 @@ class CapSheetTest {
         compose.onNodeWithText("Coffee").assertExists()
         compose.onNodeWithText("€16").assertExists()
         compose.onNodeWithText("€3.20").assertExists()
+        // The tile's pace, which the list's rows leave out.
+        compose.onNodeWithText("To stay under, a day").assertExists()
+        compose.onNodeWithText("about €4").assertExists()
         compose.onNodeWithText("The last periods").performScrollTo()
         compose.onNodeWithText("Clear the reserve").performScrollTo().performClick()
         compose.onNodeWithText("Edit").performScrollTo().performClick()
@@ -107,6 +110,7 @@ class CapSheetTest {
         compose.onNodeWithText("Nothing spent in this period yet.").assertExists()
         compose.onNodeWithText("Clear the reserve").assertDoesNotExist()
         compose.onNodeWithText("The last periods").assertDoesNotExist()
+        compose.onNodeWithText("To stay under, a day").assertExists()
     }
 
     @Test

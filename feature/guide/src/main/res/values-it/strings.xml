@@ -13,6 +13,8 @@
     <string name="guide_caps_bar_body">La barra si riempie con quello che hai speso. La linea sottile che la attraversa è oggi, tanto avanti nel periodo quanto lo sono i giorni: una barra che la supera vuol dire spese in anticipo sui giorni, e cambia colore per dirlo. Non è un allarme: l’ultimo giorno di un periodo una barra piena è perfettamente in tempo.</string>
     <string name="guide_caps_pace_title">Il ritmo</string>
     <string name="guide_caps_pace_body">Su un tetto di una settimana o più, con qualche giorno ancora davanti: circa quanto al giorno ti tiene sotto il tetto fino alla fine.</string>
+    <string name="guide_caps_list_title">Tanti tetti</string>
+    <string name="guide_caps_list_body">Con molti tetti, l’elenco ne mostra di più in una schermata: un tetto per riga, la cifra accanto al nome. Quanto al giorno e la riserva stanno allora nel foglio del tetto, a una pressione lunga. Si sceglie in Impostazioni, sotto Aspetto.</string>
     <string name="guide_caps_live_title">Viva mentre guardi</string>
     <string name="guide_caps_live_body">Lasciata aperta oltre la mezzanotte, la schermata gira il giorno da sola: un periodo che finisce si chiude, e si apre il successivo.</string>
 

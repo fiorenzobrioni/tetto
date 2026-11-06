@@ -7,6 +7,7 @@ import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.Cap
 import com.callbackdev.tetto.core.model.CapIcon
 import com.callbackdev.tetto.core.model.CapState
+import com.callbackdev.tetto.core.model.CapsLayout
 import com.callbackdev.tetto.core.model.ClosedPeriod
 import com.callbackdev.tetto.core.model.DateRange
 import com.callbackdev.tetto.core.model.Money
@@ -63,8 +64,8 @@ internal object CapsSample {
 
     val underCaps = listOf(coffee, groceries, restaurants, lunch)
 
-    fun ui(caps: List<CapState>, currency: AppCurrency = EUR) =
-        CapsUiState(today, currency, caps, CapsSentence.of(caps))
+    fun ui(caps: List<CapState>, currency: AppCurrency = EUR, layout: CapsLayout = CapsLayout.TILES) =
+        CapsUiState(today, currency, caps, CapsSentence.of(caps), layout = layout)
 
     private val zone = ZoneId.of("Europe/Rome")
 

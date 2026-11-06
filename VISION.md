@@ -107,12 +107,17 @@ a ledger** (history screens, statistics, accounts, income). Its speed comes from
 ### Caps (the app's one main screen)
 
 - **The sentence** on top, before any number: everything under its cap, the one closest to its
-  cap and until when, the ones over and when they start again. Computed from the caps alone.
+  cap and until when (none named while nothing has been spent), the ones over and when they start
+  again. Computed from the caps alone. Two lines where a small step down of its size is enough.
 - **One tile per cap**, in two columns on a phone (one at large text sizes; the family's centred
   column on an open foldable), so eight caps fit one screen: the cap's icon and name; **what is left**
-  in the family's figure style (tabular, so the digits do not wobble as they change), "€12 left"
-  or, past the cap, "€30 over"; the cap and when it renews ("of €200 · until Sunday"); the
-  reserve as a small chip, "+€30 reserve", only while there is one.
+  in the family's figure style (tabular, so the digits do not wobble as they change), on a line of
+  its own with its word small beside it, "€12 / left" or, past the cap, "€30 / over" ("ancora /
+  12 €" in Italian, the word first); the cap and when it renews ("of €200 · until Sunday"); the
+  reserve as a small chip, "+€30 reserve", only while there is one. Or, the reader's choice in
+  Settings, **one row per cap** across the page, shorter, for many caps: the icon, the name and
+  "€12 left" on one line, the cap and its day, the bar; the pace and the reserve in the cap's
+  sheet (owner, 6 Nov 2026).
 - **A bar of what was spent**, with a thin mark where today falls in the period: a reader sees at
   once whether spending runs ahead of the days. The bar is drawn in the accent; it takes the
   family's *attention* ink when spending runs ahead of the period, and an over state that is
@@ -367,7 +372,8 @@ accepted with them.
    and the launcher's four shortcuts. «In words» is the family's ring card, at the same sizes as
    Passo's and Tempo's for every size of card and every line of text, so the cards line up on a
    home screen.
-5. **The caps screen**: two columns of tiles on a phone.
+5. **The caps screen**: two columns of tiles on a phone; a row per cap as the reader's choice in
+   Settings (owner, 6 Nov 2026).
 6. **`minSdk 34`**, the family's.
 7. **The guide**: in the family's shape and style, as the sisters' guides.
 8. **The mark**: the family's ring, Tetto's roof as its emblem at the lower right, where Saldo's

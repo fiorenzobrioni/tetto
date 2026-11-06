@@ -106,6 +106,7 @@ private fun GuideContent(state: GuideUiState, modifier: Modifier) {
         Feature(R.string.guide_caps_left_title, R.string.guide_caps_left_body)
         Feature(R.string.guide_caps_bar_title, R.string.guide_caps_bar_body)
         Feature(R.string.guide_caps_pace_title, R.string.guide_caps_pace_body)
+        Feature(R.string.guide_caps_list_title, R.string.guide_caps_list_body)
         Feature(R.string.guide_caps_live_title, R.string.guide_caps_live_body)
 
         Chapter(TettoIcons.Renew, stringResource(R.string.guide_period_title))

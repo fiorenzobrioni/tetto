@@ -56,6 +56,8 @@ internal fun againWords(startsAgain: LocalDate, today: LocalDate): String = when
 internal fun sentenceWords(sentence: CapsSentence, format: MoneyFormat, today: LocalDate): String? = when (sentence) {
     CapsSentence.NoCaps -> null
 
+    is CapsSentence.NothingSpent -> stringResource(R.string.sentence_nothing_spent)
+
     is CapsSentence.AllUnder -> {
         val closest = sentence.closest
         val args = arrayOf(closest.cap.name, format.short(closest.left), untilWords(closest.lastDay, today))
@@ -104,7 +106,13 @@ internal fun sentenceWords(sentence: CapsSentence, format: MoneyFormat, today: L
     }
 }
 
-/** A tile's figure: "€12 left", "€30 over". */
+/** A tile's figure alone, what is left or by how much it is over: its word is the tile's. */
+@Composable
+@ReadOnlyComposable
+internal fun figureWords(state: CapState, format: MoneyFormat): String =
+    format.short(if (state.over) state.overBy else state.left)
+
+/** A cap's figure in words, on one line: "€12 left", "€30 over" (the numpad, the home screen's numpad). */
 @Composable
 @ReadOnlyComposable
 internal fun leftWords(state: CapState, format: MoneyFormat): String = if (state.over) {

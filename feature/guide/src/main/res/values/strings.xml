@@ -13,6 +13,8 @@
     <string name="guide_caps_bar_body">The bar fills with what you spent. The thin line across it is today, as far into the period as the days are: a bar that runs past the line is spending ahead of the days, and changes colour to say so. It is not an alarm: on a period’s last day a full bar is right on time.</string>
     <string name="guide_caps_pace_title">The pace</string>
     <string name="guide_caps_pace_body">On a cap of a week or longer with a few days still to go: about how much a day keeps you under it until the end.</string>
+    <string name="guide_caps_list_title">Many caps</string>
+    <string name="guide_caps_list_body">With many caps, the list shows more of them on a screen: one cap a row, its figure beside its name. The pace and the reserve are then in the cap’s sheet, a long press away. The choice is in Settings, under Appearance.</string>
     <string name="guide_caps_live_title">Live while you look</string>
     <string name="guide_caps_live_body">Left open across midnight, the screen turns the day by itself: a period that ends closes, and the next one opens.</string>
 

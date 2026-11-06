@@ -42,3 +42,33 @@ internal fun TextLayoutResult.breaksAWord(text: String): Boolean = (0 until line
     val end = getLineEnd(line)
     end in 1 until text.length && text[end - 1].isLetterOrDigit() && text[end].isLetterOrDigit()
 }
+
+/**
+ * A sentence's size that keeps it to [lines] lines where a small step down is enough: from [max]
+ * down by [step] to [min], the largest size at which the text takes [lines] lines at most, and
+ * [max] where none does, so a long sentence or a large text size wraps onto more lines rather than
+ * being cut or shrunk for nothing. The caller lays the text out with no line limit.
+ */
+class FewLinesAutoSize(
+    private val max: TextUnit,
+    private val min: TextUnit,
+    private val lines: Int = 2,
+    private val step: TextUnit = 1.sp,
+) : TextAutoSize {
+    override fun TextAutoSizeLayoutScope.getFontSize(constraints: Constraints, text: AnnotatedString): TextUnit {
+        var size = max.value
+        while (size >= min.value) {
+            if (performLayout(constraints, text, size.sp).lineCount <= lines) return size.sp
+            size -= step.value
+        }
+        return max
+    }
+
+    override fun equals(other: Any?): Boolean = other is FewLinesAutoSize &&
+        other.max == max &&
+        other.min == min &&
+        other.lines == lines &&
+        other.step == step
+
+    override fun hashCode(): Int = ((max.hashCode() * 31 + min.hashCode()) * 31 + lines) * 31 + step.hashCode()
+}

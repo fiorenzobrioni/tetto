@@ -23,6 +23,7 @@ import com.callbackdev.tetto.core.domain.backup.BackupSpend
 import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.AppPalette
 import com.callbackdev.tetto.core.model.CapIcon
+import com.callbackdev.tetto.core.model.CapsLayout
 import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.PeriodKind
 import com.callbackdev.tetto.core.model.ThemeMode
@@ -63,6 +64,7 @@ class SettingsScreenTest {
     private var weekStart: DayOfWeek? = DayOfWeek.WEDNESDAY
     private var weekStartSet = false
     private var theme: ThemeMode? = null
+    private var layout: CapsLayout? = null
     private var dynamic: Boolean? = null
     private var reminder: Boolean? = null
     private var reminderTime: LocalTime? = null
@@ -110,6 +112,7 @@ class SettingsScreenTest {
                             weekStartSet = true
                         },
                         setTheme = { theme = it },
+                        setCapsLayout = { layout = it },
                         setDynamicColor = { dynamic = it },
                         setReminder = { reminder = it },
                         setReminderTime = { reminderTime = it },
@@ -227,6 +230,11 @@ class SettingsScreenTest {
         compose.onNodeWithTag(SettingsTags.LIST).performScrollToNode(hasTestTag(SettingsTags.PREVIEW))
         compose.onNodeWithTag(SettingsTags.PREVIEW).assertIsDisplayed()
         compose.writeScreenshot("settings-appearance")
+        compose.onNodeWithTag(SettingsTags.LIST).performScrollToNode(hasTestTag(SettingsTags.CAPS_LAYOUT))
+        compose.onNodeWithText("Tiles").assertIsDisplayed()
+        compose.onNodeWithTag(SettingsTags.CAPS_LAYOUT).performClick()
+        compose.onNodeWithText("List").performClick()
+        assertThat(layout).isEqualTo(CapsLayout.LIST)
         compose.onNodeWithTag(SettingsTags.LIST).performScrollToNode(hasTestTag(SettingsTags.THEME))
         compose.onNodeWithTag(SettingsTags.THEME).performClick()
         compose.onNodeWithText("Dark").performClick()
@@ -234,6 +242,16 @@ class SettingsScreenTest {
         compose.onNodeWithTag(SettingsTags.LIST).performScrollToNode(hasTestTag(SettingsTags.DYNAMIC_COLOR))
         compose.onNodeWithTag(SettingsTags.DYNAMIC_COLOR).performClick()
         assertThat(dynamic).isTrue()
+    }
+
+    @Test
+    fun `with the caps as a list, the preview shows rows`() {
+        draw(state(UserSettings(currency = "EUR", onboardingCompleted = true, capsLayout = CapsLayout.LIST)))
+        compose.onNodeWithTag(SettingsTags.LIST).performScrollToNode(hasTestTag(SettingsTags.CAPS_LAYOUT))
+        compose.onNodeWithText("List").assertIsDisplayed()
+        compose.onNodeWithTag(SettingsTags.LIST).performScrollToNode(hasTestTag(SettingsTags.PREVIEW))
+        compose.onNodeWithTag(SettingsTags.PREVIEW).assertIsDisplayed()
+        compose.writeScreenshot("settings-appearance-list")
     }
 
     @Test
@@ -411,11 +429,16 @@ class SettingsScreenTest {
     @Test
     fun `your data, each row saying what it carries`() {
         draw(state())
-        scrollTo(DataTags.ERASE)
-        compose.onNodeWithText("Your data").assertIsDisplayed()
-        compose.onNodeWithText("4 caps and 37 spends, with your settings, in a file you choose").assertIsDisplayed()
-        compose.onNodeWithText("37 spends, one row each, as a CSV file").assertIsDisplayed()
-        compose.onNodeWithText("Erase everything").assertIsDisplayed()
+        // Each row brought into view by itself: where the group stands depends on what is above it.
+        listOf(
+            "Your data",
+            "4 caps and 37 spends, with your settings, in a file you choose",
+            "37 spends, one row each, as a CSV file",
+            "Erase everything",
+        ).forEach { text ->
+            compose.onNodeWithTag(SettingsTags.LIST).performScrollToNode(hasText(text))
+            compose.onNodeWithText(text).assertIsDisplayed()
+        }
         compose.assertAccessible()
         compose.writeScreenshot("settings-data")
     }

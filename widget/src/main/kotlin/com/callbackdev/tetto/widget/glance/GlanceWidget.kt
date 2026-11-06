@@ -53,6 +53,7 @@ import com.callbackdev.tetto.widget.RingSpec
 import com.callbackdev.tetto.widget.TettoWidgetReceiver
 import com.callbackdev.tetto.widget.TextWeight
 import com.callbackdev.tetto.widget.WidgetCard
+import com.callbackdev.tetto.widget.WidgetFailure
 import com.callbackdev.tetto.widget.WidgetIntents
 import com.callbackdev.tetto.widget.WidgetModel
 import com.callbackdev.tetto.widget.WidgetPalette
@@ -90,6 +91,11 @@ class GlanceWidget : GlanceAppWidget() {
 
     override suspend fun providePreview(context: Context, widgetCategory: Int) {
         provideContent { GlanceCardContent(WidgetSamples.model(context)) }
+    }
+
+    /** Tetto's card that says so, and the reason in Tetto's log, instead of Glance's blank box. */
+    override fun onCompositionError(context: Context, glanceId: GlanceId, appWidgetId: Int, throwable: Throwable) {
+        WidgetFailure.show(context, appWidgetId, throwable)
     }
 }
 

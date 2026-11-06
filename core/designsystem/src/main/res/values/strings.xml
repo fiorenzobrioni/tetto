@@ -46,5 +46,18 @@
     <string name="cap_icon_subscriptions">Subscriptions</string>
     <string name="cap_icon_hobbies">Hobbies</string>
     <string name="cap_icon_education">Education</string>
+    <string name="cap_icon_takeaway">Takeaway and delivery</string>
+    <string name="cap_icon_drinks">Drinks and nights out</string>
+    <string name="cap_icon_games">Games</string>
+    <string name="cap_icon_events">Cinema and events</string>
+    <string name="cap_icon_bank">Bank and loans</string>
+    <string name="cap_icon_rent">Rent and building fees</string>
     <string name="cap_icon_other">Other</string>
+
+    <!-- The word a cap's figure stands with: "€12 / left", "€30 / over" (VISION's glossary). -->
+    <string name="cap_word_left">left</string>
+    <string name="cap_word_over">over</string>
+    <!-- Whether the word comes before the figure: over it on a tile ("ancora / 12 €"), before it on a
+         row ("ancora 12 €"); or after it ("€12 / left", "€12 left"). -->
+    <bool name="cap_word_first">false</bool>
 </resources>

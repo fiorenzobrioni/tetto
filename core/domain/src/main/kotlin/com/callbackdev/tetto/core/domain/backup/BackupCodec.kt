@@ -5,6 +5,7 @@ import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.AppFont
 import com.callbackdev.tetto.core.model.AppPalette
 import com.callbackdev.tetto.core.model.CapIcon
+import com.callbackdev.tetto.core.model.CapsLayout
 import com.callbackdev.tetto.core.model.DateRange
 import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.PeriodKind
@@ -114,6 +115,7 @@ private fun Backup.toFile() = BackupFile(
         theme = settings.theme.name,
         palette = settings.palette.name,
         font = settings.font.name,
+        capsLayout = settings.capsLayout.name,
         dynamicColor = settings.dynamicColor,
         reminderOn = settings.reminderOn,
         reminderTime = settings.reminderTime.withSecond(0).withNano(0).toString(),
@@ -167,6 +169,7 @@ private fun BackupFile.toBackup(): Backup {
         theme = enumOrNull<ThemeMode>(settings.theme) ?: defaults.theme,
         palette = enumOrNull<AppPalette>(settings.palette) ?: defaults.palette,
         font = enumOrNull<AppFont>(settings.font) ?: defaults.font,
+        capsLayout = enumOrNull<CapsLayout>(settings.capsLayout) ?: defaults.capsLayout,
         dynamicColor = settings.dynamicColor,
         reminderOn = settings.reminderOn,
         reminderTime = settings.reminderTime?.let { runCatching { LocalTime.parse(it) }.getOrNull() }

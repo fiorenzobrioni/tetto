@@ -149,6 +149,14 @@ internal fun CapSheetContent(
             } else {
                 InfoRow(stringResource(R.string.sheet_left), format.short(state.left))
             }
+            // The tile's pace, here too: the list's rows leave it out.
+            state.pace?.let { pace ->
+                GroupDivider()
+                InfoRow(
+                    stringResource(R.string.sheet_pace),
+                    stringResource(R.string.sheet_pace_value, format.short(pace)),
+                )
+            }
         }
 
         GroupHeader(stringResource(R.string.sheet_spends))

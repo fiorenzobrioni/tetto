@@ -20,13 +20,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -36,7 +39,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
+import com.callbackdev.tetto.core.designsystem.components.CapRow
 import com.callbackdev.tetto.core.designsystem.components.CapTile
+import com.callbackdev.tetto.core.designsystem.components.FewLinesAutoSize
+import com.callbackdev.tetto.core.designsystem.components.NewCapRow
 import com.callbackdev.tetto.core.designsystem.components.NewCapTile
 import com.callbackdev.tetto.core.designsystem.components.StatusCard
 import com.callbackdev.tetto.core.designsystem.components.StatusTone
@@ -50,14 +58,16 @@ import com.callbackdev.tetto.core.designsystem.theme.padding
 import com.callbackdev.tetto.core.designsystem.theme.pageGutter
 import com.callbackdev.tetto.core.designsystem.theme.reducedMotion
 import com.callbackdev.tetto.core.model.CapState
+import com.callbackdev.tetto.core.model.CapsLayout
 import java.time.LocalDate
 
 /**
  * The caps screen (VISION, «Caps»; PLANNING.md §11 Phase 2), drawn from its state: today, the
  * sentence before any number, a tile per cap in the reader's order (two columns on a phone, one at
- * large text sizes), "New cap" last, and "Change the order" under them from two caps up. A touch
- * on a tile opens the numpad on it, a long press its sheet. On the first day, the tip over the
- * tiles says how to read one, and leads to the guide (Phase 6).
+ * large text sizes) or, as the reader chooses in Settings, a row per cap ([CapsLayout.LIST]),
+ * "New cap" last, and "Change the order" under them from two caps up. A touch on a cap opens the
+ * numpad on it, a long press its sheet. On the first day, the tip over the caps says how to read
+ * one, and leads to the guide (Phase 6).
  */
 @Composable
 fun CapsScreen(
@@ -102,11 +112,7 @@ fun CapsScreen(
         }
         Spacer(Modifier.height(4.dp))
         val sentence = sentenceWords(state.sentence, format, state.today)
-        Text(
-            sentence ?: stringResource(R.string.caps_empty_title),
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.semantics { heading() },
-        )
+        Sentence(sentence ?: stringResource(R.string.caps_empty_title))
         if (state.caps.isEmpty()) {
             Spacer(Modifier.height(8.dp))
             Text(
@@ -128,7 +134,10 @@ fun CapsScreen(
             }
         }
         Spacer(Modifier.height(24.dp))
-        TileGrid(state, format, onAddSpend, onOpenCap, onNewCap)
+        when (state.layout) {
+            CapsLayout.TILES -> TileGrid(state, format, onAddSpend, onOpenCap, onNewCap)
+            CapsLayout.LIST -> RowList(state, format, onAddSpend, onOpenCap, onNewCap)
+        }
         if (state.caps.size >= 2) {
             Spacer(Modifier.height(16.dp))
             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -136,6 +145,26 @@ fun CapsScreen(
             }
         }
     }
+}
+
+/**
+ * The sentence on top, the page's heading: two lines where a step down from the headline's size
+ * to [SENTENCE_MIN] makes it fit, so the caps start higher; at the headline's size, on as many
+ * lines as it takes, where it does not (a long cap's name, a large text size), never cut.
+ */
+@Composable
+private fun Sentence(text: String) {
+    val headline = MaterialTheme.typography.headlineSmall
+    BasicText(
+        text,
+        style = headline.copy(
+            color = LocalContentColor.current,
+            // The headline's leading as a share of its size, so a smaller step keeps its rhythm.
+            lineHeight = (headline.lineHeight.value / headline.fontSize.value).em,
+        ),
+        autoSize = FewLinesAutoSize(max = headline.fontSize, min = SENTENCE_MIN, lines = 2),
+        modifier = Modifier.semantics { heading() },
+    )
 }
 
 /**
@@ -192,6 +221,56 @@ private fun TileGrid(
     }
 }
 
+/**
+ * A row per cap across the page, closer together than the tiles (owner, 6 Nov 2026): for a reader
+ * with many caps, more of them on a screen.
+ */
+@Composable
+private fun RowList(
+    state: CapsUiState,
+    format: MoneyFormat,
+    onAddSpend: (Long) -> Unit,
+    onOpenCap: (Long) -> Unit,
+    onNewCap: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(RowGap)) {
+        state.caps.forEach { cap ->
+            val id = cap.cap.id
+            // Keyed by the cap, so a figure rolls from its own last value, never a neighbour's.
+            key(id) { ListRow(cap, id, format, state.today, onAddSpend, onOpenCap) }
+        }
+        NewCapRow(stringResource(R.string.new_cap), TettoIcons.Plus, onNewCap, Modifier.fillMaxWidth())
+    }
+}
+
+@Composable
+private fun ListRow(
+    cap: CapState,
+    id: Long,
+    format: MoneyFormat,
+    today: LocalDate,
+    onAddSpend: (Long) -> Unit,
+    onOpenCap: (Long) -> Unit,
+) {
+    CapRow(
+        icon = cap.cap.icon.symbol,
+        name = cap.cap.name,
+        figure = figureWords(cap, format),
+        figureValue = cap.left.minor,
+        detail = detailWords(cap, format, today),
+        bar = cap.bar,
+        mark = cap.todayMark,
+        over = cap.over,
+        ahead = cap.aheadOfDays,
+        description = tileDescription(cap, format, today),
+        clickLabel = stringResource(R.string.tile_click),
+        longClickLabel = stringResource(R.string.tile_long_click),
+        onClick = { onAddSpend(id) },
+        onLongClick = { onOpenCap(id) },
+        modifier = Modifier.fillMaxWidth().testTag(CapsTags.tile(id)),
+    )
+}
+
 @Composable
 private fun Tile(
     state: CapState,
@@ -205,8 +284,8 @@ private fun Tile(
     CapTile(
         icon = state.cap.icon.symbol,
         name = state.cap.name,
-        left = leftWords(state, format),
-        leftValue = state.left.minor,
+        figure = figureWords(state, format),
+        figureValue = state.left.minor,
         detail = detailWords(state, format, today),
         bar = state.bar,
         mark = state.todayMark,
@@ -235,6 +314,10 @@ private fun tileColumns(): Int {
 }
 
 private val TileGap = 12.dp
+private val RowGap = 8.dp
+
+/** The smallest the sentence steps down to for two lines: still the page's largest words. */
+private val SENTENCE_MIN = 20.sp
 private const val LARGE_TEXT = 1.5f
 private const val NARROW_DP = 300f
 

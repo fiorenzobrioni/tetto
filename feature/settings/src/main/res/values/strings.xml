@@ -40,6 +40,10 @@
 
     <!-- The appearance, the family's. -->
     <string name="settings_group_appearance">Appearance</string>
+    <string name="settings_caps_layout">Caps</string>
+    <string name="settings_caps_layout_tiles">Tiles</string>
+    <string name="settings_caps_layout_list">List</string>
+    <string name="settings_caps_layout_note">Tiles, two by two, show each cap’s pace and reserve too. The list puts one cap on a row, shorter, so more of them fit on the screen: the pace and the reserve are in the cap’s sheet.</string>
     <string name="settings_theme">Theme</string>
     <string name="settings_theme_system">Same as the phone</string>
     <string name="settings_theme_light">Light</string>
@@ -59,8 +63,6 @@
     <string name="settings_preview_caption">Example</string>
     <string name="settings_preview_under_name">Coffee</string>
     <string name="settings_preview_over_name">Shopping</string>
-    <string name="settings_preview_left">%s left</string>
-    <string name="settings_preview_over">%s over</string>
     <string name="settings_preview_detail">of %s · until Sunday</string>
     <string name="settings_preview_detail_over">of %s · starts again on Monday</string>
 

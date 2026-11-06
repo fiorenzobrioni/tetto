@@ -10,7 +10,8 @@ import com.callbackdev.tetto.core.model.Share
  * many caps there are, so the words can tell one cap from several, and "every cap" from some.
  *
  * Which kind is said, when more than one holds (owner, 5 Nov 2026): a cap over first, then a cap
- * renewed today, then all under with the closest.
+ * renewed today, then all under with the closest; with nothing spent on any of several caps, no
+ * cap is closer than another, and the sentence names none (owner, 6 Nov 2026).
  */
 sealed interface CapsSentence {
     val caps: Int
@@ -31,6 +32,12 @@ sealed interface CapsSentence {
     /** All under their caps: the [closest] to its cap (the lowest share left), its left and its last day. */
     data class AllUnder(val closest: CapState, override val caps: Int) : CapsSentence
 
+    /**
+     * Two caps or more, and not a spend in any of their periods: every cap whole, so naming one as
+     * the closest would only name the first. A single cap is still said with its left and its day.
+     */
+    data class NothingSpent(override val caps: Int) : CapsSentence
+
     companion object {
         /** From the caps' states in the reader's order: a tie goes to the first. */
         fun of(states: List<CapState>): CapsSentence {
@@ -44,6 +51,7 @@ sealed interface CapsSentence {
             if (renewed.isNotEmpty()) return Renewed(renewed.first(), renewed.size - 1, caps)
 
             // None is over, so every share left is between zero and the whole.
+            if (caps > 1 && states.none { it.spent.isPositive }) return NothingSpent(caps)
             val closest = states.minWith(compareBy { Share(it.left.minor, (it.cap.amount + it.cap.reserve).minor) })
             return AllUnder(closest, caps)
         }

@@ -50,7 +50,9 @@ data class ClosedPeriod(
  * The cap palette's keys (PLANNING.md §5): a curated set, so the caps screen keeps one look. The
  * [key] is what the database and the backup store, never the constant's name, so a constant can
  * be renamed without touching a reader's data. The first twelve are the first run's areas
- * (VISION.md, First run); the drawings are `TettoIcons`' (Phase 2).
+ * (VISION.md, First run); [OTHER] stays last, where the editor's grid ends; the drawings are
+ * `TettoIcons`' (Phase 2). A new key reads as [OTHER] in a build that predates it, so a backup
+ * made after an addition still opens in an older Tetto.
  */
 enum class CapIcon(val key: String) {
     GROCERIES("groceries"),
@@ -76,6 +78,12 @@ enum class CapIcon(val key: String) {
     SUBSCRIPTIONS("subscriptions"),
     HOBBIES("hobbies"),
     EDUCATION("education"),
+    TAKEAWAY("takeaway"),
+    DRINKS("drinks"),
+    GAMES("games"),
+    EVENTS("events"),
+    BANK("bank"),
+    RENT("rent"),
     OTHER("other"),
     ;
 

@@ -6,6 +6,7 @@ import com.callbackdev.tetto.core.domain.euros
 import com.callbackdev.tetto.core.model.AppFont
 import com.callbackdev.tetto.core.model.AppPalette
 import com.callbackdev.tetto.core.model.CapIcon
+import com.callbackdev.tetto.core.model.CapsLayout
 import com.callbackdev.tetto.core.model.DateRange
 import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.PeriodKind
@@ -36,6 +37,7 @@ internal fun sampleBackup(): Backup = Backup(
         theme = ThemeMode.DARK,
         palette = AppPalette.PAPER,
         font = AppFont.INTER,
+        capsLayout = CapsLayout.LIST,
         dynamicColor = true,
         reminderOn = true,
         reminderTime = LocalTime.of(21, 0),

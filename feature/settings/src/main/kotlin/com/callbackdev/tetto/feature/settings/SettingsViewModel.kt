@@ -11,6 +11,7 @@ import com.callbackdev.tetto.core.data.widget.HomeScreenCards
 import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.AppFont
 import com.callbackdev.tetto.core.model.AppPalette
+import com.callbackdev.tetto.core.model.CapsLayout
 import com.callbackdev.tetto.core.model.ThemeMode
 import com.callbackdev.tetto.core.model.UserSettings
 import com.callbackdev.tetto.core.reminder.EveningReminder
@@ -89,6 +90,8 @@ constructor(
     fun setPalette(palette: AppPalette) = launch { repository.setPalette(palette) }
 
     fun setFont(font: AppFont) = launch { repository.setFont(font) }
+
+    fun setCapsLayout(layout: CapsLayout) = launch { repository.setCapsLayout(layout) }
 
     fun setDynamicColor(on: Boolean) = launch { repository.setDynamicColor(on) }
 
