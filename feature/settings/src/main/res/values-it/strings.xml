@@ -2,6 +2,10 @@
 <resources>
     <string name="settings_title">Impostazioni</string>
 
+    <!-- La scheda della guida, prima nell'elenco. -->
+    <string name="settings_guide">Come funziona Tetto</string>
+    <string name="settings_guide_note">I tetti e i loro periodi, la riserva, il tastierino, la schermata Home, i tuoi dati</string>
+
     <!-- Il denaro. -->
     <string name="settings_group_money">Denaro</string>
     <string name="settings_currency_explanation">Tetto conta in una sola valuta. Cambiarla cambia il simbolo dei tuoi importi; non li converte mai.</string>
@@ -88,10 +92,12 @@
     <!-- Le righe dei tuoi dati. -->
     <plurals name="data_caps">
         <item quantity="one">%d tetto</item>
+        <item quantity="many">%d tetti</item>
         <item quantity="other">%d tetti</item>
     </plurals>
     <plurals name="data_spends">
         <item quantity="one">%d spesa</item>
+        <item quantity="many">%d spese</item>
         <item quantity="other">%d spese</item>
     </plurals>
     <string name="data_backup">Salva un backup</string>
@@ -115,6 +121,7 @@
     <string name="data_restore_written_unversioned">Scritto il %1$s.</string>
     <plurals name="data_restore_caps">
         <item quantity="one">%1$d tetto: %2$s</item>
+        <item quantity="many">%1$d tetti: %2$s</item>
         <item quantity="other">%1$d tetti: %2$s</item>
     </plurals>
     <string name="data_restore_more">altri %d</string>
@@ -122,6 +129,7 @@
     <string name="data_restore_currency">Importi in %s</string>
     <plurals name="data_restore_replaces">
         <item quantity="one">Sostituisce il tetto di questo telefono, con le sue spese, e le tue impostazioni. Non si può annullare.</item>
+        <item quantity="many">Sostituisce tutti e %d i tetti di questo telefono, con le loro spese, e le tue impostazioni. Non si può annullare.</item>
         <item quantity="other">Sostituisce tutti e %d i tetti di questo telefono, con le loro spese, e le tue impostazioni. Non si può annullare.</item>
     </plurals>
     <string name="data_restore_settings">Anche le impostazioni diventano quelle del backup.</string>
@@ -131,6 +139,7 @@
     <string name="data_erase_title">Cancellare tutto?</string>
     <plurals name="data_erase_body">
         <item quantity="one">Il tuo tetto, le sue spese e la sua riserva, e le tue impostazioni, vengono cancellati da questo telefono, e Tetto riparte dal primo avvio. Un backup che hai salvato resta com’è. Non si può annullare.</item>
+        <item quantity="many">I tuoi %d tetti, le loro spese e le loro riserve, e le tue impostazioni, vengono cancellati da questo telefono, e Tetto riparte dal primo avvio. Un backup che hai salvato resta com’è. Non si può annullare.</item>
         <item quantity="other">I tuoi %d tetti, le loro spese e le loro riserve, e le tue impostazioni, vengono cancellati da questo telefono, e Tetto riparte dal primo avvio. Un backup che hai salvato resta com’è. Non si può annullare.</item>
     </plurals>
     <string name="data_erase_body_empty">Le tue impostazioni vengono cancellate da questo telefono, e Tetto riparte dal primo avvio. Non si può annullare.</string>

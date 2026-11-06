@@ -49,3 +49,10 @@ All notable changes to Tetto are documented here. The format follows
   time zone or the language changes.
 - After the first run, and in Settings, Tetto offers to put a card on your home screen, where the
   launcher allows it.
+- The guide, first in Settings: what the caps screen answers, how a period, the reserve and
+  forgiveness work, the numpad and fixing a spend, the home screen, your data, and what Tetto does
+  not do. Its examples are the app's own tiles, bars and numpad, in your currency and your week,
+  each said to be an example. On the first day, a tip over the caps says how to read one, and
+  leads there; once dismissed it does not come back.
+- With TalkBack, the numpad says each amount as you type it together with what it would leave,
+  and the guide's chapters and Settings' groups are headings you can move between.

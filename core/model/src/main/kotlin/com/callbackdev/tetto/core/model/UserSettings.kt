@@ -5,8 +5,8 @@ import java.time.LocalTime
 
 /**
  * The reader's settings (PLANNING.md §5), as far as the phases built so far use them: the money's
- * (Phase 1), the appearance and the first run's flag (Phase 3), the evening reminder (Phase 4).
- * The caps screen's first-day tip joins with Phase 6.
+ * (Phase 1), the appearance and the first run's flag (Phase 3), the evening reminder (Phase 4),
+ * the caps screen's first-day tip (Phase 6).
  *
  * @property currency the ISO 4217 code chosen at the first run; null until then, when the
  *   phone's region's stands in.
@@ -23,6 +23,10 @@ import java.time.LocalTime
  *   says "no need to explain first" both before the first question and after a refusal it will
  *   not let the app repeat, and only this tells the two apart. A fact about this phone, so a
  *   backup does not carry it and erasing everything keeps it.
+ * @property capsTipSeen whether the reader dismissed the caps screen's first-day tip ("How to
+ *   read a cap") or opened the guide from it: shown over the tiles until then. What this phone
+ *   has shown, like [askedNotifications]: a backup does not carry it, a restore and erasing
+ *   everything keep it.
  */
 data class UserSettings(
     val currency: String? = null,
@@ -36,6 +40,7 @@ data class UserSettings(
     val reminderOn: Boolean = false,
     val reminderTime: LocalTime = DEFAULT_REMINDER_TIME,
     val askedNotifications: Boolean = false,
+    val capsTipSeen: Boolean = false,
 ) {
     companion object {
         /** Half past eight in the evening: after most days' spending, before most days end. */

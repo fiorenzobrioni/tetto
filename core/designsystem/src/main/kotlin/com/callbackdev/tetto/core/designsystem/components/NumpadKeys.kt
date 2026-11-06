@@ -49,7 +49,9 @@ fun NumpadKeys(
         }
         Row(Modifier.fillMaxWidth()) {
             if (separator != null) {
-                Key(onClick = onSeparator, label = null) {
+                // Named, not left to the character: TalkBack's punctuation setting can leave a
+                // lone "." or "," unspoken.
+                Key(onClick = onSeparator, label = stringResource(R.string.numpad_separator)) {
                     Text(separator.toString(), style = keyStyle())
                 }
             } else {

@@ -100,15 +100,17 @@ class MoneyInput private constructor(val currency: AppCurrency, val whole: Strin
         fun empty(currency: AppCurrency): MoneyInput = MoneyInput(currency, "", null)
 
         /**
-         * The buffer that types [amount], to correct a spend: whole units, and the decimals only
-         * where they are not zero ("5" for 5.00, "5,5" for 5.50).
+         * The buffer that types [amount] back (a spend to correct, a spend undone over the home
+         * screen, a cap's amount in its editor): whole units alone where the decimals are zero
+         * ("5" for 5.00), else every decimal the currency has ("5,50" for 5.50, "3,20" for 3.20),
+         * so the figure reads as the cap's sheet lists the spend (owner, 6 Nov 2026).
          */
         fun of(amount: Money, currency: AppCurrency): MoneyInput {
             require(!amount.isNegative) { "A negative amount cannot be typed" }
             val unit = currency.unit.minor
             val whole = (amount.minor / unit).toString()
             val rest = amount.minor % unit
-            val fraction = if (rest == 0L) null else rest.toString().padStart(currency.fractionDigits, '0').trimEnd('0')
+            val fraction = if (rest == 0L) null else rest.toString().padStart(currency.fractionDigits, '0')
             require(whole.length <= MAX_WHOLE_DIGITS) { "More than nine digits cannot be typed" }
             return MoneyInput(currency, whole, fraction)
         }

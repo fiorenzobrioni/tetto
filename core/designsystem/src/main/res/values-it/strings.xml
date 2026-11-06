@@ -12,6 +12,7 @@
 
     <!-- I tasti del tastierino, come li dice TalkBack. -->
     <string name="numpad_delete">Cancella</string>
+    <string name="numpad_separator">Separatore dei decimali</string>
     <string name="numpad_clear">Cancella tutto</string>
 
     <!-- Il periodo di un tetto. -->

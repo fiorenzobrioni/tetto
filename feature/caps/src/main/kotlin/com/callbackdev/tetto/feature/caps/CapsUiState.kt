@@ -9,14 +9,24 @@ import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.Spend
 import java.time.LocalDate
 
-/** The caps screen (PLANNING.md §11 Phase 2): today, the currency, the caps in the reader's order, the sentence. */
+/**
+ * The caps screen (PLANNING.md §11 Phase 2): today, the currency, the caps in the reader's order, the
+ * sentence; and whether the first-day tip was seen (Phase 6).
+ */
 data class CapsUiState(
     val today: LocalDate,
     val currency: AppCurrency,
     val caps: List<CapState>,
     val sentence: CapsSentence,
+    val tipSeen: Boolean = true,
 ) {
     fun cap(id: Long): CapState? = caps.firstOrNull { it.cap.id == id }
+
+    /**
+     * The first-day tip ("How to read a cap"), over the tiles until it is dismissed or followed to
+     * the guide; never on an empty page, which has no tile to read and its own words.
+     */
+    val showsTip: Boolean get() = !tipSeen && caps.isNotEmpty()
 }
 
 /** A cap's sheet: this period's spends, newest first, and the last periods' lines, the latest first. */

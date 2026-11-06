@@ -130,6 +130,7 @@ import com.callbackdev.tetto.core.designsystem.R as DesignR
 @Composable
 fun SettingsRoute(
     onBack: () -> Unit,
+    onOpenGuide: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
     dataViewModel: DataViewModel = hiltViewModel(),
 ) {
@@ -208,6 +209,7 @@ fun SettingsRoute(
             },
             // The browser opens it: Tetto itself has no network access. No browser, no crash.
             openUrl = { url -> runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri())) } },
+            openGuide = onOpenGuide,
         ),
     )
 }
@@ -227,6 +229,7 @@ class SettingsActions(
     val fixNotifications: () -> Unit = {},
     val openLanguage: () -> Unit = {},
     val openUrl: (String) -> Unit = {},
+    val openGuide: () -> Unit = {},
 )
 
 /**
@@ -248,11 +251,11 @@ data class ReminderReach(val block: ReminderBlock, val askable: Boolean) {
 }
 
 /**
- * Settings (PLANNING.md §11 Phases 3 and 4): every group on one rounded ground under a header in
- * the accent; the money first, then the evening reminder, a live preview of the appearance above
- * the choices that change it, the home screen's cards (where the launcher can place one), the language, your data (the privacy statement, the backup, the
- * restore, the spends for a spreadsheet, erasing everything), about and the credits. The guide's
- * card joins with Phase 6: no entry is drawn before what it opens exists.
+ * Settings (PLANNING.md §11 Phases 3, 4 and 6): the guide's card first; then every group on one
+ * rounded ground under a header in the accent: the money, the evening reminder, a live preview of
+ * the appearance above the choices that change it, the home screen's cards (where the launcher can
+ * place one), the language, your data (the privacy statement, the backup, the restore, the spends
+ * for a spreadsheet, erasing everything), about and the credits.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -319,6 +322,7 @@ private fun SettingsList(
         modifier = modifier.testTag(SettingsTags.LIST),
         contentPadding = pageGutter(sideInsets = false).contentPadding(bottom = 32.dp),
     ) {
+        item { GuideCard(actions.openGuide) }
         item { GroupHeader(stringResource(R.string.settings_group_money)) }
         item {
             SettingsGroup {
@@ -880,10 +884,42 @@ private fun PreviewTile(
         onClick = {},
         onLongClick = {},
         modifier = modifier,
+        enabled = false,
     )
 }
 
 private const val LARGE_TEXT = 1.5f
+
+/**
+ * The way to the guide, first in the list (PLANNING.md §11 Phase 6): the place a reader comes back
+ * to the day the question arrives, which the tip shown once on the caps screen could never be.
+ */
+@Composable
+private fun GuideCard(onOpenGuide: () -> Unit) {
+    Surface(
+        onClick = onOpenGuide,
+        color = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        shape = GroupShape,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = ScreenMargin, end = ScreenMargin, top = 8.dp)
+            .testTag(SettingsTags.GUIDE),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            modifier = Modifier.padding(16.dp),
+        ) {
+            Icon(TettoIcons.Info, contentDescription = null, modifier = Modifier.size(24.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.weight(1f)) {
+                Text(stringResource(R.string.settings_guide), style = MaterialTheme.typography.titleSmall)
+                Text(stringResource(R.string.settings_guide_note), style = MaterialTheme.typography.bodyMedium)
+            }
+            Icon(TettoIcons.ChevronRight, contentDescription = null)
+        }
+    }
+}
 
 @Composable
 private fun PrivacyCard() {
@@ -990,6 +1026,7 @@ private const val ICONS_URL = "https://github.com/google/material-design-icons"
 /** Hooks for the UI tests. */
 object SettingsTags {
     const val LIST = "settings_list"
+    const val GUIDE = "settings_guide"
     const val CURRENCY = "settings_currency"
     const val CURRENCY_CONFIRM = "settings_currency_confirm"
     const val MONTH_START = "settings_month_start"

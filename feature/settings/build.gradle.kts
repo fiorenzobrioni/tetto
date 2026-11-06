@@ -1,7 +1,7 @@
-// Settings (PLANNING.md §11 Phases 3 and 4): the money (currency, month start, week start), the
-// evening reminder, the appearance, the language, your data (the privacy statement, the backup,
-// the restore, the spends for a spreadsheet, erasing everything) and about. The guide's card
-// joins with Phase 6.
+// Settings (PLANNING.md §11 Phases 3, 4 and 6): the guide's card, the money (currency, month
+// start, week start), the evening reminder, the appearance, the home screen's cards, the language,
+// your data (the privacy statement, the backup, the restore, the spends for a spreadsheet, erasing
+// everything) and about.
 plugins {
     alias(libs.plugins.tetto.android.feature)
 }

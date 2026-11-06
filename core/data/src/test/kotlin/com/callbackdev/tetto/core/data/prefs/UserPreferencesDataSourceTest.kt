@@ -110,6 +110,16 @@ class UserPreferencesDataSourceTest {
     }
 
     @Test
+    fun `the first-day tip, once seen, survives, and unseen leaves no key`() = runTest {
+        source.update { it.copy(capsTipSeen = true) }
+        assertThat(source.current().capsTipSeen).isTrue()
+        assertThat(store.dataStore.data.first().asMap().mapKeys { it.key.name }).containsExactly("caps_tip_seen", true)
+
+        source.update { it.copy(capsTipSeen = false) }
+        assertThat(store.dataStore.data.first().asMap()).isEmpty()
+    }
+
+    @Test
     fun `a reminder time is kept to the minute, and one that cannot be read is the default`() = runTest {
         assertThat(source.update { it.copy(reminderTime = LocalTime.of(7, 5, 59, 1)) }.reminderTime)
             .isEqualTo(LocalTime.of(7, 5))

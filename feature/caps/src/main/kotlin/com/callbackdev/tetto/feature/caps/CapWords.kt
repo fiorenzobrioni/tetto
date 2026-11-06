@@ -258,12 +258,18 @@ internal fun headingDate(today: LocalDate): String = pattern("EEEEdMMMM").format
 @ReadOnlyComposable
 private fun weekday(date: LocalDate): String = pattern("EEEE").format(date)
 
+/**
+ * A date as the locale writes one, "30 Nov", "Nov 30", "lunedì 30 nov", held together by no-break
+ * spaces: a line that ends between a month and its day ("until Nov / 30") reads as two things.
+ */
 @Composable
 @ReadOnlyComposable
 private fun dateWords(date: LocalDate, today: LocalDate): String {
     val skeleton = stringResource(R.string.skeleton_date)
-    return pattern(if (date.year == today.year) skeleton else skeleton + "y").format(date)
+    return pattern(if (date.year == today.year) skeleton else skeleton + "y").format(date).replace(' ', NO_BREAK)
 }
+
+private const val NO_BREAK = '\u00A0'
 
 @Composable
 @ReadOnlyComposable

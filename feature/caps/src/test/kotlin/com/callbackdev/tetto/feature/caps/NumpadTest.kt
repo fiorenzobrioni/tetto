@@ -64,7 +64,10 @@ class NumpadTest {
 
     private fun type(keys: String) = keys.forEach { compose.onNodeWithText(it.toString()).performClick() }
 
-    private fun preview() = compose.onNodeWithTag(CapsTags.PREVIEW)
+    // The preview's own line, inside the readout TalkBack hears as one.
+    private fun preview() = compose.onNodeWithTag(CapsTags.PREVIEW, useUnmergedTree = true)
+
+    private fun readout() = compose.onNodeWithTag(CapsTags.READOUT)
 
     @Test
     fun `Add waits for an amount, and is never relabelled as something else`() {
@@ -80,9 +83,11 @@ class NumpadTest {
     @Test
     fun `the preview follows every key, politely for TalkBack`() {
         draw()
-        preview().assert(SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite))
+        readout().assert(SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite))
         type("4.5")
         preview().assertTextEquals("€11.50 left")
+        // TalkBack hears the amount typed with what it would leave, as one announcement.
+        readout().assertTextEquals("€4.5", "€11.50 left")
         type("0")
         type("0")
         // The third decimal is refused: still €4.50.
@@ -94,6 +99,13 @@ class NumpadTest {
         preview().assertTextEquals("€404 over")
         compose.onNodeWithTag(CapsTags.CONFIRM).performClick()
         assertThat(confirmed).containsExactly(euros(420))
+    }
+
+    @Test
+    fun `the decimal key is named for TalkBack, whatever its punctuation setting`() {
+        draw()
+        compose.onNodeWithContentDescription("Decimal separator").assertExists()
+        compose.onNodeWithContentDescription("Delete").assertExists()
     }
 
     @Test
@@ -160,11 +172,10 @@ class NumpadTest {
     fun `correcting a spend starts from its amount, and counts it back in what is left`() {
         draw(correcting = euros(3, 20))
         compose.onNodeWithText("Correcting a spend").assertExists()
+        // Its decimals in full, as the cap's sheet lists it (owner, 6 Nov 2026).
+        readout().assertTextEquals("€3.20", "€16 left")
         compose.onNodeWithTag(CapsTags.CONFIRM).assertTextEquals("Save €3.20")
-        preview().assertTextEquals("€16 left")
-        compose.onNodeWithContentDescription("Delete").performClick()
-        compose.onNodeWithContentDescription("Delete").performClick()
-        compose.onNodeWithContentDescription("Delete").performClick()
+        repeat(4) { compose.onNodeWithContentDescription("Delete").performClick() }
         preview().assertTextEquals("€19.20 left")
         type("1")
         preview().assertTextEquals("€18.20 left")

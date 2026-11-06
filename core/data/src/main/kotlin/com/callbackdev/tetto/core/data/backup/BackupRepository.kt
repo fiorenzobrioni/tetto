@@ -90,6 +90,7 @@ constructor(
                     currency = currency.code,
                     onboardingCompleted = false,
                     askedNotifications = false,
+                    capsTipSeen = false,
                 ),
                 caps = dao.capRows().map { row ->
                     val cap = row.cap
@@ -123,7 +124,8 @@ constructor(
      * in its order, and the catch-up, so a backup from last month closes what has ended since.
      *
      * Should the transaction fail, nothing of it is written and the settings are put back: the
-     * phone is as it was. What belongs to this phone stays: whether it asked for the permission.
+     * phone is as it was. What belongs to this phone stays: whether it asked for the permission,
+     * whether it showed the caps screen's first-day tip.
      */
     suspend fun restore(backup: Backup) {
         caps.exclusively {
@@ -133,6 +135,7 @@ constructor(
                     currency = backup.currency.code,
                     onboardingCompleted = true,
                     askedNotifications = current.askedNotifications,
+                    capsTipSeen = current.capsTipSeen,
                 )
             }
             try {
@@ -156,12 +159,15 @@ constructor(
      * Erases everything the reader made (VISION, «Settings»): every cap with its spends and closed
      * periods, then the settings, back to the first run. The caps first: should the settings fail,
      * the reader sees an empty caps screen, never a first run that would add its caps to the old.
-     * Whether the permission was asked is the phone's, not the reader's data, and stays.
+     * Whether the permission was asked, and whether the first-day tip was shown, are the phone's,
+     * not the reader's data, and stay: a reader who erases has met the caps screen already.
      */
     suspend fun erase() {
         caps.exclusively {
             database.withTransaction { dao.deleteAllCaps() }
-            preferences.update { UserSettings(askedNotifications = it.askedNotifications) }
+            preferences.update {
+                UserSettings(askedNotifications = it.askedNotifications, capsTipSeen = it.capsTipSeen)
+            }
         }
     }
 }

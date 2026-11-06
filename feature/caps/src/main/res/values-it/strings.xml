@@ -7,6 +7,12 @@
     <string name="change_order">Cambia l’ordine</string>
     <string name="open_settings">Impostazioni</string>
 
+    <!-- Il suggerimento del primo giorno: come leggere una scheda, e la strada per la guida. -->
+    <string name="tip_title">Come leggere un tetto</string>
+    <string name="tip_body">La cifra grande è quanto puoi ancora spendere, fino al giorno scritto sotto. La linea sottile sulla barra è oggi: una barra che la supera vuol dire spese in anticipo sui giorni. La guida spiega il resto.</string>
+    <string name="tip_open">Apri la guida</string>
+    <string name="tip_dismiss">Ho capito</string>
+
     <!-- La frase in cima: prima un tetto sforato, poi uno rinnovato oggi, poi tutti sotto. -->
     <string name="sentence_one_under">%1$s: ancora %2$s %3$s.</string>
     <string name="sentence_all_under">Tutti sotto il tetto. Il più vicino è %1$s: ancora %2$s %3$s.</string>

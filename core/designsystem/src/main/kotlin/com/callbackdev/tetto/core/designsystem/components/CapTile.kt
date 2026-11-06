@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -42,7 +44,9 @@ import com.callbackdev.tetto.core.model.Share
  * [reserve] as a small chip, only while there is one.
  *
  * TalkBack reads it as one sentence, [description], and offers the touch ([clickLabel]: the
- * numpad) and the long press ([longClickLabel]: the cap's sheet) by name.
+ * numpad) and the long press ([longClickLabel]: the cap's sheet) by name. Not [enabled], it is a
+ * picture of a tile (the guide's examples, the appearance's preview): no touch, no ripple, and
+ * TalkBack reads its sentence without calling it a button.
  */
 @Composable
 fun CapTile(
@@ -63,21 +67,25 @@ fun CapTile(
     modifier: Modifier = Modifier,
     pace: String? = null,
     reserve: String? = null,
+    enabled: Boolean = true,
 ) {
     Surface(
         modifier = modifier
             .clip(GroupShape)
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+            // A picture has no touch at all: a disabled one would still be read as a button.
+            .then(if (enabled) Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick) else Modifier)
             .clearAndSetSemantics {
                 contentDescription = description
-                role = Role.Button
-                onClick(label = clickLabel) {
-                    onClick()
-                    true
-                }
-                onLongClick(label = longClickLabel) {
-                    onLongClick()
-                    true
+                if (enabled) {
+                    role = Role.Button
+                    onClick(label = clickLabel) {
+                        onClick()
+                        true
+                    }
+                    onLongClick(label = longClickLabel) {
+                        onLongClick()
+                        true
+                    }
                 }
             },
         shape = GroupShape,
@@ -87,11 +95,14 @@ fun CapTile(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 CapBadge(icon)
                 Spacer(Modifier.size(12.dp))
-                Text(
+                // Two lines at most, and never a word cut in two: a long name steps down first.
+                val title = MaterialTheme.typography.titleMedium
+                BasicText(
                     name,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = title.copy(color = LocalContentColor.current),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
+                    autoSize = WholeWordsAutoSize(max = title.fontSize),
                 )
             }
             Spacer(Modifier.height(12.dp))

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="guide_title">La guida</string>
+    <string name="guide_intro">Tetto risponde a una domanda per ogni cosa su cui metti un tetto: quanto puoi ancora spendere, e fino a quando. Questa guida dice a cosa serve ogni parte della schermata, e le poche cose che vale la pena sapere e che una schermata non può dire da sola.</string>
+
+    <!-- A cosa risponde la schermata dei tetti -->
+    <string name="guide_caps_title">A cosa risponde la schermata dei tetti</string>
+    <string name="guide_caps_p1">Prima una frase, poi un riquadro per ogni tetto. La frase parla per tutti insieme: tutto sotto il tetto e quello più vicino, oppure un tetto sforato e quando riparte. Ogni riquadro parla per uno.</string>
+    <string name="guide_caps_caption">Un esempio, di %1$s: Caffè ben sotto il tetto, con qualcosa di riserva; Mangiare fuori con le spese in anticipo sui giorni.</string>
+    <string name="guide_caps_left_title">Prima quanto resta</string>
+    <string name="guide_caps_left_body">La cifra grande è quanto puoi ancora spendere in questo periodo: il tetto e la sua riserva, meno quello che hai speso. Sotto, il tetto e l’ultimo giorno del periodo: «fino a domenica» conta anche la domenica. Oltre il tetto, la cifra dice di quanto sei sotto, a parole oltre che col colore.</string>
+    <string name="guide_caps_bar_title">La barra e la linea di oggi</string>
+    <string name="guide_caps_bar_body">La barra si riempie con quello che hai speso. La linea sottile che la attraversa è oggi, tanto avanti nel periodo quanto lo sono i giorni: una barra che la supera vuol dire spese in anticipo sui giorni, e cambia colore per dirlo. Non è un allarme: l’ultimo giorno di un periodo una barra piena è perfettamente in tempo.</string>
+    <string name="guide_caps_pace_title">Il ritmo</string>
+    <string name="guide_caps_pace_body">Su un tetto di una settimana o più, con qualche giorno ancora davanti: circa quanto al giorno ti tiene sotto il tetto fino alla fine.</string>
+    <string name="guide_caps_live_title">Viva mentre guardi</string>
+    <string name="guide_caps_live_body">Lasciata aperta oltre la mezzanotte, la schermata gira il giorno da sola: un periodo che finisce si chiude, e si apre il successivo.</string>
+
+    <!-- Un periodo, la riserva e il condono -->
+    <string name="guide_period_title">Un periodo, la riserva e il condono</string>
+    <string name="guide_period_p1">Ogni tetto ha il suo periodo: un giorno, una settimana, un mese o un anno. Quando un periodo finisce, quello che ha avanzato viene messo da parte, quello che ha sforato viene saldato, e il periodo dopo riparte intero.</string>
+    <string name="guide_period_caption">Un esempio: quattro settimane di un tetto di %1$s per il caffè. Quello che la prima settimana ha avanzato ha portato la seconda oltre il tetto; la terza ha speso più di quanto la riserva potesse coprire, e il resto è stato condonato. La quarta riparte intera.</string>
+    <string name="guide_period_reserve_title">La riserva</string>
+    <string name="guide_period_reserve_body">Quello che un periodo avanza va nella riserva del tetto, fino a un tetto di un periodo, così qualche settimana tranquilla non fa mai di un tetto un budget a sé. La riserva conta in quanto resta, e la sua etichetta sul riquadro dice quanta ce n’è.</string>
+    <string name="guide_period_forgiven_title">Il condono</string>
+    <string name="guide_period_forgiven_body">Uno sforamento attinge prima alla riserva. Quello che la riserva non copre è condonato quando il periodo finisce: il periodo dopo riparte dal tetto intero, mai in debito. Una brutta settimana resta una brutta settimana, e basta.</string>
+    <string name="guide_period_calendar_title">Le tue settimane e i tuoi mesi</string>
+    <string name="guide_period_calendar_body">Una settimana comincia dal primo giorno della settimana del telefono, un mese dal giorno 1, un anno da quel giorno di gennaio. Tutti e due si cambiano nelle Impostazioni: un mese dal 27, per esempio, per uno stipendio che arriva il 27.</string>
+    <string name="guide_period_change_title">Cambiare un tetto</string>
+    <string name="guide_period_change_body">Un nuovo importo conta subito, nel periodo in corso. Un nuovo periodo tiene la riserva, e le spese di questo periodo passano al nuovo.</string>
+    <string name="guide_period_closing_title">Chiuso alla prossima occhiata</string>
+    <string name="guide_period_closing_body">A mezzanotte, a schermo spento, non gira niente. La prima volta che Tetto viene letto dopo la fine di un periodo (l’app, un widget, il promemoria) chiude in ordine ogni periodo finito da allora. Dopo settimane di assenza, quelli vuoti contano insieme, e la riserva si ferma al suo limite.</string>
+    <string name="guide_period_frozen_title">Chiuso vuol dire chiuso</string>
+    <string name="guide_period_frozen_body">Un periodo chiuso non cambia più: le sue spese non si possono più correggere, così la riserva non si muove mai alle tue spalle. Il foglio di un tetto tiene gli ultimi tre, una riga ciascuno, per dire da dove viene la riserva.</string>
+
+    <!-- Il tastierino, e correggere una spesa -->
+    <string name="guide_numpad_title">Il tastierino, e correggere una spesa</string>
+    <string name="guide_numpad_p1">Una spesa è un importo, in un tetto, adesso: niente data, niente nota, nessuna categoria da cercare. La categoria è il tetto che hai toccato.</string>
+    <string name="guide_numpad_caption">Un esempio: %1$s digitati su un tetto con ancora %2$s, e sotto l’importo quello che resterebbe.</string>
+    <string name="guide_numpad_preview_title">L’anteprima</string>
+    <string name="guide_numpad_preview_body">Prima di aggiungere, la riga sotto l’importo dice quanto resterebbe finché la spesa ci sta, di quanto saresti sotto quando non ci sta più, e «ancora sotto» quando il tetto era già sforato. È l’unico avviso che Tetto dà, nell’unico momento in cui può ancora cambiare qualcosa.</string>
+    <string name="guide_numpad_undo_title">Annulla, e anche dopo</string>
+    <string name="guide_numpad_undo_body">Aggiunta una spesa, la cifra scorre al nuovo valore e un messaggio propone di annullarla, per tutto il tempo che chiedono le impostazioni di accessibilità del telefono. Un importo sbagliato che noti più tardi si corregge lo stesso: ogni spesa del periodo in corso è nel foglio del tetto, da correggere o da eliminare.</string>
+    <string name="guide_numpad_sheet_title">Il foglio di un tetto</string>
+    <string name="guide_numpad_sheet_body">Dietro una pressione prolungata su un riquadro: le date e le cifre di questo periodo, le sue spese con il giorno e l’ora di ciascuna, gli ultimi periodi in una riga ciascuno, e il tetto stesso, da cambiare o eliminare. Azzerare la riserva, lì, fa ripartire un tetto da capo.</string>
+    <string name="guide_numpad_keys_title">Tasti come la tua tastiera</string>
+    <string name="guide_numpad_keys_body">Il tasto dei decimali è quello della tua lingua, e una valuta senza centesimi non ce l’ha. Ogni tasto fa il tic della tastiera del telefono; lo spegne l’impostazione di vibrazione al tocco del telefono stesso.</string>
+
+    <!-- Nella schermata Home -->
+    <string name="guide_home_title">Nella schermata Home</string>
+    <string name="guide_home_two_title">Due widget</string>
+    <string name="guide_home_two_body">«Colpo d’occhio» tiene i tuoi tetti, quanti ne permette la sua misura, ciascuno con quanto resta e una barra sottile. «In parole» tiene un tetto in un anello, con quanto resta a parole: il tetto che scegli tu, o quello più vicino al suo tetto. Nessuno dei due scorre mai: quello che non ci sta viene contato. Tieni premuto un widget per le sue impostazioni: lo sfondo e il colore, l’opacità, i tetti.</string>
+    <string name="guide_home_add_title">Una spesa senza aprire l’app</string>
+    <string name="guide_home_add_body">Un tocco su un tetto in un widget apre il tastierino sopra la schermata Home: due tocchi e l’importo, e sei di nuovo dov’eri. Una pressione prolungata sull’icona di Tetto offre allo stesso modo i tuoi primi quattro tetti.</string>
+    <string name="guide_home_dates_title">Giorni, non conti alla rovescia</string>
+    <string name="guide_home_dates_body">Un widget dice «fino a domenica», mai quante ore mancano: si ridisegna dopo ogni spesa e a mezzanotte, non a ogni minuto, e un conto alla rovescia sarebbe presto sbagliato.</string>
+    <string name="guide_home_reminder_title">Il promemoria serale</string>
+    <string name="guide_home_reminder_body">Se lo attivi nelle Impostazioni, una notifica alla sera chiede se c’è qualcosa da aggiungere, e solo in un giorno senza spese aggiunte. Arriva verso l’ora che hai scelto, non al minuto: Tetto non chiede ad Android una sveglia esatta, così il telefono può risparmiare batteria, e alcuni telefoni la trattengono ancora un po’.</string>
+
+    <!-- I tuoi dati -->
+    <string name="guide_data_title">I tuoi dati</string>
+    <string name="guide_data_p1">Tetto non ha alcun permesso di accesso a internet: non invia nulla, a nessuno. I tuoi tetti e le tue spese restano su questo telefono.</string>
+    <string name="guide_data_p2">Lo lasciano solo in un file che salvi tu (un backup, da ripristinare qui o su un altro telefono, o le tue spese in CSV per un foglio di calcolo) o nel backup di Android, se è attivo: quella copia è di Android, non di Tetto.</string>
+    <string name="guide_data_p3">Un file di backup non è cifrato: tienilo dove tieni gli altri file riservati. Ripristinarne uno sostituisce i tetti di questo telefono, dopo aver detto che cosa contiene e che cosa sostituisce.</string>
+
+    <!-- Quello che Tetto non fa -->
+    <string name="guide_not_title">Quello che Tetto non fa</string>
+    <string name="guide_not_p1">Tetto non tiene un registro: niente cronologia da scorrere, niente statistiche né grafici, niente conti, niente entrate, niente note o etichette su una spesa. È questo che tiene una spesa a due tocchi, e la schermata su una sola domanda.</string>
+    <string name="guide_not_p2">Se vuoi ogni movimento conservato per sempre, con i saldi e i grafici di dove sono andati i tuoi soldi, ti serve un’app per tracciare le spese: un altro tipo di app, fatta per quello.</string>
+    <string name="guide_not_total_title">Nessun totale</string>
+    <string name="guide_not_total_body">Tetti di periodi diversi non si sommano: una settimana di caffè e un anno di regali non fanno una somma che valga la pena leggere, e così non c’è.</string>
+    <string name="guide_not_move_title">Niente soldi spostati tra i tetti</string>
+    <string name="guide_not_move_body">Lo sforamento di un tetto non si paga mai con un altro: la riserva e il condono sono tutto il meccanismo, così ogni tetto continua a voler dire quello che hai deciso.</string>
+    <string name="guide_not_alerts_title">Nessun avviso</string>
+    <string name="guide_not_alerts_body" formatted="false">Nessun avviso all’80%, nessun messaggio quando vai sotto: il tastierino dice quanto lascerà una spesa prima che tu la aggiunga.</string>
+    <string name="guide_not_currency_title">Una sola valuta</string>
+    <string name="guide_not_currency_body">Ogni importo in una sola valuta. Cambiarla nelle Impostazioni rietichetta le tue cifre e non le converte mai.</string>
+
+    <!-- Gli esempi: i componenti dell'app, nella valuta di chi legge, detti esempi. -->
+    <string name="guide_sample_coffee">Caffè</string>
+    <string name="guide_sample_eating_out">Mangiare fuori</string>
+    <string name="guide_sample_left">ancora %s</string>
+    <string name="guide_sample_detail">su %1$s · fino a %2$s</string>
+    <string name="guide_sample_pace">circa %s al giorno</string>
+    <string name="guide_sample_reserve">+%s di riserva</string>
+    <string name="guide_sample_tile_description">Esempio. %1$s, ancora %2$s su %3$s, fino a %4$s</string>
+    <string name="guide_sample_ahead">spese in anticipo sui giorni</string>
+    <string name="guide_sample_with_reserve">con %s di riserva</string>
+    <string name="guide_story_week">Settimana %d</string>
+    <string name="guide_story_spent">%1$s su %2$s</string>
+    <string name="guide_story_to_reserve">+%s alla riserva</string>
+    <string name="guide_story_from_reserve">%s dalla riserva</string>
+    <string name="guide_story_forgiven">Usati i %1$s della riserva, condono di %2$s</string>
+    <string name="guide_story_forgiven_alone">Condono di %s</string>
+    <string name="guide_story_whole">Riparte intera: ancora %s</string>
+    <string name="guide_story_description">Esempio. %1$s: %2$s. %3$s</string>
+    <string name="guide_numpad_description">Esempio del tastierino: %1$s digitati su %2$s, che ha ancora %3$s. Sotto l’importo: %4$s</string>
+</resources>

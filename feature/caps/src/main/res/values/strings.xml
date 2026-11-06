@@ -7,6 +7,12 @@
     <string name="change_order">Change the order</string>
     <string name="open_settings">Settings</string>
 
+    <!-- The first day's tip (PLANNING.md §11 Phase 6): how to read a tile, and the way to the guide. -->
+    <string name="tip_title">How to read a cap</string>
+    <string name="tip_body">The large figure is what you can still spend, until the day written under it. The thin line across the bar is today: a bar that runs past it is spending ahead of the days. The guide explains the rest.</string>
+    <string name="tip_open">Open the guide</string>
+    <string name="tip_dismiss">Got it</string>
+
     <!-- The sentence on top (PLANNING.md §4.6): a cap over first, then one renewed today, then all under. -->
     <string name="sentence_one_under">%1$s: %2$s left %3$s.</string>
     <string name="sentence_all_under">All under your caps. %1$s is the closest: %2$s left %3$s.</string>

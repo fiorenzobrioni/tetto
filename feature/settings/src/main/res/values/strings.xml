@@ -2,6 +2,10 @@
 <resources>
     <string name="settings_title">Settings</string>
 
+    <!-- The guide's card, first in the list (PLANNING.md §11 Phase 6). -->
+    <string name="settings_guide">How Tetto works</string>
+    <string name="settings_guide_note">The caps and their periods, the reserve, the numpad, the home screen, your data</string>
+
     <!-- The money (PLANNING.md §4.1, §4.2, §4.5). -->
     <string name="settings_group_money">Money</string>
     <string name="settings_currency_explanation">Tetto counts in one currency. Changing it relabels your amounts; it never converts them.</string>

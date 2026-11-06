@@ -120,6 +120,7 @@ class SettingsRepositoryTest {
         repository.setReminder(true)
         repository.setReminderTime(LocalTime.of(21, 15))
         repository.noteNotificationsAsked()
+        repository.noteCapsTipSeen()
 
         restart()
 
@@ -136,6 +137,7 @@ class SettingsRepositoryTest {
                 reminderOn = true,
                 reminderTime = LocalTime.of(21, 15),
                 askedNotifications = true,
+                capsTipSeen = true,
             ),
         )
         assertThat(repository.currency.first()).isEqualTo(AppCurrency("JPY", 0))

@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -87,6 +88,12 @@ class CapEditorTest {
         assertThat(draft.amount).isEqualTo(euros(12, 34))
         amount.performTextReplacement("1234567890")
         assertThat(draft.amount).isEqualTo(euros(12, 34))
+    }
+
+    @Test
+    fun `a cap's amount opens with its decimals in full`() {
+        draw(editing = PeriodKind.MONTH, start = CapDraft("Books", euros(12, 50), PeriodKind.MONTH, CapIcon.BOOKS))
+        compose.onNodeWithTag(CapsTags.EDITOR_AMOUNT).assertTextContains("12.50")
     }
 
     @Test

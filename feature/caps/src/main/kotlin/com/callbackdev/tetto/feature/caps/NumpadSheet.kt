@@ -179,25 +179,30 @@ internal fun NumpadContent(
     ) {
         Header(state, format, correcting, onOpenCap)
         Spacer(Modifier.height(16.dp))
-        Amount(format, input)
-        // Before a spend is corrected, its own amount is back in what is left.
-        val base = state.left + (correcting ?: Money.ZERO)
-        Text(
-            previewWords(SpendPreview.of(base, input.amount), format),
-            style = MaterialTheme.typography.titleMedium,
-            color = if (base <
-                input.amount
-            ) {
-                MaterialTheme.colorScheme.error
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
-            },
-            textAlign = TextAlign.Center,
-            modifier = Modifier
+        // The amount and its preview, one polite live region for TalkBack: each key is heard as
+        // what is typed and what it would leave ("€4.50, €11.50 left"), the separator too, which
+        // changes the figure and not what is left.
+        Column(
+            Modifier
                 .fillMaxWidth()
-                .testTag(CapsTags.PREVIEW)
-                .semantics { liveRegion = LiveRegionMode.Polite },
-        )
+                .testTag(CapsTags.READOUT)
+                .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
+        ) {
+            Amount(format, input)
+            // Before a spend is corrected, its own amount is back in what is left.
+            val base = state.left + (correcting ?: Money.ZERO)
+            Text(
+                previewWords(SpendPreview.of(base, input.amount), format),
+                style = MaterialTheme.typography.titleMedium,
+                color = if (base < input.amount) {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().testTag(CapsTags.PREVIEW),
+            )
+        }
         Spacer(Modifier.height(16.dp))
         NumpadKeys(
             separator = format.decimalSeparator.takeIf { input.hasSeparator },

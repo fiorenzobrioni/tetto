@@ -70,6 +70,7 @@ constructor(private val dataStore: DataStore<Preferences>) {
             reminderOn = prefs[Keys.REMINDER_ON] ?: defaults.reminderOn,
             reminderTime = prefs[Keys.REMINDER_TIME]?.let(::timeOrNull) ?: defaults.reminderTime,
             askedNotifications = prefs[Keys.ASKED_NOTIFICATIONS] ?: defaults.askedNotifications,
+            capsTipSeen = prefs[Keys.CAPS_TIP_SEEN] ?: defaults.capsTipSeen,
         )
     }
 
@@ -86,6 +87,7 @@ constructor(private val dataStore: DataStore<Preferences>) {
         prefs.putOrRemove(Keys.REMINDER_ON, settings.reminderOn, defaults.reminderOn)
         prefs.putOrRemove(Keys.REMINDER_TIME, settings.reminderTime.toString(), defaults.reminderTime.toString())
         prefs.putOrRemove(Keys.ASKED_NOTIFICATIONS, settings.askedNotifications, defaults.askedNotifications)
+        prefs.putOrRemove(Keys.CAPS_TIP_SEEN, settings.capsTipSeen, defaults.capsTipSeen)
     }
 
     private fun <T> MutablePreferences.putOrRemove(key: Preferences.Key<T>, value: T?, default: T?) {
@@ -124,6 +126,7 @@ constructor(private val dataStore: DataStore<Preferences>) {
         /** The local time, as `java.time` writes one: "20:30". */
         val REMINDER_TIME = stringPreferencesKey("reminder_time")
         val ASKED_NOTIFICATIONS = booleanPreferencesKey("asked_notifications")
+        val CAPS_TIP_SEEN = booleanPreferencesKey("caps_tip_seen")
     }
 
     companion object {

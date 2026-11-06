@@ -107,6 +107,7 @@ dependencies {
     implementation(project(":feature:caps"))
     implementation(project(":feature:onboarding"))
     implementation(project(":feature:settings"))
+    implementation(project(":feature:guide"))
     implementation(project(":widget"))
 
     implementation(libs.androidx.core.ktx)

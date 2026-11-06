@@ -1,5 +1,6 @@
 package com.callbackdev.tetto.feature.caps
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,13 +38,17 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.callbackdev.tetto.core.designsystem.components.CapTile
 import com.callbackdev.tetto.core.designsystem.components.NewCapTile
+import com.callbackdev.tetto.core.designsystem.components.StatusCard
+import com.callbackdev.tetto.core.designsystem.components.StatusTone
 import com.callbackdev.tetto.core.designsystem.format.MoneyFormat
 import com.callbackdev.tetto.core.designsystem.format.rememberMoneyFormat
 import com.callbackdev.tetto.core.designsystem.icons.TettoIcons
 import com.callbackdev.tetto.core.designsystem.icons.symbol
 import com.callbackdev.tetto.core.designsystem.theme.ScreenMargin
+import com.callbackdev.tetto.core.designsystem.theme.TettoMotion
 import com.callbackdev.tetto.core.designsystem.theme.padding
 import com.callbackdev.tetto.core.designsystem.theme.pageGutter
+import com.callbackdev.tetto.core.designsystem.theme.reducedMotion
 import com.callbackdev.tetto.core.model.CapState
 import java.time.LocalDate
 
@@ -51,7 +56,8 @@ import java.time.LocalDate
  * The caps screen (VISION, «Caps»; PLANNING.md §11 Phase 2), drawn from its state: today, the
  * sentence before any number, a tile per cap in the reader's order (two columns on a phone, one at
  * large text sizes), "New cap" last, and "Change the order" under them from two caps up. A touch
- * on a tile opens the numpad on it, a long press its sheet.
+ * on a tile opens the numpad on it, a long press its sheet. On the first day, the tip over the
+ * tiles says how to read one, and leads to the guide (Phase 6).
  */
 @Composable
 fun CapsScreen(
@@ -62,9 +68,12 @@ fun CapsScreen(
     onChangeOrder: () -> Unit,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenGuide: () -> Unit = {},
+    onDismissTip: () -> Unit = {},
     contentPadding: PaddingValues = PaddingValues(),
 ) {
     val format = rememberMoneyFormat(state.currency)
+    val reduced = reducedMotion()
     Column(
         modifier
             .fillMaxSize()
@@ -106,6 +115,18 @@ fun CapsScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+        // Gone with a fade and the space closing, so the tiles rise to where it was: the reader sees
+        // where the tip went.
+        AnimatedVisibility(
+            visible = state.showsTip,
+            enter = TettoMotion.enter(reduced),
+            exit = TettoMotion.exit(reduced),
+        ) {
+            Column {
+                Spacer(Modifier.height(20.dp))
+                TipCard(onOpenGuide, onDismissTip)
+            }
+        }
         Spacer(Modifier.height(24.dp))
         TileGrid(state, format, onAddSpend, onOpenCap, onNewCap)
         if (state.caps.size >= 2) {
@@ -115,6 +136,26 @@ fun CapsScreen(
             }
         }
     }
+}
+
+/**
+ * The first day's tip (PLANNING.md §11 Phase 6): what a tile's figure and its bar say, and the way
+ * to the guide for the rest. Shown until it is dismissed or followed ([CapsUiState.showsTip]); the
+ * guide stays first in Settings for the day the question comes back.
+ */
+@Composable
+private fun TipCard(onOpenGuide: () -> Unit, onDismiss: () -> Unit) {
+    StatusCard(
+        icon = TettoIcons.Roof,
+        title = stringResource(R.string.tip_title),
+        body = stringResource(R.string.tip_body),
+        tone = StatusTone.NOTE,
+        action = stringResource(R.string.tip_open),
+        onAction = onOpenGuide,
+        dismiss = stringResource(R.string.tip_dismiss),
+        onDismiss = onDismiss,
+        modifier = Modifier.testTag(CapsTags.TIP),
+    )
 }
 
 /**
@@ -201,9 +242,13 @@ private const val NARROW_DP = 300f
 object CapsTags {
     const val PAGE = "caps_page"
     const val SETTINGS = "caps_settings"
+    const val TIP = "caps_tip"
     const val NUMPAD = "numpad"
     const val AMOUNT = "numpad_amount"
     const val PREVIEW = "numpad_preview"
+
+    /** The amount and its preview together, as TalkBack hears them. */
+    const val READOUT = "numpad_readout"
     const val CONFIRM = "numpad_confirm"
     const val SHEET = "cap_sheet"
     const val EDITOR = "cap_editor"

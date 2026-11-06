@@ -226,9 +226,19 @@ class BackupRepositoryTest {
 
     @Test
     fun `what belongs to the phone stays with it`() = runTest {
-        new.preferences.update { it.copy(askedNotifications = true, onboardingCompleted = true) }
+        new.preferences.update { it.copy(askedNotifications = true, onboardingCompleted = true, capsTipSeen = true) }
+        old.preferences.update { it.copy(capsTipSeen = false) }
         new.data.restore(old.data.backup("0.1.0"))
         assertThat(new.preferences.current().askedNotifications).isTrue()
+        assertThat(new.preferences.current().capsTipSeen).isTrue()
+    }
+
+    @Test
+    fun `a backup does not carry what the phone has shown`() = runTest {
+        old.preferences.update { it.copy(capsTipSeen = true, askedNotifications = true) }
+        val settings = old.data.backup("0.1.0").settings
+        assertThat(settings.capsTipSeen).isFalse()
+        assertThat(settings.askedNotifications).isFalse()
     }
 
     @Test
@@ -245,7 +255,7 @@ class BackupRepositoryTest {
     @Test
     fun `erasing everything leaves no cap, the first run, and the phone's own facts`() = runTest {
         aMonthOfSpending()
-        old.preferences.update { it.copy(askedNotifications = true) }
+        old.preferences.update { it.copy(askedNotifications = true, capsTipSeen = true) }
         val lastId = old.caps.currentStates().maxOf { it.cap.id }
 
         old.data.erase()
@@ -253,7 +263,7 @@ class BackupRepositoryTest {
         assertThat(old.caps.currentStates()).isEmpty()
         assertThat(old.database.capsDao().spendCount()).isEqualTo(0)
         assertThat(old.database.capsDao().allClosedPeriods()).isEmpty()
-        assertThat(old.preferences.current()).isEqualTo(UserSettings(askedNotifications = true))
+        assertThat(old.preferences.current()).isEqualTo(UserSettings(askedNotifications = true, capsTipSeen = true))
         // An id is never given twice: a cap made after the erase is a new one.
         assertThat(old.caps.addCap("Coffee", COFFEE, euros(20), WEEK)).isGreaterThan(lastId)
     }

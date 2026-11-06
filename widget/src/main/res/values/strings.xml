@@ -26,7 +26,7 @@
     <string name="widget_again_tomorrow">tomorrow</string>
     <string name="widget_again_day">on %s</string>
     <!-- How a date beyond the next six days is written, as a date skeleton. -->
-    <string name="widget_skeleton_date" translatable="false">dMMM</string>
+    <string name="widget_skeleton_date">dMMM</string>
 
     <!-- What is left: "€12 left", "€30 over"; the word alone, under a one-cell figure. -->
     <string name="widget_left">%s left</string>
@@ -60,7 +60,6 @@
     <string name="widget_description_ahead">spending ahead of the days</string>
     <string name="widget_description_pace">about %s a day</string>
     <string name="widget_description_reserve">with %s in reserve</string>
-    <string name="widget_description_add">Add a spend</string>
 
     <!-- What does not fit, counted. -->
     <plurals name="widget_more">
@@ -79,7 +78,6 @@
     <string name="widget_gone_hint">Choose another in this card’s settings</string>
     <string name="widget_unavailable_title">The caps could not be read</string>
     <string name="widget_unavailable_hint">Touch to open Tetto</string>
-    <string name="widget_open_tetto">Open Tetto</string>
 
     <!-- The card's settings screen (PLANNING.md §7): the family's, with Tetto's content. -->
     <string name="widget_config_title">This card</string>
