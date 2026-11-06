@@ -15,18 +15,15 @@ import com.callbackdev.tetto.core.data.time.TodaySource
 import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.CapIcon
 import com.callbackdev.tetto.core.model.PeriodKind
+import com.callbackdev.tetto.core.testing.RealMainThread
 import com.callbackdev.tetto.feature.caps.CapsSample.euros
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Before
@@ -38,20 +35,18 @@ import java.io.File
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.ZoneId
-import java.util.concurrent.Executors
 
 /**
  * The caps screen's ViewModel on a real Room database (PLANNING.md §11 Phase 2, acceptance): a
  * spend is two touches and the amount, and Undo puts the figure back. On real threads: the page's
  * midnight wait is real time, which a test scheduler would skip round and round.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(AndroidJUnit4::class)
 class CapsViewModelTest {
     @get:Rule val folder = TemporaryFolder()
 
     private val context: Context = ApplicationProvider.getApplicationContext()
-    private val main = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+    private val main = RealMainThread()
     private val io = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var database: TettoDatabase
     private lateinit var caps: CapsRepository
@@ -71,7 +66,7 @@ class CapsViewModelTest {
 
     @Before
     fun setUp() {
-        Dispatchers.setMain(main)
+        main.start()
         database = Room.inMemoryDatabaseBuilder(context, TettoDatabase::class.java).build()
         val store = PreferenceDataStoreFactory.create(scope = io) { File(folder.root, "settings.preferences_pb") }
         val preferences = UserPreferencesDataSource(store)
@@ -81,10 +76,9 @@ class CapsViewModelTest {
 
     @After
     fun tearDown() {
-        Dispatchers.resetMain()
+        main.stop(viewModel)
         database.close()
         io.cancel()
-        main.close()
     }
 
     private suspend fun awaitLeft(capId: Long, cents: Long) = withTimeout(TIMEOUT) {

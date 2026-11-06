@@ -16,18 +16,15 @@ import com.callbackdev.tetto.core.data.widget.QuickAdd
 import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.CapIcon
 import com.callbackdev.tetto.core.model.PeriodKind
+import com.callbackdev.tetto.core.testing.RealMainThread
 import com.callbackdev.tetto.feature.caps.CapsSample.euros
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Before
@@ -39,23 +36,24 @@ import java.io.File
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.ZoneId
-import java.util.concurrent.Executors
 
 /**
  * The numpad over the home screen (PLANNING.md §7, Taps), on a real Room database: from the home
  * screen a spend is two touches and the amount; Undo takes it back and types its amount in again.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(AndroidJUnit4::class)
 class QuickAddViewModelTest {
     @get:Rule val folder = TemporaryFolder()
 
     private val context: Context = ApplicationProvider.getApplicationContext()
-    private val main = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+    private val main = RealMainThread()
     private val io = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var database: TettoDatabase
     private lateinit var caps: CapsRepository
     private lateinit var settings: SettingsRepository
+
+    // Each test opens its own: all of them are stopped before Main is reset.
+    private val made = mutableListOf<QuickAddViewModel>()
 
     private val clock = object : TodaySource {
         override fun now(): Instant = Instant.parse("2026-11-05T09:00:00Z")
@@ -71,7 +69,7 @@ class QuickAddViewModelTest {
 
     @Before
     fun setUp() {
-        Dispatchers.setMain(main)
+        main.start()
         database = Room.inMemoryDatabaseBuilder(context, TettoDatabase::class.java).build()
         val store = PreferenceDataStoreFactory.create(scope = io) { File(folder.root, "settings.preferences_pb") }
         val preferences = UserPreferencesDataSource(store)
@@ -81,10 +79,9 @@ class QuickAddViewModelTest {
 
     @After
     fun tearDown() {
-        Dispatchers.resetMain()
+        main.stop(*made.toTypedArray())
         database.close()
         io.cancel()
-        main.close()
     }
 
     private fun viewModel(capId: Long?) = QuickAddViewModel(
@@ -96,7 +93,7 @@ class QuickAddViewModelTest {
         caps,
         settings,
         clock,
-    )
+    ).also { made += it }
 
     @Test
     fun `the amount and Add, and the cap says what is left`() = runBlocking<Unit> {

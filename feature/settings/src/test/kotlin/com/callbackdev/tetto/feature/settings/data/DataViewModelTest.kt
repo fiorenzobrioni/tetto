@@ -17,17 +17,14 @@ import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.CapIcon
 import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.PeriodKind
+import com.callbackdev.tetto.core.testing.RealMainThread
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Before
@@ -39,7 +36,6 @@ import java.io.File
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.ZoneId
-import java.util.concurrent.Executors
 
 /**
  * Your data's ViewModel on a real database and real files (PLANNING.md §11 Phase 4): a backup
@@ -47,13 +43,12 @@ import java.util.concurrent.Executors
  * that is not a backup refused, the spends' table, and erasing everything. On real threads, as
  * the app runs it.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(AndroidJUnit4::class)
 class DataViewModelTest {
     @get:Rule val folder = TemporaryFolder()
 
     private val context: Context = ApplicationProvider.getApplicationContext()
-    private val main = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+    private val main = RealMainThread()
     private val io = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var database: TettoDatabase
     private lateinit var preferences: UserPreferencesDataSource
@@ -74,7 +69,7 @@ class DataViewModelTest {
 
     @Before
     fun setUp() {
-        Dispatchers.setMain(main)
+        main.start()
         database = Room.inMemoryDatabaseBuilder(context, TettoDatabase::class.java).build()
         val store = PreferenceDataStoreFactory.create(scope = io) { File(folder.root, "settings.preferences_pb") }
         preferences = UserPreferencesDataSource(store)
@@ -84,10 +79,9 @@ class DataViewModelTest {
 
     @After
     fun tearDown() {
-        Dispatchers.resetMain()
+        main.stop(viewModel)
         database.close()
         io.cancel()
-        main.close()
     }
 
     private fun file(name: String): File = File(folder.root, name)
