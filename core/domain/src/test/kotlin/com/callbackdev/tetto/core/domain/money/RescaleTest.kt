@@ -37,4 +37,18 @@ class RescaleTest {
     fun `the same decimals change nothing`() {
         assertThat(Rescale.amount(Money(1250), fromDigits = 2, toDigits = 2)).isEqualTo(Money(1250))
     }
+
+    @Test
+    fun `what the numpad typed is held to what it can type back, a closed line's sum is not`() {
+        // 999,999,999.500 dinars would be a ten-digit yen amount: held to nine nines.
+        val largestDinars = Money(999_999_999_500)
+        assertThat(Rescale.amount(largestDinars, fromDigits = 3, toDigits = 0)).isEqualTo(Money(1_000_000_000))
+        assertThat(Rescale.typed(largestDinars, fromDigits = 3, toDigits = 0)).isEqualTo(Money(999_999_999))
+        // Below the edge, the two agree.
+        assertThat(Rescale.typed(Money(1250), fromDigits = 2, toDigits = 0)).isEqualTo(Money(13))
+        assertThat(Rescale.typed(Money(40), fromDigits = 2, toDigits = 0)).isEqualTo(Money(1))
+        // The same decimals hold nothing back: the amount is as it was typed.
+        assertThat(Rescale.typed(Money(1_000_000_000_00), fromDigits = 2, toDigits = 2))
+            .isEqualTo(Money(1_000_000_000_00))
+    }
 }

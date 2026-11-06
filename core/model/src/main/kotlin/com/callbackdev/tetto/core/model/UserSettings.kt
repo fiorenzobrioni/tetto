@@ -28,6 +28,11 @@ import java.time.LocalTime
  *   read a cap") or opened the guide from it: shown over the tiles until then. What this phone
  *   has shown, like [askedNotifications]: a backup does not carry it, a restore and erasing
  *   everything keep it.
+ * @property weekInForce the first day of the week the weekly caps' open periods were made by, the
+ *   engine's own note, not a choice (PLANNING.md §4.5): while [weekStart] follows the phone, the
+ *   phone's week can change under the caps (another language, a backup restored on a phone of
+ *   another region), and the open periods are then moved to it as a change in Settings would move
+ *   them, rather than judged by a week they were not made for. Null until the caps are first read.
  */
 data class UserSettings(
     val currency: String? = null,
@@ -43,6 +48,7 @@ data class UserSettings(
     val reminderTime: LocalTime = DEFAULT_REMINDER_TIME,
     val askedNotifications: Boolean = false,
     val capsTipSeen: Boolean = false,
+    val weekInForce: DayOfWeek? = null,
 ) {
     companion object {
         /** Half past eight in the evening: after most days' spending, before most days end. */

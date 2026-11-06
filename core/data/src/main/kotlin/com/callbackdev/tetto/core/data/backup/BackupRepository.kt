@@ -74,15 +74,15 @@ constructor(
      */
     suspend fun backup(appVersion: String): Backup = caps.exclusively {
         val settings = preferences.current()
-        val today = clock.today()
-        database.withTransaction {
-            caps.catchUpLocked(settings, today)
+        val moment = caps.moment()
+        val backup = database.withTransaction {
+            caps.catchUpLocked(settings, moment)
             val spends = dao.allSpends().groupBy { it.capId }
             val closed = dao.allClosedPeriods().groupBy { it.capId }
             val currency = settings.resolvedCurrency(phone)
             Backup(
-                exportedAt = clock.now(),
-                zone = clock.zone().id,
+                exportedAt = moment.now,
+                zone = moment.zone.id,
                 appVersion = appVersion,
                 currency = currency,
                 // The reader's choices only: what belongs to this phone stays at its default.
@@ -91,7 +91,11 @@ constructor(
                     onboardingCompleted = false,
                     askedNotifications = false,
                     capsTipSeen = false,
+                    weekInForce = null,
                 ),
+                // The week the open periods run on now, after the catch-up: what lets a phone that
+                // starts its weeks on another day move them rather than misread them (§4.5).
+                weekInForce = settings.weekStart ?: phone.weekStart(),
                 caps = dao.capRows().map { row ->
                     val cap = row.cap
                     BackupCap(
@@ -108,6 +112,8 @@ constructor(
                 },
             )
         }
+        caps.keepWeekInForce(settings)
+        backup
     }
 
     /** Every spend, one row each, from the same snapshot a backup takes. */
@@ -136,6 +142,9 @@ constructor(
                     onboardingCompleted = true,
                     askedNotifications = current.askedNotifications,
                     capsTipSeen = current.capsTipSeen,
+                    // The week the backup's open periods were made by: the catch-up moves them to
+                    // this phone's, where the reader's week follows the phone and the two differ.
+                    weekInForce = backup.weekInForce,
                 )
             }
             try {
@@ -146,12 +155,13 @@ constructor(
                         dao.insertSpends(cap.spends.map { it.toEntity(id) })
                         dao.insertClosedPeriods(cap.closed.map { it.toEntity(id) })
                     }
-                    caps.catchUpLocked(after, clock.today())
+                    caps.catchUpLocked(after, caps.moment())
                 }
             } catch (failure: Throwable) {
                 withContext(NonCancellable) { preferences.update { before } }
                 throw failure
             }
+            caps.keepWeekInForce(after)
         }
     }
 

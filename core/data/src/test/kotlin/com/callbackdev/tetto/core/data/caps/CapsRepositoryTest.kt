@@ -12,6 +12,7 @@ import com.callbackdev.tetto.core.data.db.ClosedPeriodEntity
 import com.callbackdev.tetto.core.data.db.TettoDatabase
 import com.callbackdev.tetto.core.data.euros
 import com.callbackdev.tetto.core.data.prefs.UserPreferencesDataSource
+import com.callbackdev.tetto.core.domain.period.Days
 import com.callbackdev.tetto.core.model.CapDraft
 import com.callbackdev.tetto.core.model.CapIcon.COFFEE
 import com.callbackdev.tetto.core.model.CapIcon.GROCERIES
@@ -38,6 +39,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
+import java.time.DayOfWeek.MONDAY
 import java.time.DayOfWeek.SUNDAY
 import java.time.Duration
 import java.time.ZoneId
@@ -56,6 +58,7 @@ class CapsRepositoryTest {
     private lateinit var repository: CapsRepository
 
     private val clock = FakeToday(ZoneId.of("Europe/Rome"))
+    private val phone = FakePhone()
     private val dao get() = database.capsDao()
 
     @Before
@@ -65,7 +68,7 @@ class CapsRepositoryTest {
             .build()
         store = TestDataStore(folder.root)
         preferences = UserPreferencesDataSource(store.dataStore)
-        repository = CapsRepository(database, preferences, clock, FakePhone())
+        repository = CapsRepository(database, preferences, clock, phone)
         clock.at("2026-11-05T10:00")
     }
 
@@ -279,6 +282,37 @@ class CapsRepositoryTest {
         assertThat(repository.closedPeriods(coffee)).isEmpty()
         assertThat(groceriesState.period.start).isEqualTo(date(2026, 11, 1))
         assertThat(preferences.current().weekStart).isEqualTo(SUNDAY)
+    }
+
+    @Test
+    fun `the phone's week changing under a week that follows it moves the weekly open periods, once`() = runTest {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        spend(coffee, euros(4))
+        assertThat(preferences.current().weekInForce).isEqualTo(MONDAY)
+
+        // The phone's language changed, and its weeks now start on Sunday; the reader never chose.
+        phone.weekStart = SUNDAY
+        val state = repository.currentStates().single()
+        // Moved as a change in Settings moves it, not judged by a week it was not made for (which
+        // would have ended it on Sunday, a six-day week).
+        assertThat(state.period).isEqualTo(DateRange(date(2026, 11, 1), date(2026, 11, 8)))
+        assertThat(state.spent).isEqualTo(euros(4))
+        assertThat(repository.closedPeriods(coffee)).isEmpty()
+        assertThat(preferences.current().weekInForce).isEqualTo(SUNDAY)
+        assertThat(preferences.current().weekStart).isNull()
+        // Noted once: a second read moves nothing.
+        assertThat(repository.currentStates().single().period).isEqualTo(state.period)
+    }
+
+    @Test
+    fun `a spend on the stroke of midnight counts in the day its instant falls on`() = runTest {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(3), DAY)
+        clock.at("2026-11-05T23:59:59.999")
+        // The clock moves on between two readings, as a real one does.
+        clock.step = Duration.ofMillis(1)
+        val added = spend(coffee, euros(1))
+        clock.step = Duration.ZERO
+        assertThat(Days.dateOf(added.addedAt, clock.zone)).isEqualTo(added.periodStart)
     }
 
     @Test

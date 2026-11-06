@@ -38,6 +38,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.time.DayOfWeek
+import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import javax.inject.Inject
@@ -119,9 +120,9 @@ constructor(
      * in the one before, in the zone of the moment of asking, and what the caps are worth in a
      * month. Spends of closed periods count: they were added in the month all the same.
      */
-    suspend fun currentMonth(): YourMonth = afterCatchUp { settings ->
-        val zone = clock.zone()
-        val month = MonthSums.month(clock.today(), settings.monthStartDay)
+    suspend fun currentMonth(): YourMonth = afterCatchUp { settings, moment ->
+        val zone = moment.zone
+        val month = MonthSums.month(moment.today, settings.monthStartDay)
         val last = MonthSums.previous(month, settings.monthStartDay)
         val caps = dao.allCaps().map { it.toModel() }
         YourMonth(
@@ -139,8 +140,8 @@ constructor(
     }
 
     /** The caps' states once, for a card's render, the reminder, the numpad over the home screen. */
-    suspend fun currentStates(): List<CapState> = afterCatchUp { settings ->
-        val today = clock.today()
+    suspend fun currentStates(): List<CapState> = afterCatchUp { settings, moment ->
+        val today = moment.today
         val currency = settings.resolvedCurrency(phone)
         dao.capRows().map { row ->
             val cap = row.cap.toModel()
@@ -157,7 +158,7 @@ constructor(
 
     /** Closes every period that ended, in one transaction; nothing when none did. */
     suspend fun catchUp() {
-        afterCatchUp { }
+        afterCatchUp { _, _ -> }
     }
 
     /** A new cap, its open period the one that holds today, last in the reader's order; its id. */
@@ -173,9 +174,9 @@ constructor(
             require(draft.name.isNotBlank()) { "A cap needs a name" }
             require(draft.amount.isPositive) { "A cap needs an amount above zero" }
         }
-        return afterCatchUp { settings ->
-            val today = clock.today()
-            val createdAt = clock.now().toEpochMilli()
+        return afterCatchUp { settings, moment ->
+            val today = moment.today
+            val createdAt = moment.now.toEpochMilli()
             val first = dao.lastPosition() + 1
             drafts.mapIndexed { index, draft ->
                 dao.insertCap(
@@ -200,12 +201,14 @@ constructor(
      */
     suspend fun addSpend(capId: Long, amount: Money): Spend? {
         require(amount.isPositive) { "A spend is an amount above zero" }
-        return afterCatchUp { _ ->
+        return afterCatchUp { _, moment ->
             val cap = dao.cap(capId) ?: return@afterCatchUp null
             val spend = SpendEntity(
                 capId = capId,
                 amount = amount.minor,
-                addedAt = clock.now().toEpochMilli(),
+                // The instant the catch-up judged today by: a spend at midnight counts in the
+                // period that holds that instant's day, never in the one closing behind it.
+                addedAt = moment.now.toEpochMilli(),
                 periodStart = cap.openStart,
             )
             spend.copy(id = dao.insertSpend(spend)).toModel()
@@ -218,7 +221,7 @@ constructor(
      */
     suspend fun editSpend(spendId: Long, amount: Money): Money? {
         require(amount.isPositive) { "A spend is an amount above zero" }
-        return afterCatchUp { _ ->
+        return afterCatchUp { _, _ ->
             val spend = openSpend(spendId) ?: return@afterCatchUp null
             dao.setSpendAmount(spendId, amount.minor)
             Money(spend.amount)
@@ -226,7 +229,7 @@ constructor(
     }
 
     /** Deletes the spend [spendId]; the spend deleted, for Undo, or null when it is gone or its period has closed. */
-    suspend fun deleteSpend(spendId: Long): Spend? = afterCatchUp { _ ->
+    suspend fun deleteSpend(spendId: Long): Spend? = afterCatchUp { _, _ ->
         val spend = openSpend(spendId) ?: return@afterCatchUp null
         dao.deleteSpend(spendId)
         spend.toModel()
@@ -239,7 +242,7 @@ constructor(
     suspend fun undoEdit(spendId: Long, previous: Money): Boolean = editSpend(spendId, previous) != null
 
     /** Undoes [deleteSpend]: the spend again, with its id and fields, while its period is open. */
-    suspend fun undoDelete(spend: Spend): Boolean = afterCatchUp { _ ->
+    suspend fun undoDelete(spend: Spend): Boolean = afterCatchUp { _, _ ->
         val cap = dao.cap(spend.capId) ?: return@afterCatchUp false
         if (cap.openStart != spend.periodStart.toEpochDay() || dao.spend(spend.id) != null) return@afterCatchUp false
         dao.insertSpend(spend.toEntity())
@@ -247,13 +250,13 @@ constructor(
     }
 
     /** The open period's spends of the cap [capId], newest first. */
-    suspend fun openSpends(capId: Long): List<Spend> = afterCatchUp { _ ->
+    suspend fun openSpends(capId: Long): List<Spend> = afterCatchUp { _, _ ->
         val cap = dao.cap(capId) ?: return@afterCatchUp emptyList()
         dao.spends(capId, cap.openStart).map { it.toModel() }
     }
 
     /** The cap [capId]'s closed periods, the latest first: the reserve's story. */
-    suspend fun closedPeriods(capId: Long): List<ClosedPeriod> = afterCatchUp { _ ->
+    suspend fun closedPeriods(capId: Long): List<ClosedPeriod> = afterCatchUp { _, _ ->
         dao.closedPeriods(capId).map { it.toModel() }
     }
 
@@ -266,11 +269,11 @@ constructor(
     suspend fun changeCap(capId: Long, name: String, icon: CapIcon, amount: Money, kind: PeriodKind): Boolean {
         require(name.isNotBlank()) { "A cap needs a name" }
         require(amount.isPositive) { "A cap needs an amount above zero" }
-        return afterCatchUp { settings ->
+        return afterCatchUp { settings, moment ->
             val cap = dao.cap(capId)?.toModel() ?: return@afterCatchUp false
             dao.setCapLooks(capId, name.trim(), icon.key, amount.minor)
             if (kind != cap.kind) {
-                val today = clock.today()
+                val today = moment.today
                 val lastClosedEnd = dao.lastClosedEnd(capId)?.let(LocalDate::ofEpochDay)
                 val start = CapChanges.replacedOpenStart(settings.rule(kind, phone), today, lastClosedEnd)
                 dao.moveSpends(capId, cap.openStart.toEpochDay(), start.toEpochDay())
@@ -281,7 +284,7 @@ constructor(
     }
 
     /** Clears the cap [capId]'s reserve; what it was, for Undo, or null when the cap is gone or had none. */
-    suspend fun clearReserve(capId: Long): ClearedReserve? = afterCatchUp { _ ->
+    suspend fun clearReserve(capId: Long): ClearedReserve? = afterCatchUp { _, _ ->
         val cap = dao.cap(capId) ?: return@afterCatchUp null
         if (cap.reserve == 0L) return@afterCatchUp null
         dao.setReserve(capId, 0)
@@ -292,7 +295,7 @@ constructor(
      * Undoes [clearReserve], while the period it was cleared in is still open: after a close, the
      * reserve is the one that close carried, and the old one no longer means anything.
      */
-    suspend fun undoClearReserve(cleared: ClearedReserve): Boolean = afterCatchUp { _ ->
+    suspend fun undoClearReserve(cleared: ClearedReserve): Boolean = afterCatchUp { _, _ ->
         val cap = dao.cap(cleared.capId) ?: return@afterCatchUp false
         if (cap.openStart != cleared.openStart.toEpochDay() || cap.reserve != 0L) return@afterCatchUp false
         dao.setReserve(cleared.capId, cleared.reserve.minor)
@@ -300,11 +303,11 @@ constructor(
     }
 
     /** Deletes the cap [capId], its spends and its closed periods. */
-    suspend fun deleteCap(capId: Long): Boolean = afterCatchUp { _ -> dao.deleteCap(capId) > 0 }
+    suspend fun deleteCap(capId: Long): Boolean = afterCatchUp { _, _ -> dao.deleteCap(capId) > 0 }
 
     /** Puts the caps in the order of [capIds], in one transaction. */
     suspend fun reorder(capIds: List<Long>) {
-        afterCatchUp { _ -> capIds.forEachIndexed { position, id -> dao.setPosition(id, position) } }
+        afterCatchUp { _, _ -> capIds.forEachIndexed { position, id -> dao.setPosition(id, position) } }
     }
 
     /**
@@ -339,15 +342,17 @@ constructor(
             if (from.fractionDigits != to.fractionDigits) {
                 try {
                     database.withTransaction {
-                        catchUpLocked(after, clock.today())
+                        catchUpLocked(after, moment())
                         rescaleLocked(from.fractionDigits, to.fractionDigits)
                     }
                 } catch (failure: Throwable) {
                     withContext(NonCancellable) { preferences.update { it.copy(currency = before.currency) } }
                     throw failure
                 }
+                keepWeekInForce(after)
+            } else {
+                after
             }
-            after
         }
     }
 
@@ -368,27 +373,51 @@ constructor(
         val before = preferences.current()
         val after = preferences.update(transform)
         database.withTransaction {
-            val today = clock.today()
-            catchUpLocked(before, today)
-            for (row in dao.capRows()) {
-                val cap = row.cap.toModel()
-                val oldRule = before.rule(cap.kind, phone)
-                val newRule = after.rule(cap.kind, phone)
-                val changed = when (cap.kind) {
-                    PeriodKind.DAY -> false
-                    PeriodKind.WEEK -> newRule.weekStart != oldRule.weekStart
-                    PeriodKind.MONTH, PeriodKind.YEAR -> newRule.monthStartDay != oldRule.monthStartDay
-                }
-                if (!changed) continue
-                val lastClosedEnd = row.lastClosedEnd?.let(LocalDate::ofEpochDay)
-                val start = CapChanges.replacedOpenStart(newRule, today, lastClosedEnd)
-                if (start == cap.openStart) continue
-                dao.moveSpends(cap.id, cap.openStart.toEpochDay(), start.toEpochDay())
-                dao.setCapPeriod(cap.id, cap.kind.name, start.toEpochDay())
-            }
+            val moment = moment()
+            catchUpLocked(before, moment)
+            replaceOpenPeriodsLocked(before, after, moment)
         }
-        after
+        keepWeekInForce(after)
     }
+
+    /**
+     * Runs inside a transaction: the open periods of the caps whose rule differs between [before]
+     * and [after] (a week's start, a month's start day) replaced by the new rule's that holds today
+     * (§4.5). The periods that ended under [before] must be closed first.
+     */
+    private suspend fun replaceOpenPeriodsLocked(before: UserSettings, after: UserSettings, moment: Moment) {
+        for (row in dao.capRows()) {
+            val cap = row.cap.toModel()
+            val oldRule = before.rule(cap.kind, phone)
+            val newRule = after.rule(cap.kind, phone)
+            val changed = when (cap.kind) {
+                PeriodKind.DAY -> false
+                PeriodKind.WEEK -> newRule.weekStart != oldRule.weekStart
+                PeriodKind.MONTH, PeriodKind.YEAR -> newRule.monthStartDay != oldRule.monthStartDay
+            }
+            if (!changed) continue
+            val lastClosedEnd = row.lastClosedEnd?.let(LocalDate::ofEpochDay)
+            val start = CapChanges.replacedOpenStart(newRule, moment.today, lastClosedEnd)
+            if (start == cap.openStart) continue
+            dao.moveSpends(cap.id, cap.openStart.toEpochDay(), start.toEpochDay())
+            dao.setCapPeriod(cap.id, cap.kind.name, start.toEpochDay())
+        }
+    }
+
+    /**
+     * Notes the week the weekly caps' open periods now run on ([UserSettings.weekInForce]), once a
+     * transaction that closed and moved them by it has committed; the settings as stored after.
+     * Written after the caps, never before: should the process die between the two, the next read
+     * finds the old note and moves nothing a second time (a period already moved starts where the
+     * new rule puts it).
+     */
+    internal suspend fun keepWeekInForce(settings: UserSettings): UserSettings {
+        val week = settings.weekStart ?: phone.weekStart()
+        return if (settings.weekInForce == week) settings else preferences.update { it.copy(weekInForce = week) }
+    }
+
+    /** Now, and the zone in effect now, read once for a whole read or write (§4.2). */
+    internal fun moment(): Moment = Moment(clock.now(), clock.zone())
 
     /**
      * [block] under [lock], for this module's other repositories whose work spans the caps and the
@@ -397,12 +426,17 @@ constructor(
     internal suspend fun <T> exclusively(block: suspend () -> T): T = lock.withLock { block() }
 
     /** A read or a write, under [lock], after the catch-up, in the same transaction. */
-    private suspend fun <T> afterCatchUp(block: suspend (UserSettings) -> T): T = lock.withLock {
+    private suspend fun <T> afterCatchUp(block: suspend (UserSettings, Moment) -> T): T = lock.withLock {
         val settings = preferences.current()
-        database.withTransaction {
-            catchUpLocked(settings, clock.today())
-            block(settings)
+        // Read once: the catch-up and the work after it see the same day, so a spend added on the
+        // stroke of midnight never lands in the period that the same read has just judged open.
+        val moment = moment()
+        val result = database.withTransaction {
+            catchUpLocked(settings, moment)
+            block(settings, moment)
         }
+        keepWeekInForce(settings)
+        result
     }
 
     /** The spend [spendId], if it counts in its cap's open period: the only one that can change. */
@@ -415,8 +449,11 @@ constructor(
     /** Runs inside a transaction: every stored amount from [fromDigits] decimals to [toDigits] (§4.1). */
     private suspend fun rescaleLocked(fromDigits: Int, toDigits: Int) {
         fun rescaled(minor: Long): Long = Rescale.amount(Money(minor), fromDigits, toDigits).minor
-        for (cap in dao.allCaps()) dao.setCapAmounts(cap.id, rescaled(cap.amount), rescaled(cap.reserve))
-        for (spend in dao.allSpends()) dao.setSpendAmount(spend.id, rescaled(spend.amount))
+
+        // What the numpad typed stays an amount it can type back (Rescale.typed).
+        fun typed(minor: Long): Long = Rescale.typed(Money(minor), fromDigits, toDigits).minor
+        for (cap in dao.allCaps()) dao.setCapAmounts(cap.id, typed(cap.amount), typed(cap.reserve))
+        for (spend in dao.allSpends()) dao.setSpendAmount(spend.id, typed(spend.amount))
         dao.updateClosedPeriods(
             dao.allClosedPeriods().map {
                 it.copy(
@@ -430,15 +467,29 @@ constructor(
         )
     }
 
-    /** Runs inside a transaction, under [lock]: closes what ended for every cap (§4.4). */
-    internal suspend fun catchUpLocked(settings: UserSettings, today: LocalDate) {
+    /**
+     * Runs inside a transaction, under [lock]: closes what ended for every cap (§4.4), each by the
+     * rule its open period was made by. Where the week in force is no longer the one the weekly
+     * caps were made by (the phone's week changed under a reader's week that follows it), their
+     * open periods are then moved to it, as a change in Settings moves them (§4.5); the caller
+     * notes the new week once the transaction commits ([keepWeekInForce]).
+     */
+    internal suspend fun catchUpLocked(settings: UserSettings, moment: Moment) {
+        val week = settings.weekStart ?: phone.weekStart()
+        val madeBy = settings.copy(weekStart = settings.weekInForce ?: week)
         for (row in dao.capRows()) {
             val cap = row.cap.toModel()
-            val plan = CatchUp.plan(cap, Money(row.spent), settings.rule(cap.kind, phone), today) ?: continue
+            val plan = CatchUp.plan(cap, Money(row.spent), madeBy.rule(cap.kind, phone), moment.today) ?: continue
             dao.insertClosedPeriods(plan.closed.map { it.toEntity() })
             dao.setOpenPeriod(cap.id, plan.openStart.toEpochDay(), plan.reserve.minor)
         }
+        if (madeBy.weekStart != week) replaceOpenPeriodsLocked(madeBy, settings, moment)
     }
+}
+
+/** One moment of asking: [now], the zone in effect then, and the local date the two make (§4.2). */
+data class Moment(val now: Instant, val zone: ZoneId) {
+    val today: LocalDate get() = Days.dateOf(now, zone)
 }
 
 /** A reserve cleared, for Undo: the cap, what its reserve was, and the open period it was cleared in. */

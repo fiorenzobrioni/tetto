@@ -119,4 +119,16 @@ class MoneyInputTest {
         assertThat(MoneyInput.of(Money(1250), JPY)).isEqualTo(typed("1250", JPY))
         assertThat(MoneyInput.of(euros(5, 5), EUR).amount).isEqualTo(euros(5, 5))
     }
+
+    @Test
+    fun `the largest amount the numpad types, and whether an amount can be typed back`() {
+        assertThat(MoneyInput.largest(EUR)).isEqualTo(Money(999_999_999_99))
+        assertThat(MoneyInput.largest(JPY)).isEqualTo(Money(999_999_999))
+        assertThat(MoneyInput.largest(KWD)).isEqualTo(Money(999_999_999_999))
+        assertThat(MoneyInput.canType(Money(999_999_999_99), EUR)).isTrue()
+        assertThat(MoneyInput.canType(Money(1_000_000_000_00), EUR)).isFalse()
+        assertThat(MoneyInput.canType(Money(-1), EUR)).isFalse()
+        // Whatever it accepts, it types back.
+        assertThat(MoneyInput.of(MoneyInput.largest(EUR), EUR).amount).isEqualTo(MoneyInput.largest(EUR))
+    }
 }

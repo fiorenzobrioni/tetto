@@ -49,11 +49,12 @@ constructor(
 ) : ViewModel() {
     val state: StateFlow<CapsUiState?> =
         combine(
-            days.days().flatMapLatest { caps.states },
+            // One ticker for the caps and the month: each day (and each change of clock or zone)
+            // reads both again, as two tickers did, with one receiver and one wait instead of two.
+            days.days().flatMapLatest { combine(caps.states, caps.yourMonth, ::Pair) },
             settings.currency,
             settings.settings.map { it.capsTipSeen to it.capsLayout }.distinctUntilChanged(),
-            days.days().flatMapLatest { caps.yourMonth },
-        ) { states, currency, (tipSeen, layout), month ->
+        ) { (states, month), currency, (tipSeen, layout) ->
             CapsUiState(clock.today(), currency, states, CapsSentence.of(states), tipSeen, layout, month)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), null)
 
@@ -97,7 +98,9 @@ constructor(
 
     /** The numpad's Add, or its Save for a correction. */
     fun confirmNumpad(target: NumpadTarget, amount: Money) {
-        numpadTarget.value = null
+        // Once only: a second Add from the same numpad (two touches in one frame, Enter held on a
+        // keyboard) arrives after the first has closed it, and must not add the spend again.
+        if (!numpadTarget.compareAndSet(target, null)) return
         val correcting = target.correcting
         if (correcting == null) addSpend(target.capId, amount) else correctSpend(correcting, amount)
     }

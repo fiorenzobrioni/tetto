@@ -19,6 +19,11 @@ internal data class BackupFile(
     /** The currency's decimals where the file was written; absent, the currency's own. */
     val decimals: Int? = null,
     val settings: SettingsDto = SettingsDto(),
+    /**
+     * The week the weekly caps' open periods were made by (a `DayOfWeek`'s name); absent in a file
+     * written before it was carried, where the restoring phone's week stands in.
+     */
+    val weekInForce: String? = null,
     val caps: List<CapDto> = emptyList(),
 )
 

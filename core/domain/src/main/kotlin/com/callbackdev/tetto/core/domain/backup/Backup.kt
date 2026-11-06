@@ -6,6 +6,7 @@ import com.callbackdev.tetto.core.model.DateRange
 import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.PeriodKind
 import com.callbackdev.tetto.core.model.UserSettings
+import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 
@@ -21,6 +22,10 @@ import java.time.LocalDate
  *   (a file written where its decimals differed is rescaled as it is read).
  * @property settings the reader's choices: the money's (its [UserSettings.currency] is
  *   [currency]'s code), the appearance and the evening reminder.
+ * @property weekInForce the first day of the week the weekly caps' open periods were made by, the
+ *   reader's or the phone's: where the reader's week follows the phone, the phone that restores the
+ *   file may start its weeks on another day, and it moves the open periods to its own week rather
+ *   than judge them by it (PLANNING.md §4.5). Null in a file written before it was carried.
  */
 data class Backup(
     val exportedAt: Instant,
@@ -29,6 +34,7 @@ data class Backup(
     val currency: AppCurrency,
     val settings: UserSettings,
     val caps: List<BackupCap>,
+    val weekInForce: DayOfWeek? = null,
 ) {
     /** Every spend it holds, of every period. */
     val spendCount: Int get() = caps.sumOf { it.spends.size }

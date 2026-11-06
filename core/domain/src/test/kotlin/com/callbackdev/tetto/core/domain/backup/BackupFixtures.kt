@@ -42,6 +42,7 @@ internal fun sampleBackup(): Backup = Backup(
         reminderOn = true,
         reminderTime = LocalTime.of(21, 0),
     ),
+    weekInForce = DayOfWeek.MONDAY,
     caps = listOf(
         BackupCap(
             name = "Coffee",

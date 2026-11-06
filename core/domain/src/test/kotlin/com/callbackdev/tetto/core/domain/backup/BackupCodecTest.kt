@@ -176,6 +176,30 @@ class BackupCodecTest {
     }
 
     @Test
+    fun `the week the open periods were made by travels, and a file without it has none`() {
+        assertThat(BackupCodec.encode(sampleBackup())).contains("\"weekInForce\": \"MONDAY\"")
+        assertThat(ok(edited("\"weekInForce\": \"MONDAY\",", "")).weekInForce).isNull()
+        assertThat(BackupCodec.decode(edited("\"weekInForce\": \"MONDAY\"", "\"weekInForce\": \"MOONDAY\"")))
+            .isEqualTo(BackupRead.Damaged)
+    }
+
+    @Test
+    fun `an amount the numpad could not type back is damaged, not a crash in the editor`() {
+        val backup = sampleBackup()
+        val coffee = backup.caps[0]
+        val tenDigits = Money(1_000_000_000_00)
+        val bigCap = backup.copy(caps = listOf(coffee.copy(amount = tenDigits)))
+        assertThat(BackupCodec.decode(BackupCodec.encode(bigCap))).isEqualTo(BackupRead.Damaged)
+        val bigSpend = backup.copy(
+            caps = listOf(coffee.copy(spends = listOf(coffee.spends[0].copy(amount = tenDigits)))),
+        )
+        assertThat(BackupCodec.decode(BackupCodec.encode(bigSpend))).isEqualTo(BackupRead.Damaged)
+        // The largest the numpad types is an amount like any other.
+        val largest = backup.copy(caps = listOf(coffee.copy(amount = Money(999_999_999_99))))
+        assertThat(ok(BackupCodec.encode(largest)).caps[0].amount).isEqualTo(Money(999_999_999_99))
+    }
+
+    @Test
     fun `a file whose currency had other decimals is read in this phone's, rescaled`() {
         // Written where the yen was counted in hundredths: ¥1,250.40 as 125040.
         val backup = sampleBackup().copy(currency = JPY, settings = UserSettings(currency = "JPY"))
