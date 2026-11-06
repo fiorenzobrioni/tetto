@@ -75,7 +75,7 @@ class CapWordsTest {
     fun `over, the figure and when it starts again`() {
         val shopping = CapsSample.shopping
         assertThat(words { listOf(leftWords(shopping, it), detailWords(shopping, it, today)) })
-            .containsExactly("€30 over", "of €100 · starts again on 1 Dec").inOrder()
+            .containsExactly("€30 over", "of €100 · starts again on 1 Dec").inOrder()
     }
 
     @Test
@@ -95,8 +95,8 @@ class CapWordsTest {
             "today",
             "until tomorrow",
             "until Sunday",
-            "until 12 Nov",
-            "until 31 Jan 2027",
+            "until 12 Nov",
+            "until 31\u00A0Jan\u00A02027",
             "tomorrow",
             "on Monday",
         ).inOrder()
@@ -195,8 +195,8 @@ class CapWordsTest {
         }
         assertThat(near).containsExactly(
             "fino a domenica",
-            "fino a lunedì 30 nov",
-            "su 100 € · riparte martedì 1 dic",
+            "fino a lunedì 30 nov",
+            "su 100 € · riparte martedì 1 dic",
             "ancora 16 €",
         ).inOrder()
     }

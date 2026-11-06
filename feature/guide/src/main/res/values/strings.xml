@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="guide_title">The guide</string>
+    <string name="guide_intro">Tetto answers one question for each thing you put a cap on: how much can you still spend, and until when. This guide says what each part of the screen is for, and the few things worth knowing that a screen cannot say out loud.</string>
+
+    <!-- What the caps screen answers -->
+    <string name="guide_caps_title">What the caps screen answers</string>
+    <string name="guide_caps_p1">One sentence first, then a tile for each cap. The sentence speaks for all of them at once: everything under its cap and the one closest to it, or a cap that went over and when it starts again. Each tile speaks for one.</string>
+    <string name="guide_caps_caption">An example, on a %1$s: Coffee well under its cap, with something in reserve; Eating out spending ahead of the days.</string>
+    <string name="guide_caps_left_title">What is left, first</string>
+    <string name="guide_caps_left_body">The large figure is what you can still spend in this period: the cap and its reserve, less what you spent. Under it, the cap and the period’s last day: “until Sunday” counts Sunday too. Past the cap, the figure says how much over, in words as well as in colour.</string>
+    <string name="guide_caps_bar_title">The bar and today’s line</string>
+    <string name="guide_caps_bar_body">The bar fills with what you spent. The thin line across it is today, as far into the period as the days are: a bar that runs past the line is spending ahead of the days, and changes colour to say so. It is not an alarm: on a period’s last day a full bar is right on time.</string>
+    <string name="guide_caps_pace_title">The pace</string>
+    <string name="guide_caps_pace_body">On a cap of a week or longer with a few days still to go: about how much a day keeps you under it until the end.</string>
+    <string name="guide_caps_live_title">Live while you look</string>
+    <string name="guide_caps_live_body">Left open across midnight, the screen turns the day by itself: a period that ends closes, and the next one opens.</string>
+
+    <!-- A period, the reserve and forgiveness -->
+    <string name="guide_period_title">A period, the reserve and forgiveness</string>
+    <string name="guide_period_p1">Each cap runs on its own period: a day, a week, a month or a year. When a period ends, what it left over is set aside, what it overspent is settled, and the next period starts whole.</string>
+    <string name="guide_period_caption">An example: four weeks of a %1$s coffee cap. What the first week left over carried the second past its cap; the third spent more than its reserve could cover, and the rest was forgiven. The fourth starts whole.</string>
+    <string name="guide_period_reserve_title">The reserve</string>
+    <string name="guide_period_reserve_body">What a period leaves over goes to the cap’s reserve, up to one period’s cap, so a few quiet weeks never turn a cap into a budget of its own. The reserve counts in what is left, and its chip on the tile says how much there is.</string>
+    <string name="guide_period_forgiven_title">Forgiveness</string>
+    <string name="guide_period_forgiven_body">An overspend takes from the reserve first. What the reserve cannot cover is forgiven when the period ends: the next period starts at its full cap, never in debt. A bad week stays one bad week.</string>
+    <string name="guide_period_calendar_title">Your weeks and months</string>
+    <string name="guide_period_calendar_body">A week starts on your phone’s first day of the week, a month on the 1st, a year on that day of January. Both can change in Settings: a month from the 27th, say, for a salary paid on the 27th.</string>
+    <string name="guide_period_change_title">Changing a cap</string>
+    <string name="guide_period_change_body">A new amount counts at once, in the period under way. A new period keeps the reserve, and this period’s spends move into it.</string>
+    <string name="guide_period_closing_title">Closed when you next look</string>
+    <string name="guide_period_closing_body">Nothing runs at midnight with the screen off. The first time Tetto is read after a period ends (the app, a widget, the reminder) it closes every period that ended since, in order. After weeks away, the empty ones are counted together, and the reserve stops at its limit.</string>
+    <string name="guide_period_frozen_title">Closed means closed</string>
+    <string name="guide_period_frozen_body">A closed period never changes again: its spends can no longer be corrected, so the reserve never moves behind your back. A cap’s sheet keeps the last three, one line each, to say where the reserve came from.</string>
+
+    <!-- The numpad, and fixing a spend -->
+    <string name="guide_numpad_title">The numpad, and fixing a spend</string>
+    <string name="guide_numpad_p1">A spend is an amount, in one cap, now: no date, no note, no category to look for. The cap you touched is the category.</string>
+    <string name="guide_numpad_caption">An example: %1$s typed on a cap with %2$s left, and under the amount what it would leave.</string>
+    <string name="guide_numpad_preview_title">The preview</string>
+    <string name="guide_numpad_preview_body">Before you add, the line under the amount says what the spend would leave while it fits, how much over once it does not, and “still over” when the cap was over already. It is the only warning Tetto gives, at the one moment it can still change anything.</string>
+    <string name="guide_numpad_undo_title">Undo, and later too</string>
+    <string name="guide_numpad_undo_body">After a spend is added, the figure rolls to its new value and a message offers to undo it, for as long as your phone’s accessibility settings ask. A wrong amount noticed later can still be fixed: every spend of the period under way is in the cap’s sheet, to correct or to delete.</string>
+    <string name="guide_numpad_sheet_title">A cap’s sheet</string>
+    <string name="guide_numpad_sheet_body">Behind a long press on a tile: this period’s dates and figures, its spends with the day and time of each, the last periods in one line each, and the cap itself, to change or delete. Clearing the reserve there starts a cap afresh.</string>
+    <string name="guide_numpad_keys_title">Keys like your keyboard</string>
+    <string name="guide_numpad_keys_body">The decimal key is your language’s, and a currency without cents has none. Each key ticks as your phone’s keyboard does; your phone’s own touch feedback setting turns it off.</string>
+
+    <!-- On the home screen -->
+    <string name="guide_home_title">On the home screen</string>
+    <string name="guide_home_two_title">Two widgets</string>
+    <string name="guide_home_two_body">«At a glance» holds your caps, as many as its size allows, each with what is left and a slim bar. «In words» holds one cap in a ring, with what is left in words: the cap you choose, or the one closest to its cap. Neither ever scrolls: what does not fit is counted. Touch and hold one for its own settings: its background and colour, its opacity, its caps.</string>
+    <string name="guide_home_add_title">A spend without opening the app</string>
+    <string name="guide_home_add_body">A touch on a cap on a widget opens the numpad over the home screen: two touches and the amount, and you are back where you were. A long press on Tetto’s icon offers your first four caps the same way.</string>
+    <string name="guide_home_dates_title">Days, not countdowns</string>
+    <string name="guide_home_dates_body">A widget says “until Sunday”, never how many hours are left: it is redrawn after every spend and at midnight, not every minute, so a countdown would soon be wrong.</string>
+    <string name="guide_home_reminder_title">The evening reminder</string>
+    <string name="guide_home_reminder_body">Turned on in Settings, one notification in the evening asks whether there is anything to add, and only on a day with no spend added. It comes near the time you chose, not to the minute: Tetto asks Android for no exact alarm, so the phone can save its battery, and some phones hold it back a little longer.</string>
+
+    <!-- Your data -->
+    <string name="guide_data_title">Your data</string>
+    <string name="guide_data_p1">Tetto has no internet permission at all: it sends nothing, to anyone. Your caps and your spends are kept on this phone.</string>
+    <string name="guide_data_p2">They leave it only in a file you save (a backup, to restore here or on another phone, or your spends as a CSV for a spreadsheet) or in Android’s own backup, if it is turned on: that copy is Android’s, not Tetto’s.</string>
+    <string name="guide_data_p3">A backup file is not encrypted: keep it where you keep other private files. Restoring one replaces the caps on this phone, after it has said what it holds and what it replaces.</string>
+
+    <!-- What Tetto does not do -->
+    <string name="guide_not_title">What Tetto does not do</string>
+    <string name="guide_not_p1">Tetto keeps no ledger: no history to scroll, no statistics or charts, no accounts, no income, no notes or tags on a spend. That is what keeps a spend to two touches, and the screen on one question.</string>
+    <string name="guide_not_p2">If you want every movement kept for good, with balances and charts of where your money went, you want an expense tracker: another kind of app, made for that.</string>
+    <string name="guide_not_total_title">No total</string>
+    <string name="guide_not_total_body">Caps of different periods do not add up: a week of coffee and a year of presents make no sum worth reading, so there is none.</string>
+    <string name="guide_not_move_title">No moving money between caps</string>
+    <string name="guide_not_move_body">An overspend on one cap is never paid from another: the reserve and forgiveness are the whole mechanism, so each cap keeps meaning what you set.</string>
+    <string name="guide_not_alerts_title">No alerts</string>
+    <string name="guide_not_alerts_body" formatted="false">No warning at 80%, no message when you go over: the numpad says what a spend will leave before you add it.</string>
+    <string name="guide_not_currency_title">One currency</string>
+    <string name="guide_not_currency_body">Every amount in one currency. Changing it in Settings relabels your figures and never converts them.</string>
+
+    <!-- The examples: the app's own components, in the reader's currency, said to be examples. -->
+    <string name="guide_sample_coffee">Coffee</string>
+    <string name="guide_sample_eating_out">Eating out</string>
+    <string name="guide_sample_left">%s left</string>
+    <string name="guide_sample_detail">of %1$s · until %2$s</string>
+    <string name="guide_sample_pace">about %s a day</string>
+    <string name="guide_sample_reserve">+%s reserve</string>
+    <string name="guide_sample_tile_description">Example. %1$s, %2$s left of %3$s, until %4$s</string>
+    <string name="guide_sample_ahead">spending ahead of the days</string>
+    <string name="guide_sample_with_reserve">with %s in reserve</string>
+    <string name="guide_story_week">Week %d</string>
+    <string name="guide_story_spent">%1$s of %2$s</string>
+    <string name="guide_story_to_reserve">+%s to the reserve</string>
+    <string name="guide_story_from_reserve">%s from the reserve</string>
+    <string name="guide_story_forgiven">The reserve’s %1$s used, %2$s forgiven</string>
+    <string name="guide_story_forgiven_alone">%s forgiven</string>
+    <string name="guide_story_whole">Starts whole: %s left</string>
+    <string name="guide_story_description">Example. %1$s: %2$s. %3$s</string>
+    <string name="guide_numpad_description">Example of the numpad: %1$s typed on %2$s, which has %3$s left. Under the amount: %4$s</string>
+</resources>

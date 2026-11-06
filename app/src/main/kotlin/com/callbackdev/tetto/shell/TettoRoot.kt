@@ -28,6 +28,7 @@ import com.callbackdev.tetto.core.model.UserSettings
 import com.callbackdev.tetto.feature.caps.ArrangeCapsRoute
 import com.callbackdev.tetto.feature.caps.CapEditorRoute
 import com.callbackdev.tetto.feature.caps.CapsRoute
+import com.callbackdev.tetto.feature.guide.GuideRoute
 import com.callbackdev.tetto.feature.onboarding.OnboardingRoute
 import com.callbackdev.tetto.feature.settings.SettingsRoute
 import kotlinx.serialization.Serializable
@@ -53,8 +54,12 @@ data object ArrangeKey : NavKey
 @Serializable
 data object SettingsKey : NavKey
 
+/** The guide, from the card first in Settings and from the caps screen's first-day tip (Phase 6). */
+@Serializable
+data object GuideKey : NavKey
+
 /**
- * The shell (PLANNING.md §11 Phases 2, 3 and 5): the first run until it is done, then the pages. The
+ * The shell (PLANNING.md §11 Phases 2, 3, 5 and 6): the first run until it is done, then the pages. The
  * first run stands before them, not on the back stack: it is not a page to go back to. A run that
  * made caps ends on the home screen's card, where the launcher can place one and none is there
  * yet (PLANNING.md §8); the caps are already made then, so a process ended on that page loses
@@ -99,11 +104,13 @@ private fun MainPages() {
                         onEditCap = { backStack.add(EditorKey(it)) },
                         onChangeOrder = { backStack.add(ArrangeKey) },
                         onOpenSettings = { backStack.add(SettingsKey) },
+                        onOpenGuide = { backStack.add(GuideKey) },
                     )
                 }
                 entry<EditorKey> { key -> CapEditorRoute(capId = key.capId, onBack = goBack) }
                 entry<ArrangeKey> { ArrangeCapsRoute(onBack = goBack) }
-                entry<SettingsKey> { SettingsRoute(onBack = goBack) }
+                entry<SettingsKey> { SettingsRoute(onBack = goBack, onOpenGuide = { backStack.add(GuideKey) }) }
+                entry<GuideKey> { GuideRoute(onBack = goBack) }
             },
         )
     }

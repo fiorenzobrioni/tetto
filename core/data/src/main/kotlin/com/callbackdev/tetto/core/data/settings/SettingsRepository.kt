@@ -80,6 +80,11 @@ constructor(
         preferences.update { it.copy(askedNotifications = true) }
     }
 
+    /** The caps screen's first-day tip was dismissed, or followed to the guide: never shown again. */
+    suspend fun noteCapsTipSeen() {
+        preferences.update { it.copy(capsTipSeen = true) }
+    }
+
     /**
      * The first run's end (PLANNING.md §11 Phase 3): the currency stored, so a later change of the
      * phone's region relabels nothing by itself (§4.1); the reader's caps, together; then the flag,

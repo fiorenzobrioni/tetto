@@ -26,6 +26,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.callbackdev.tetto.core.designsystem.R
 import com.callbackdev.tetto.core.designsystem.icons.TettoIcons
@@ -40,14 +42,16 @@ import com.callbackdev.tetto.core.designsystem.theme.SectionTop
  * them starting where the text starts, and one dialog shape for every multiple choice.
  */
 
-/** A section's title, in the accent. */
+/** A section's title, in the accent: a heading, so TalkBack can move from one section to the next. */
 @Composable
 fun GroupHeader(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.primary,
-        modifier = modifier.padding(start = 20.dp, end = ScreenMargin, top = SectionTop, bottom = SectionBottom + 4.dp),
+        modifier = modifier
+            .padding(start = 20.dp, end = ScreenMargin, top = SectionTop, bottom = SectionBottom + 4.dp)
+            .semantics { heading() },
     )
 }
 

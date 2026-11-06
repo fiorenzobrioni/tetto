@@ -16,15 +16,16 @@ single-purpose apps by callbackdev, with **Chiaro** (weather), **Passo** (step c
 release setup, and the same visual language. Its build and structure are Tempo's (itself
 Passo's), with Passo's Room back.
 
-**State (5 Nov 2026): Phases 0 to 5 are built.** The build, the design system, CI, the
+**State (6 Nov 2026): Phases 0 to 6 are built.** The build, the design system, CI, the
 keystores, the cap engine with its storage, the caps screen with its numpad, its sheets, the
 editor and the order, the first run and Settings, your data (the backup file, the restore, the
 CSV, erasing everything) and the evening reminder, the two home-screen cards with their settings,
-the numpad over the home screen (`QuickAddActivity`) and the launcher's shortcuts; the modules in
-the build are `:app`, `:core:model`, `:core:domain`, `:core:data`, `:core:reminder`,
+the numpad over the home screen (`QuickAddActivity`) and the launcher's shortcuts, the guide with
+the caps screen's first-day tip, the accessibility pass and the README's screenshots; the modules
+in the build are `:app`, `:core:model`, `:core:domain`, `:core:data`, `:core:reminder`,
 `:core:designsystem`, `:core:testing`, `:feature:caps`, `:feature:onboarding`,
-`:feature:settings` and `:widget`. `:feature:guide` joins with Phase 6 (PLANNING.md §11), so
-check before citing a file.
+`:feature:settings`, `:feature:guide` and `:widget`. The device checks of Phases 4 to 6 wait for
+the owner's phone (PLANNING.md §11); Phase 7 is the 1.0 release.
 
 **Tetto and Saldo are two separate apps, alternatives to each other** (owner, 5 Nov 2026).
 Tetto takes the family's look and structure from its sisters, so the apps are recognisable;
@@ -108,7 +109,7 @@ that does not match it.
 | `:core:reminder` | Android library | the evening reminder's Android half (`EveningReminder`, started by the application): the inexact alarm and its re-arming, the receiver (alarm, boot, package replaced, time and zone, the notifications' block states), the `reminder` channel and its notification (`ic_stat_tetto`, drawn by the icon script), `ReminderAccess` (whether it can show, and the page that fixes it) |
 | `:core:designsystem` | Android library | M3 theme (Chiaro's dresses through Passo and Tempo), typography, shapes, motion, page gutter (`PageWidth.kt`), the widget card colours, `TettoIcons` (the curated cap icons, Material Symbols drawn in code); the settings rows and `StatusCard`; the numpad's keys, a cap's tile, the bar with its mark, the ring; the amount field (`MoneyField`, through `:core:domain`'s `MoneyInput`, its one use of the domain) and the currency picker (`CurrencyPickerDialog`, `Currencies`), shared by the editor, the first run and Settings; money formatting (`MoneyFormat`, from minor units and the locale) |
 | `:core:testing` | Android library, test-only | `assertAccessible()` (labels, 48dp touch targets) and `walkPage()`, shared by the UI tests as `testImplementation` |
-| `:feature:*` | Android library | `caps` (the caps screen, the numpad sheet and its ViewModel, a cap's sheet, the cap editor, the numpad over the home screen's ViewModel and sheet), `onboarding` (welcome, the areas, the amounts), `settings` (money, the reminder, appearance, your data with its `DataViewModel`, about), `guide` (in Chiaro's shape, Phase 6) |
+| `:feature:*` | Android library | `caps` (the caps screen with its first-day tip, the numpad sheet and its ViewModel, a cap's sheet, the cap editor, the numpad over the home screen's ViewModel and sheet), `onboarding` (welcome, the areas, the amounts), `settings` (the guide's card, money, the reminder, appearance, your data with its `DataViewModel`, about), `guide` (six chapters in the family's prose kit, its examples drawn by the engine in the reader's currency and week: `GuideScreen`, `GuideSamples`, `GuideViewModel`) |
 | `:widget` | Android library | the two Glance cards («At a glance», «In words»), the ring's painter, their settings screen with the real card as its preview, their looks (`WidgetLookStore`, the `widgets` file), the refresh (`WidgetUpdater` after every write, `MidnightAlarm`, the exempt broadcasts), the pin request (`PinnedCards`), the generated previews |
 | `:app` | application | `Application`, `MainActivity` (the reader's appearance), the shell (onboarding, the first run's last page `HomeOffer`, then Navigation 3), `QuickAddActivity` (the numpad over the home screen, from a card or a shortcut), the dynamic launcher shortcuts (`CapShortcuts`), DI entry points; wires everything |
 

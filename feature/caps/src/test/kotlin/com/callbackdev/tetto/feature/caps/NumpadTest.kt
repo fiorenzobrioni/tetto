@@ -64,7 +64,10 @@ class NumpadTest {
 
     private fun type(keys: String) = keys.forEach { compose.onNodeWithText(it.toString()).performClick() }
 
-    private fun preview() = compose.onNodeWithTag(CapsTags.PREVIEW)
+    // The preview's own line, inside the readout TalkBack hears as one.
+    private fun preview() = compose.onNodeWithTag(CapsTags.PREVIEW, useUnmergedTree = true)
+
+    private fun readout() = compose.onNodeWithTag(CapsTags.READOUT)
 
     @Test
     fun `Add waits for an amount, and is never relabelled as something else`() {
@@ -80,9 +83,11 @@ class NumpadTest {
     @Test
     fun `the preview follows every key, politely for TalkBack`() {
         draw()
-        preview().assert(SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite))
+        readout().assert(SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite))
         type("4.5")
         preview().assertTextEquals("€11.50 left")
+        // TalkBack hears the amount typed with what it would leave, as one announcement.
+        readout().assertTextEquals("€4.5", "€11.50 left")
         type("0")
         type("0")
         // The third decimal is refused: still €4.50.
@@ -94,6 +99,13 @@ class NumpadTest {
         preview().assertTextEquals("€404 over")
         compose.onNodeWithTag(CapsTags.CONFIRM).performClick()
         assertThat(confirmed).containsExactly(euros(420))
+    }
+
+    @Test
+    fun `the decimal key is named for TalkBack, whatever its punctuation setting`() {
+        draw()
+        compose.onNodeWithContentDescription("Decimal separator").assertExists()
+        compose.onNodeWithContentDescription("Delete").assertExists()
     }
 
     @Test

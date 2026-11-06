@@ -1,5 +1,8 @@
 package com.callbackdev.tetto.feature.caps
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
@@ -41,6 +44,8 @@ class CapsScreenTest {
     private var newCap = 0
     private var order = 0
     private var settings = 0
+    private var guide = 0
+    private var tipDismissed = 0
 
     private fun draw(state: CapsUiState, dark: Boolean = false) {
         compose.setContent {
@@ -52,6 +57,8 @@ class CapsScreenTest {
                     onNewCap = { newCap++ },
                     onChangeOrder = { order++ },
                     onOpenSettings = { settings++ },
+                    onOpenGuide = { guide++ },
+                    onDismissTip = { tipDismissed++ },
                 )
             }
         }
@@ -84,7 +91,7 @@ class CapsScreenTest {
     fun `all under, the sentence names the closest, before any number`() {
         draw(CapsSample.ui(CapsSample.underCaps))
         compose.onNodeWithText(
-            "All under your caps. Restaurants is the closest: €12 left until 30 Nov.",
+            "All under your caps. Restaurants is the closest: €12 left until 30 Nov.",
         ).assertIsDisplayed()
         compose.onNodeWithText("Thursday 5 November", substring = true).assertIsDisplayed()
         compose.assertAccessible()
@@ -112,6 +119,65 @@ class CapsScreenTest {
     }
 
     @Test
+    fun `on the first day, a tip over the tiles says how to read one, and leads to the guide`() {
+        draw(CapsSample.ui(CapsSample.underCaps).copy(tipSeen = false))
+        compose.onNodeWithText("How to read a cap").assertIsDisplayed()
+        compose.onNodeWithText("The thin line across the bar is today", substring = true).assertIsDisplayed()
+        // Over the tiles: the first tile starts below the tip.
+        val tip = compose.onNodeWithTag(CapsTags.TIP).fetchSemanticsNode().boundsInRoot
+        val tile = compose.onNodeWithTag(CapsTags.tile(1)).fetchSemanticsNode().boundsInRoot
+        assertThat(tile.top).isGreaterThan(tip.bottom)
+        compose.assertAccessible()
+        compose.writeScreenshot("caps-tip")
+
+        compose.onNodeWithText("Open the guide").performClick()
+        assertThat(guide).isEqualTo(1)
+        compose.onNodeWithText("Got it").performClick()
+        assertThat(tipDismissed).isEqualTo(1)
+    }
+
+    @Test
+    fun `once seen, the tip is gone for good, and an empty page never shows it`() {
+        var state by mutableStateOf(CapsSample.ui(CapsSample.underCaps).copy(tipSeen = false))
+        compose.setContent {
+            TettoTheme {
+                CapsScreen(
+                    state = state,
+                    onAddSpend = {},
+                    onOpenCap = {},
+                    onNewCap = {},
+                    onChangeOrder = {},
+                    onOpenSettings = {},
+                    onDismissTip = { state = state.copy(tipSeen = true) },
+                )
+            }
+        }
+        compose.onNodeWithText("Got it").performClick()
+        compose.onNodeWithTag(CapsTags.TIP).assertDoesNotExist()
+
+        state = CapsSample.ui(emptyList()).copy(tipSeen = false)
+        compose.onNodeWithText("No caps yet").assertIsDisplayed()
+        compose.onNodeWithTag(CapsTags.TIP).assertDoesNotExist()
+    }
+
+    @Test
+    @Config(qualifiers = "it-rIT-w411dp-h891dp-xxhdpi")
+    fun `the tip, in Italian`() {
+        draw(CapsSample.ui(CapsSample.underCaps).copy(tipSeen = false))
+        compose.onNodeWithText("Come leggere un tetto").assertIsDisplayed()
+        compose.onNodeWithText("Apri la guida").assertIsDisplayed()
+        compose.onNodeWithText("Ho capito").assertIsDisplayed()
+        compose.writeScreenshot("caps-tip-it")
+    }
+
+    @Test
+    @Config(qualifiers = "en-rGB-w360dp-h740dp-xxhdpi", fontScale = 2f)
+    fun `the tip at twice the text size on a small phone`() {
+        draw(CapsSample.ui(CapsSample.underCaps).copy(tipSeen = false))
+        compose.walkPage(hasTestTag(CapsTags.PAGE), "caps-tip-large-text", maxScreens = 20)
+    }
+
+    @Test
     fun `from two caps, the order can be changed`() {
         draw(CapsSample.ui(listOf(CapsSample.coffee, CapsSample.groceries)))
         compose.onNodeWithText("Change the order").performClick()
@@ -128,8 +194,8 @@ class CapsScreenTest {
     @Test
     fun `over is said in words, with when the cap starts again`() {
         draw(CapsSample.ui(listOf(CapsSample.coffee, CapsSample.shopping, CapsSample.groceries)))
-        compose.onNodeWithText("Shopping is €30 over. It starts again on 1 Dec.").assertIsDisplayed()
-        assertThat(description(CapsTags.tile(4))).isEqualTo("Shopping, €30 over its cap of €100, starts again on 1 Dec")
+        compose.onNodeWithText("Shopping is €30 over. It starts again on 1 Dec.").assertIsDisplayed()
+        assertThat(description(CapsTags.tile(4))).isEqualTo("Shopping, €30 over its cap of €100, starts again on 1 Dec")
         compose.writeScreenshot("caps-over")
     }
 
@@ -137,7 +203,7 @@ class CapsScreenTest {
     fun `every cap over`() {
         val over = CapsSample.state(6, "Fun", CapIcon.FUN, euros(50), PeriodKind.WEEK, euros(55))
         draw(CapsSample.ui(listOf(CapsSample.shopping, over)))
-        compose.onNodeWithText("Every cap is over. Shopping starts again on 1 Dec.").assertIsDisplayed()
+        compose.onNodeWithText("Every cap is over. Shopping starts again on 1 Dec.").assertIsDisplayed()
     }
 
     @Test
@@ -151,7 +217,7 @@ class CapsScreenTest {
             Money.ZERO,
         ).let { it.copy(renewedToday = true) }
         draw(CapsSample.ui(listOf(CapsSample.coffee, renewed)))
-        compose.onNodeWithText("Books starts again today: €30 until 30 Nov.").assertIsDisplayed()
+        compose.onNodeWithText("Books starts again today: €30 until 30 Nov.").assertIsDisplayed()
     }
 
     @Test
@@ -169,7 +235,7 @@ class CapsScreenTest {
     fun `in Italian`() {
         draw(CapsSample.ui(CapsSample.underCaps))
         // Italian writes the euro after the figure, past a no-break space.
-        compose.onNodeWithText("Tutti sotto il tetto. Il più vicino è Restaurants: ancora 12 € fino a lunedì 30 nov.")
+        compose.onNodeWithText("Tutti sotto il tetto. Il più vicino è Restaurants: ancora 12 € fino a lunedì 30 nov.")
             .assertIsDisplayed()
         assertThat(description(CapsTags.tile(1))).isEqualTo(
             "Coffee, ancora 16 € su 20 €, fino a domenica, circa 4 € al giorno, con 4 € di riserva",

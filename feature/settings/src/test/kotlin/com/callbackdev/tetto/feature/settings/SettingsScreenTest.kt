@@ -1,9 +1,11 @@
 package com.callbackdev.tetto.feature.settings
 
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isHeading
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -73,6 +75,7 @@ class SettingsScreenTest {
     private val euro = AppCurrency("EUR", 2)
 
     private var pinned: HomeCard? = null
+    private var guide = 0
 
     private fun state(
         settings: UserSettings = UserSettings(currency = "EUR", onboardingCompleted = true),
@@ -112,6 +115,7 @@ class SettingsScreenTest {
                         setReminderTime = { reminderTime = it },
                         fixNotifications = { fixed = true },
                         pinCard = { pinned = it },
+                        openGuide = { guide++ },
                     ),
                 )
             }
@@ -127,6 +131,25 @@ class SettingsScreenTest {
         compose.onNodeWithText("Monday, as the phone").assertIsDisplayed()
         compose.assertAccessible()
         compose.writeScreenshot("settings")
+    }
+
+    @Test
+    fun `the guide's card comes first, and opens the guide`() {
+        draw(state())
+        val card = compose.onNodeWithTag(SettingsTags.GUIDE)
+        card.assertIsDisplayed()
+        compose.onNodeWithText("How Tetto works").assertIsDisplayed()
+        val money = compose.onNodeWithText("Money").fetchSemanticsNode().boundsInRoot
+        assertThat(card.fetchSemanticsNode().boundsInRoot.bottom).isLessThan(money.top)
+        card.performClick()
+        assertThat(guide).isEqualTo(1)
+    }
+
+    @Test
+    fun `each group's header is a heading TalkBack can move by`() {
+        draw(state())
+        compose.onNodeWithText("Money").assert(isHeading())
+        compose.onNodeWithText("Reminder").assert(isHeading())
     }
 
     @Test
@@ -234,6 +257,7 @@ class SettingsScreenTest {
     fun `in Italian`() {
         draw(state(UserSettings(currency = "EUR", monthStartDay = 27)))
         compose.onNodeWithText("Denaro").assertIsDisplayed()
+        compose.onNodeWithText("Come funziona Tetto").assertIsDisplayed()
         compose.onNodeWithText("Lunedì, come il telefono").assertIsDisplayed()
         compose.onNodeWithText("Giorno 27 · questo mese:", substring = true).assertIsDisplayed()
         compose.writeScreenshot("settings-it")

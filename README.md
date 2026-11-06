@@ -38,8 +38,27 @@ speed comes from having none.
 
 ## Screenshots
 
-None yet: the screens are being built (see [Roadmap](#roadmap)). They will be drawn by the app's
-own screens from sample caps, in English, as the family's are.
+<table>
+  <tr>
+    <td align="center" width="33%"><img src="docs/screenshots/caps.png" width="250" alt="The caps screen on Thursday 5 November: the sentence All under your caps, Restaurants is the closest: €12 left until Nov 30; then a tile per cap in two columns, each with what is left, the cap and its last day, a bar with a mark for today: Coffee with €16 left of €20 until Sunday, about €4 a day and a €4 reserve; Groceries; Restaurants; Lunch; Fuel; and the New cap tile"><br><sub><b>The caps</b>: what is left, first</sub></td>
+    <td align="center" width="33%"><img src="docs/screenshots/numpad.png" width="250" alt="The numpad over the caps screen, on the Coffee cap with €16 left: €3.20 typed in large figures, the preview under it saying €12.80 left, the keys from 1 to 0 with the decimal point and delete, and the button Add €3.20"><br><sub><b>Two touches and the amount</b>, the preview first</sub></td>
+    <td align="center" width="33%"><img src="docs/screenshots/cap-sheet.png" width="250" alt="Coffee's sheet over the caps screen: this week's dates, the cap, the reserve, what was spent and what is left; this week's three spends with their day and time; the last three weeks in one line each, saying what went to the reserve or came from it"><br><sub><b>A cap's sheet</b>: this period, and where the reserve came from</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/caps-dark.png" width="250" alt="The caps screen in the dark theme: the sentence Shopping is €30 over, it starts again on Dec 1; Shopping's tile says €30 over in words, its bar full and hatched"><br><sub><b>Over, in words</b>, never by colour alone</sub></td>
+    <td align="center"><img src="docs/screenshots/widgets.png" width="250" alt="The cards on a home screen: At a glance at four by two with five caps, each with what is left and a slim bar; two In words cards side by side, Coffee in plum with €12 left beside its ring, about €2 a day until Sunday, and Fun in clay saying €6 over, starts again on Monday; a one-row In words in teal with €62 left for Groceries"><br><sub><b>The cards</b>: a spend from the home screen</sub></td>
+    <td align="center"><img src="docs/screenshots/onboarding.png" width="250" alt="The first run: What do you want to put a cap on? A grid of twelve areas, each an icon and a name, four of them picked: groceries, eating out, coffee and bars, transport"><br><sub><b>First run</b>: a minute, and the caps are yours</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/settings.png" width="250" alt="Settings: the guide's card first, How Tetto works; then the money, the currency in euros, a month from the 27th and the week from Monday; then the evening reminder, on, around 8:30 PM"><br><sub><b>Settings</b>, the guide first</sub></td>
+    <td align="center"><img src="docs/screenshots/guide.png" width="250" alt="The guide's chapter on a period, the reserve and forgiveness: four weeks of a €20 coffee cap, each with its bar. Week 1 spent €14, +€6 to the reserve; week 2 spent €23, €3 from the reserve; week 3 spent €30, the reserve's €3 used and €7 forgiven; week 4 starts whole with €20 left"><br><sub><b>The guide</b>: the reserve and forgiveness, shown</sub></td>
+  </tr>
+</table>
+
+Drawn by the app's own screens from sample caps on a Thursday in November, in English (the app
+also speaks Italian). The phone's status bar is not in the pictures; the cards are drawn by Glance
+as a launcher draws them, on a stand-in wallpaper. The command that redraws them is in
+[Build](#build).
 
 ## Features
 
@@ -64,7 +83,10 @@ What 1.0 will do ([VISION.md](./VISION.md) has the full scope):
 - 🌙 **An evening reminder**, if you want one, that stays quiet on a day you already added a spend.
 - 💾 **Your data**: a backup file to export and restore, a CSV, and everything erased in one place.
 - 🎨 **Appearance**: light or dark, two palettes, three typefaces, the same as the family's.
-- 📖 **The guide**: what each part of the screen is for.
+- 📖 **The guide**: what each part of the screen is for, the reserve and forgiveness shown with the
+  app's own tiles and bars, in your currency; a tip on the first day leads there.
+- ♿ **For every reader**: TalkBack reads each cap as one sentence and every key of the numpad with
+  what it would leave; text works at twice its size; an open foldable shows a centred column.
 - 🇮🇹 🇬🇧 **Italian and English**, through the system per-app language picker.
 
 ## Principles
@@ -110,7 +132,7 @@ The phased plan, with every decision and its reason, is in [PLANNING.md](./PLANN
 - **Phase 3**, the first run and settings. *Done.*
 - **Phase 4**, your data and the evening reminder. *Done.*
 - **Phase 5**, the two widgets and the launcher's shortcuts. *Done.*
-- **Phase 6**, the guide and the accessibility pass.
+- **Phase 6**, the guide and the accessibility pass. *Done.*
 - **Phase 7**, the 1.0 release on GitHub.
 - **Phase 8**, Google Play: optional, later.
 

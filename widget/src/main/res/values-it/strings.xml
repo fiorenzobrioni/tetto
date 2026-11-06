@@ -23,7 +23,7 @@
     <string name="widget_again_tomorrow">domani</string>
     <string name="widget_again_day">%s</string>
     <!-- In Italian a date carries its weekday ("fino a lunedì 30 nov"): no article to agree. -->
-    <string name="widget_skeleton_date" translatable="false">EEEEdMMM</string>
+    <string name="widget_skeleton_date">EEEEdMMM</string>
 
     <string name="widget_left">ancora %s</string>
     <string name="widget_over">sotto di %s</string>
@@ -52,14 +52,15 @@
     <string name="widget_description_ahead">spese in anticipo sui giorni</string>
     <string name="widget_description_pace">circa %s al giorno</string>
     <string name="widget_description_reserve">con %s di riserva</string>
-    <string name="widget_description_add">Aggiungi una spesa</string>
 
     <plurals name="widget_more">
         <item quantity="one">altro %d</item>
+        <item quantity="many">altri %d</item>
         <item quantity="other">altri %d</item>
     </plurals>
     <plurals name="widget_more_short">
         <item quantity="one">+%d</item>
+        <item quantity="many">+%d</item>
         <item quantity="other">+%d</item>
     </plurals>
 
@@ -69,7 +70,6 @@
     <string name="widget_gone_hint">Scegline un altro nelle impostazioni di questa scheda</string>
     <string name="widget_unavailable_title">Impossibile leggere i tetti</string>
     <string name="widget_unavailable_hint">Tocca per aprire Tetto</string>
-    <string name="widget_open_tetto">Apri Tetto</string>
 
     <string name="widget_config_title">Questa scheda</string>
     <string name="widget_config_preview_desc">Anteprima della scheda</string>

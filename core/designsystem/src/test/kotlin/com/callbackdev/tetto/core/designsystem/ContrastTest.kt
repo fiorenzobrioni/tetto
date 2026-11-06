@@ -52,6 +52,35 @@ class ContrastTest {
         }
     }
 
+    /**
+     * A status card sets its body in its own ink at 86% (`StatusCard`): the first-day tip on the
+     * caps screen, the reminder's cards in Settings. Each tone's softened body on its ground.
+     */
+    @Test
+    fun `a status card's body reads on its ground`() {
+        for (dress in dresses) {
+            val s = dress.scheme
+            expect(
+                dress,
+                "onSurface at 86% on surfaceContainerHigh",
+                s.onSurface.copy(alpha = BODY),
+                s.surfaceContainerHigh,
+            )
+            expect(
+                dress,
+                "onSecondaryContainer at 86% on secondaryContainer",
+                s.onSecondaryContainer.copy(alpha = BODY),
+                s.secondaryContainer,
+            )
+            expect(
+                dress,
+                "onErrorContainer at 86% on errorContainer",
+                s.onErrorContainer.copy(alpha = BODY),
+                s.errorContainer,
+            )
+        }
+    }
+
     @Test
     fun `the attention ink reads on the page`() {
         for (dress in dresses) {
@@ -73,5 +102,8 @@ class ContrastTest {
 
     private companion object {
         const val TEXT_CONTRAST = 4.5
+
+        /** `StatusCard`'s body alpha. */
+        const val BODY = 0.86f
     }
 }

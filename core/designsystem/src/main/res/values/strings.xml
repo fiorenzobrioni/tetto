@@ -13,6 +13,7 @@
     <!-- The numpad's keys, as TalkBack says them. -->
     <string name="numpad_delete">Delete</string>
     <string name="numpad_clear">Clear</string>
+    <string name="numpad_separator">Decimal separator</string>
 
     <!-- A cap's period, by its kind: the editor's choice, and the first run's (Phase 3). -->
     <string name="period_day">Day</string>

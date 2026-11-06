@@ -101,7 +101,7 @@ object TettoIcons {
         }
     }
 
-    /** A clock: the time, the clock format. */
+    /** A bell: the evening reminder. */
     val Bell: ImageVector by lazy {
         icon("bell") {
             moveTo(6f, 16.5f)
@@ -208,6 +208,57 @@ object TettoIcons {
             for (x in listOf(9.5f, 14.5f)) {
                 for (y in listOf(7f, 12f, 17f)) circle(x, y, 0.6f)
             }
+        }
+    }
+
+    /**
+     * The mark's roof: two slopes from the ridge and a chimney standing on the right one, the
+     * status-bar icon's centrelines at the line icons' weight. A cap, where a glyph names caps.
+     */
+    val Roof: ImageVector by lazy {
+        icon("roof") {
+            moveTo(3.5f, 16.7f)
+            lineTo(12f, 9.1f)
+            lineTo(20.5f, 16.7f)
+            moveTo(16.9f, 7.3f)
+            lineTo(16.9f, 13.5f)
+        }
+    }
+
+    /**
+     * An arrow round a circle that starts again where it began: a period that ends and the next
+     * one. Five sixths of the circle, clockwise from the top right, its head at the top left.
+     */
+    val Renew: ImageVector by lazy {
+        icon("renew") {
+            moveTo(15.5f, 5.94f)
+            arcTo(7f, 7f, 0f, isMoreThanHalf = true, isPositiveArc = true, x1 = 8.5f, y1 = 5.94f)
+            moveTo(5.01f, 5.64f)
+            lineTo(8.5f, 5.94f)
+            lineTo(7.02f, 9.11f)
+        }
+    }
+
+    /** The numpad: three rows of three keys and the zero, as dots. */
+    val Keypad: ImageVector by lazy {
+        icon("keypad") {
+            for (y in listOf(4.5f, 9.5f, 14.5f)) {
+                for (x in listOf(7f, 12f, 17f)) circle(x, y, 0.9f)
+            }
+            circle(12f, 19.5f, 0.9f)
+        }
+    }
+
+    /** A ledger: a bound book with two ruled lines, what Tetto does not keep. */
+    val Ledger: ImageVector by lazy {
+        icon("ledger") {
+            roundRect(5.5f, 3.5f, 18.5f, 20.5f, 2f)
+            moveTo(9f, 3.5f)
+            lineTo(9f, 20.5f)
+            moveTo(12f, 8.5f)
+            lineTo(15.5f, 8.5f)
+            moveTo(12f, 12f)
+            lineTo(15.5f, 12f)
         }
     }
 

@@ -20,8 +20,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -41,13 +43,17 @@ class CapsViewModel
 @Inject
 constructor(
     private val caps: CapsRepository,
-    settings: SettingsRepository,
+    private val settings: SettingsRepository,
     days: DayTicks,
     private val clock: TodaySource,
 ) : ViewModel() {
     val state: StateFlow<CapsUiState?> =
-        combine(days.days().flatMapLatest { caps.states }, settings.currency) { states, currency ->
-            CapsUiState(clock.today(), currency, states, CapsSentence.of(states))
+        combine(
+            days.days().flatMapLatest { caps.states },
+            settings.currency,
+            settings.settings.map { it.capsTipSeen }.distinctUntilChanged(),
+        ) { states, currency, tipSeen ->
+            CapsUiState(clock.today(), currency, states, CapsSentence.of(states), tipSeen)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), null)
 
     private val sheetCap = MutableStateFlow<Long?>(null)
@@ -135,6 +141,9 @@ constructor(
             is CapsNotice.CapDeleted, CapsNotice.PeriodClosed -> Unit
         }
     }
+
+    /** The first-day tip was dismissed, or followed to the guide: never again (PLANNING.md §11 Phase 6). */
+    fun onTipSeen() = launch { settings.noteCapsTipSeen() }
 
     /** The caps in the order of [capIds]. */
     fun reorder(capIds: List<Long>) = launch { caps.reorder(capIds) }
