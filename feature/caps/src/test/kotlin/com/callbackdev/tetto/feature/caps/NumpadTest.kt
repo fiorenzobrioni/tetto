@@ -52,12 +52,13 @@ class NumpadTest {
         currency: AppCurrency = CapsSample.EUR,
         correcting: Money? = null,
         dark: Boolean = false,
+        amounts: List<Money> = emptyList(),
     ) {
         compose.setContent {
             TettoTheme(darkTheme = dark) {
                 Numpad(state, currency, onConfirm = {
                     confirmed += it
-                }, onOpenCap = { openedCap++ }, correcting = correcting)
+                }, onOpenCap = { openedCap++ }, correcting = correcting, amounts = amounts)
             }
         }
     }
@@ -78,6 +79,33 @@ class NumpadTest {
         compose.onNodeWithTag(CapsTags.CONFIRM).assertIsEnabled().assertTextEquals("Add €5.00")
         compose.assertAccessible()
         compose.writeScreenshot("numpad")
+    }
+
+    @Test
+    fun `the cap's habits are one touch each, while nothing is typed`() {
+        draw(amounts = listOf(euros(1, 20), euros(2, 50)))
+        compose.onNodeWithContentDescription("Add €1.20").assertExists()
+        compose.assertAccessible()
+        compose.writeScreenshot("numpad-amounts")
+        compose.onNodeWithContentDescription("Add €2.50").performClick()
+        assertThat(confirmed).containsExactly(euros(2, 50))
+    }
+
+    @Test
+    fun `typing puts the habits away, keeping their room`() {
+        draw(amounts = listOf(euros(1, 20)))
+        val keysBefore = compose.onNodeWithText("1").fetchSemanticsNode().boundsInRoot
+        type("3")
+        compose.waitForIdle()
+        compose.onNodeWithContentDescription("Add €1.20").assertDoesNotExist()
+        // The keys stay where the finger found them.
+        assertThat(compose.onNodeWithText("1").fetchSemanticsNode().boundsInRoot).isEqualTo(keysBefore)
+    }
+
+    @Test
+    fun `no habits while a spend is corrected`() {
+        draw(correcting = euros(3, 20), amounts = listOf(euros(1, 20)))
+        compose.onNodeWithContentDescription("Add €1.20").assertDoesNotExist()
     }
 
     @Test

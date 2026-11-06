@@ -43,6 +43,12 @@ constructor(
         QuickAddUiState(clock.today(), currency, states.firstOrNull { it.cap.id == capId })
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), null)
 
+    /** The amounts the numpad offers on the cap, one touch each. */
+    val amounts: StateFlow<List<Money>> =
+        caps.observeRecentAmounts(
+            capId,
+        ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), emptyList())
+
     private val phases = MutableStateFlow<QuickAddPhase>(QuickAddPhase.Typing())
 
     val phase: StateFlow<QuickAddPhase> = phases.asStateFlow()

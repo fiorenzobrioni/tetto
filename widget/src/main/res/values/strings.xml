@@ -47,12 +47,12 @@
     <string name="widget_pace_short">%s a day</string>
 
     <!-- «In words»'s sentence, on a tall card (PLANNING.md §7). -->
-    <string name="widget_note_pace">About %s a day</string>
-    <string name="widget_note_ahead_pace">Ahead of the days: about %s a day</string>
-    <string name="widget_note_ahead">Spending ahead of the days</string>
-    <string name="widget_note_ahead_short">Ahead of the days</string>
-    <string name="widget_note_reserve">With %s in reserve</string>
-    <string name="widget_note_forgiven">Forgiven when it starts again</string>
+    <string name="widget_note_pace">about %s a day</string>
+    <string name="widget_note_ahead_pace">ahead of the days: about %s a day</string>
+    <string name="widget_note_ahead">spending ahead of the days</string>
+    <string name="widget_note_ahead_short">ahead of the days</string>
+    <string name="widget_note_reserve">with %s in reserve</string>
+    <string name="widget_note_forgiven">forgiven when it starts again</string>
 
     <!-- What TalkBack reads for a cap, one sentence, as on the caps screen. -->
     <string name="widget_description_left">%1$s, %2$s left of %3$s, %4$s</string>

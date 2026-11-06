@@ -33,7 +33,7 @@ class CardWordsTest {
         assertThat(words.detail(coffee)).isEqualTo("of €20 · until Sunday")
         assertThat(words.line(coffee)).isEqualTo("Coffee · until Sunday")
         assertThat(words.paceForms(coffee)).containsExactly("about €2 a day", "€2 a day").inOrder()
-        assertThat(words.noteForms(coffee)).containsExactly("About €2 a day")
+        assertThat(words.noteForms(coffee)).containsExactly("about €2 a day")
         assertThat(words.lastWords(coffee, withName = false))
             .containsExactly("of €20 · until Sunday", "of €20\nuntil Sunday", "until Sunday").inOrder()
         assertThat(words.lastWords(coffee, withName = true))
@@ -45,9 +45,9 @@ class CardWordsTest {
     @Config(qualifiers = "en-rGB")
     fun `ahead of the days, said with the pace, the month's last day a date`() {
         val groceries = caps[1]
-        assertThat(words.noteForms(groceries).first()).isEqualTo("Ahead of the days: about €3 a day")
+        assertThat(words.noteForms(groceries).first()).isEqualTo("ahead of the days: about €3 a day")
         assertThat(words.detail(groceries)).isEqualTo("of €300 · until 30 Nov")
-        assertThat(words.noteForms(groceries).last()).isEqualTo("Ahead of the days")
+        assertThat(words.noteForms(groceries).last()).isEqualTo("ahead of the days")
         assertThat(words.description(groceries)).contains("spending ahead of the days")
     }
 
@@ -59,7 +59,7 @@ class CardWordsTest {
         assertThat(words.word(over)).isEqualTo("over")
         assertThat(words.detail(over)).isEqualTo("of €40 · starts again on Monday")
         assertThat(words.line(over)).isEqualTo("Fun · starts again on Monday")
-        assertThat(words.noteForms(over)).containsExactly("Forgiven when it starts again")
+        assertThat(words.noteForms(over)).containsExactly("forgiven when it starts again")
         assertThat(words.lastWords(over, withName = false).last()).isEqualTo("starts again on Monday")
         assertThat(words.description(over)).isEqualTo("Fun, €6 over its cap of €40, starts again on Monday")
     }

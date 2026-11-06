@@ -15,6 +15,7 @@ import com.callbackdev.tetto.core.domain.cap.CapChanges
 import com.callbackdev.tetto.core.domain.cap.CapStates
 import com.callbackdev.tetto.core.domain.cap.CatchUp
 import com.callbackdev.tetto.core.domain.cap.MonthSums
+import com.callbackdev.tetto.core.domain.cap.RecentAmounts
 import com.callbackdev.tetto.core.domain.cap.YourMonth
 import com.callbackdev.tetto.core.domain.money.Rescale
 import com.callbackdev.tetto.core.domain.period.Days
@@ -102,6 +103,18 @@ constructor(
     /** The cap [capId]'s latest closed lines, at most [limit], the latest first, as they change. */
     fun observeClosedPeriods(capId: Long, limit: Int): Flow<List<ClosedPeriod>> =
         changes().map { closedPeriods(capId).take(limit) }.distinctUntilChanged()
+
+    /**
+     * The amounts the numpad offers on the cap [capId], one touch each ([RecentAmounts]), as its
+     * spends change; none for a cap with none.
+     */
+    fun observeRecentAmounts(capId: Long): Flow<List<Money>> =
+        changes().map { recentAmounts(capId) }.distinctUntilChanged()
+
+    /** The amounts the numpad offers on the cap [capId] ([RecentAmounts]). */
+    suspend fun recentAmounts(capId: Long): List<Money> = afterCatchUp { _, _ ->
+        RecentAmounts.pick(dao.lastAmounts(capId, RecentAmounts.WINDOW).map(::Money))
+    }
 
     private fun changes(): Flow<Set<String>> =
         database.invalidationTracker.createFlow(*TettoDatabase.CAP_TABLES).conflate()

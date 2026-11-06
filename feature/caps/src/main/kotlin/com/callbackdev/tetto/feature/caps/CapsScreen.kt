@@ -67,6 +67,7 @@ import com.callbackdev.tetto.core.designsystem.theme.tabular
 import com.callbackdev.tetto.core.domain.cap.YourMonth
 import com.callbackdev.tetto.core.model.CapState
 import com.callbackdev.tetto.core.model.CapsLayout
+import com.callbackdev.tetto.core.model.Money
 import java.time.LocalDate
 
 /**
@@ -362,12 +363,14 @@ private fun Tile(
     modifier: Modifier,
 ) {
     val id = state.cap.id
+    val (of, until) = tileLines(state, format, today)
     CapTile(
         icon = state.cap.icon.symbol,
         name = state.cap.name,
         figure = figureWords(state, format),
         figureValue = state.left.minor,
-        detail = detailWords(state, format, today),
+        detail = of,
+        dateLine = until,
         bar = state.bar,
         mark = state.todayMark,
         over = state.over,
@@ -412,6 +415,9 @@ object CapsTags {
     const val AMOUNT = "numpad_amount"
     const val PREVIEW = "numpad_preview"
 
+    /** The cap's habits above the numpad's keys. */
+    const val AMOUNTS = "numpad_amounts"
+
     /** The amount and its preview together, as TalkBack hears them. */
     const val READOUT = "numpad_readout"
     const val CONFIRM = "numpad_confirm"
@@ -429,4 +435,9 @@ object CapsTags {
     fun tile(capId: Long) = "cap_tile_$capId"
 
     fun spend(spendId: Long) = "spend_$spendId"
+
+    fun amount(amount: Money) = "numpad_amount_${amount.minor}"
+
+    /** A cap's sheet's figures: the cap, its reserve, what was spent and what is left. */
+    const val RECEIPT = "cap_receipt"
 }

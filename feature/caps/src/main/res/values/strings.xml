@@ -53,6 +53,8 @@
     <string name="tile_over">%s over</string>
     <string name="tile_detail">of %1$s · %2$s</string>
     <string name="tile_detail_over">of %1$s · starts again %2$s</string>
+    <string name="tile_of">of %s</string>
+    <string name="tile_again">starts again %s</string>
     <string name="tile_pace">about %s a day</string>
     <string name="tile_reserve">+%s reserve</string>
     <string name="tile_description_left">%1$s, %2$s left of %3$s, %4$s</string>
@@ -88,9 +90,14 @@
     <string name="sheet_reserve">Reserve</string>
     <string name="sheet_spent">Spent</string>
     <string name="sheet_left">Left</string>
-    <string name="sheet_pace">To stay under, a day</string>
-    <string name="sheet_pace_value">about %s</string>
     <string name="sheet_over">Over</string>
+    <string name="sheet_pace_line">To stay under, about %s a day</string>
+    <string name="sheet_receipt_cap">%s cap</string>
+    <string name="sheet_receipt_reserve">plus %s in reserve</string>
+    <string name="sheet_receipt_spent">less %s spent</string>
+    <string name="sheet_receipt_left">%s left</string>
+    <string name="sheet_receipt_over">%s over</string>
+    <string name="sheet_receipt_sentence">%1$s: %2$s</string>
     <string name="sheet_spends">This period’s spends</string>
     <string name="sheet_no_spends">Nothing spent in this period yet.</string>
     <string name="spend_correct">Correct</string>

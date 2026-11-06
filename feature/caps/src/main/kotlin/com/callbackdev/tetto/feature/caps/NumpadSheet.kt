@@ -1,11 +1,15 @@
 package com.callbackdev.tetto.feature.caps
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,8 +24,10 @@ import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -48,6 +54,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -58,9 +66,13 @@ import com.callbackdev.tetto.core.designsystem.components.CapBadge
 import com.callbackdev.tetto.core.designsystem.components.NumpadKeys
 import com.callbackdev.tetto.core.designsystem.format.MoneyFormat
 import com.callbackdev.tetto.core.designsystem.format.rememberMoneyFormat
+import com.callbackdev.tetto.core.designsystem.icons.TettoIcons
 import com.callbackdev.tetto.core.designsystem.icons.symbol
 import com.callbackdev.tetto.core.designsystem.theme.ScreenMargin
+import com.callbackdev.tetto.core.designsystem.theme.TettoMotion
 import com.callbackdev.tetto.core.designsystem.theme.TettoTheme
+import com.callbackdev.tetto.core.designsystem.theme.reducedMotion
+import com.callbackdev.tetto.core.designsystem.theme.tabular
 import com.callbackdev.tetto.core.domain.cap.SpendPreview
 import com.callbackdev.tetto.core.domain.money.MoneyInput
 import com.callbackdev.tetto.core.model.AppCurrency
@@ -81,10 +93,11 @@ fun NumpadSheet(
     onDismiss: () -> Unit,
     onOpenCap: (() -> Unit)?,
     correcting: Money? = null,
+    amounts: List<Money> = emptyList(),
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
-        Numpad(state, currency, onConfirm, onOpenCap, correcting = correcting)
+        Numpad(state, currency, onConfirm, onOpenCap, correcting = correcting, amounts = amounts)
     }
 }
 
@@ -103,6 +116,7 @@ fun Numpad(
     modifier: Modifier = Modifier,
     correcting: Money? = null,
     initial: Money? = null,
+    amounts: List<Money> = emptyList(),
 ) {
     val format = rememberMoneyFormat(currency)
     var input by rememberSaveable(stateSaver = moneyInputSaver(currency)) {
@@ -120,6 +134,11 @@ fun Numpad(
             onConfirm(input.amount)
         }
     }
+    // One of the cap's habits, added in one touch: the same Add, the same Undo after it.
+    val quick: (Money) -> Unit = { amount ->
+        haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+        onConfirm(amount)
+    }
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
     NumpadContent(
@@ -130,6 +149,9 @@ fun Numpad(
         onKey = press,
         onConfirm = confirm,
         onOpenCap = onOpenCap,
+        // Never while a spend is corrected: there the amount is the spend's own.
+        amounts = if (correcting == null) amounts else emptyList(),
+        onAmount = quick,
         modifier = modifier
             .focusRequester(focus)
             .focusable()
@@ -168,6 +190,8 @@ internal fun NumpadContent(
     onConfirm: () -> Unit,
     onOpenCap: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    amounts: List<Money> = emptyList(),
+    onAmount: (Money) -> Unit = {},
 ) {
     Column(
         modifier
@@ -203,7 +227,13 @@ internal fun NumpadContent(
                 modifier = Modifier.fillMaxWidth().testTag(CapsTags.PREVIEW),
             )
         }
-        Spacer(Modifier.height(16.dp))
+        if (amounts.isNotEmpty()) {
+            Spacer(Modifier.height(8.dp))
+            QuickAmounts(amounts, format, visible = input.isEmpty, onAmount = onAmount)
+            Spacer(Modifier.height(8.dp))
+        } else {
+            Spacer(Modifier.height(16.dp))
+        }
         NumpadKeys(
             separator = format.decimalSeparator.takeIf { input.hasSeparator },
             onDigit = { onKey(MoneyInput.Key.Digit(it)) },
@@ -259,6 +289,48 @@ private fun Header(state: CapState, format: MoneyFormat, correcting: Money?, onO
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
+        // The arrow that says the header leads to the cap's page, as a tile's does.
+        if (onOpenCap != null) {
+            Icon(TettoIcons.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+/**
+ * The cap's habits above the keys (owner, 6 Nov 2026): its most used amounts, smallest first, each
+ * added in one touch ([RecentAmounts][com.callbackdev.tetto.core.domain.cap.RecentAmounts]). Shown
+ * while nothing is typed; once a key is pressed they fade, keeping their room, so the keys never
+ * move under a finger.
+ */
+@Composable
+private fun QuickAmounts(amounts: List<Money>, format: MoneyFormat, visible: Boolean, onAmount: (Money) -> Unit) {
+    val reduced = reducedMotion()
+    Box(Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag(CapsTags.AMOUNTS), contentAlignment = Alignment.Center) {
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(TettoMotion.effects(reduced)),
+            exit = fadeOut(TettoMotion.effects(reduced)),
+        ) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                amounts.forEach { amount ->
+                    val label = stringResource(R.string.numpad_add_amount, format.full(amount))
+                    SuggestionChip(
+                        onClick = { onAmount(amount) },
+                        label = {
+                            Text(
+                                format.full(amount),
+                                style = MaterialTheme.typography.labelLarge.tabular(),
+                                modifier = Modifier.clearAndSetSemantics {},
+                            )
+                        },
+                        modifier = Modifier.semantics { contentDescription = label }.testTag(CapsTags.amount(amount)),
+                    )
+                }
+            }
         }
     }
 }

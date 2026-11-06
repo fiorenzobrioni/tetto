@@ -76,6 +76,17 @@ constructor(
     /** The numpad open now, if any. */
     val numpad: StateFlow<NumpadTarget?> = numpadTarget.asStateFlow()
 
+    /** The amounts the open numpad offers, one touch each; none while it corrects a spend. */
+    val numpadAmounts: StateFlow<List<Money>> = numpadTarget.flatMapLatest { target ->
+        if (target == null ||
+            target.correcting != null
+        ) {
+            flowOf(emptyList())
+        } else {
+            caps.observeRecentAmounts(target.capId)
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), emptyList())
+
     private val noticeChannel = Channel<CapsNotice>(Channel.BUFFERED)
 
     val notices: Flow<CapsNotice> = noticeChannel.receiveAsFlow()

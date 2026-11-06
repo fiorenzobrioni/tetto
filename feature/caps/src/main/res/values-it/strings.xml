@@ -55,6 +55,8 @@
     <string name="tile_over">sotto di %s</string>
     <string name="tile_detail">su %1$s · %2$s</string>
     <string name="tile_detail_over">su %1$s · riparte %2$s</string>
+    <string name="tile_of">su %s</string>
+    <string name="tile_again">riparte %s</string>
     <string name="tile_pace">circa %s al giorno</string>
     <string name="tile_reserve">+%s di riserva</string>
     <string name="tile_description_left">%1$s, ancora %2$s su %3$s, %4$s</string>
@@ -90,9 +92,14 @@
     <string name="sheet_reserve">Riserva</string>
     <string name="sheet_spent">Speso</string>
     <string name="sheet_left">Residuo</string>
-    <string name="sheet_pace">Per restare sotto, al giorno</string>
-    <string name="sheet_pace_value">circa %s</string>
     <string name="sheet_over">Sotto di</string>
+    <string name="sheet_pace_line">Per restare sotto, circa %s al giorno</string>
+    <string name="sheet_receipt_cap">tetto di %s</string>
+    <string name="sheet_receipt_reserve">più %s di riserva</string>
+    <string name="sheet_receipt_spent">meno %s spesi</string>
+    <string name="sheet_receipt_left">restano %s</string>
+    <string name="sheet_receipt_over">sotto di %s</string>
+    <string name="sheet_receipt_sentence">%1$s: %2$s</string>
     <string name="sheet_spends">Le spese di questo periodo</string>
     <string name="sheet_no_spends">Ancora nessuna spesa in questo periodo.</string>
     <string name="spend_correct">Correggi</string>

@@ -65,6 +65,9 @@
     <string name="settings_preview_over_name">Shopping</string>
     <string name="settings_preview_detail">of %s · until Sunday</string>
     <string name="settings_preview_detail_over">of %s · starts again on Monday</string>
+    <string name="settings_preview_of">of %s</string>
+    <string name="settings_preview_until">until Sunday</string>
+    <string name="settings_preview_again">starts again on Monday</string>
 
     <string name="settings_group_language">Language</string>
     <string name="settings_language">App language</string>

@@ -25,6 +25,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.callbackdev.tetto.core.designsystem.format.MoneyFormat
 import com.callbackdev.tetto.core.designsystem.format.rememberMoneyFormat
+import kotlinx.coroutines.flow.collectLatest
 import com.callbackdev.tetto.core.designsystem.R as DesignR
 
 /**
@@ -44,6 +45,7 @@ fun CapsRoute(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val sheet by viewModel.sheet.collectAsStateWithLifecycle()
     val numpad by viewModel.numpad.collectAsStateWithLifecycle()
+    val numpadAmounts by viewModel.numpadAmounts.collectAsStateWithLifecycle()
     val current = state ?: return
     val format = rememberMoneyFormat(current.currency)
     val snackbars = remember { SnackbarHostState() }
@@ -51,7 +53,10 @@ fun CapsRoute(
     var confirmingDelete by rememberSaveable { mutableStateOf<Long?>(null) }
 
     LaunchedEffect(viewModel, format, resources) {
-        viewModel.notices.collect { notice ->
+        // The latest notice replaces the one on screen, never waits behind it: three spends added
+        // in a row offer the third's Undo at once (owner, 6 Nov 2026). The one replaced is
+        // dismissed as its wait is cancelled.
+        viewModel.notices.collectLatest { notice ->
             val result = snackbars.showSnackbar(
                 message = noticeWords(notice, format, resources),
                 actionLabel = if (notice.undoable) resources.getString(R.string.action_undo) else null,
@@ -111,6 +116,7 @@ fun CapsRoute(
             state = numpadCap,
             currency = current.currency,
             correcting = target.correcting?.amount,
+            amounts = numpadAmounts,
             onConfirm = { amount -> viewModel.confirmNumpad(target, amount) },
             onDismiss = viewModel::closeNumpad,
             // From the numpad's header to the cap's sheet; not while correcting, which came from it.

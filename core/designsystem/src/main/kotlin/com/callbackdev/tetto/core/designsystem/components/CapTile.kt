@@ -2,6 +2,7 @@ package com.callbackdev.tetto.core.designsystem.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -17,6 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -39,22 +42,27 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.callbackdev.tetto.core.designsystem.R
+import com.callbackdev.tetto.core.designsystem.icons.TettoIcons
 import com.callbackdev.tetto.core.designsystem.theme.GroupShape
 import com.callbackdev.tetto.core.designsystem.theme.TettoTheme
 import com.callbackdev.tetto.core.designsystem.theme.tabular
 import com.callbackdev.tetto.core.model.Share
 
 /**
- * A cap's tile (VISION, «Caps»), its words written by the caller: the icon and the [name]; the
- * [figure], what is left or, [over], by how much, alone on its line in the figure style and
- * rolling to a new value ([figureValue] gives the direction), with its word ([CapFigure]); the
- * cap and its last day ([detail]); the bar with today's mark; the [pace] where it helps; the
- * [reserve] as a small chip, only while there is one.
+ * A cap's tile (VISION, «Caps»), its words written by the caller: the icon and the [name], with
+ * the arrow that opens the cap's sheet; the [figure], what is left or, [over], by how much, in the
+ * figure style and rolling to a new value ([figureValue] gives the direction), its word on the
+ * same line ([CapFigure]); the cap ([detail], "of €20") and, on a line of its own, its last day
+ * ([dateLine], "until Sunday"), so every tile has the same lines and the bars of a row stand
+ * level; the bar with today's mark; the [pace] where it helps; the [reserve] as a small chip at
+ * the tile's foot, only while there is one.
  *
  * TalkBack reads it as one sentence, [description], and offers the touch ([clickLabel]: the
- * numpad) and the long press ([longClickLabel]: the cap's sheet) by name. Not [enabled], it is a
- * picture of a tile (the guide's examples, the appearance's preview): no touch, no ripple, and
- * TalkBack reads its sentence without calling it a button.
+ * numpad) and the long press ([longClickLabel]: the cap's sheet) by name; the header's arrow is
+ * the long press's for a finger that has not found it (owner, 6 Nov 2026), and TalkBack already
+ * offers it by name. Not [enabled], it is a picture of a tile (the guide's examples, the
+ * appearance's preview): no touch, no ripple, no arrow, and TalkBack reads its sentence without
+ * calling it a button.
  */
 @Composable
 fun CapTile(
@@ -73,6 +81,7 @@ fun CapTile(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
+    dateLine: String? = null,
     pace: String? = null,
     reserve: String? = null,
     enabled: Boolean = true,
@@ -82,33 +91,87 @@ fun CapTile(
         shape = GroupShape,
         color = MaterialTheme.colorScheme.surfaceContainer,
     ) {
-        Column(Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                CapBadge(icon)
-                Spacer(Modifier.size(12.dp))
-                CapName(name)
+        // Two parts, the second at the tile's foot: in a row of tiles as tall as the tallest, the
+        // reserve's chips stand on one line, and what is above them keeps its place.
+        Column(Modifier.padding(vertical = 16.dp), verticalArrangement = Arrangement.SpaceBetween) {
+            // The header reaches into the tile's end margin, so its arrow costs the name almost
+            // none of its width: "Restaurants" stays whole beside its badge on a phone.
+            Column {
+                CapHeader(icon, name, onOpen = onLongClick.takeIf { enabled })
+                Spacer(Modifier.height(8.dp))
+                CapBody(figure, figureValue, over, detail, dateLine, bar, mark, ahead, pace)
             }
-            Spacer(Modifier.height(12.dp))
-            CapFigure(figure, figureValue, over)
+            if (reserve != null) ReserveChip(reserve, Modifier.padding(start = 16.dp, end = 16.dp, top = 10.dp))
+        }
+    }
+}
+
+/** Under a tile's header: the figure and its word, the cap and its day, the bar, the pace. */
+@Composable
+private fun CapBody(
+    figure: String,
+    figureValue: Long,
+    over: Boolean,
+    detail: String,
+    dateLine: String?,
+    bar: Share,
+    mark: Share?,
+    ahead: Boolean,
+    pace: String?,
+) {
+    Column(Modifier.padding(horizontal = 16.dp)) {
+        CapFigure(figure, figureValue, over)
+        Text(
+            detail,
+            style = MaterialTheme.typography.bodyMedium.tabular(),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        if (dateLine != null) {
             Text(
-                detail,
+                dateLine,
                 style = MaterialTheme.typography.bodyMedium.tabular(),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
+        Spacer(Modifier.height(10.dp))
+        CapBar(bar = bar, mark = mark, over = over, ahead = ahead)
+        if (pace != null) {
             Spacer(Modifier.height(8.dp))
-            CapBar(bar = bar, mark = mark, over = over, ahead = ahead)
-            if (pace != null || reserve != null) Spacer(Modifier.height(8.dp))
-            if (pace != null) {
-                Text(
-                    pace,
-                    style = MaterialTheme.typography.bodySmall.tabular(),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            if (reserve != null) {
-                if (pace != null) Spacer(Modifier.height(6.dp))
-                ReserveChip(reserve)
-            }
+            Text(
+                pace,
+                style = MaterialTheme.typography.bodySmall.tabular(),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/**
+ * A tile's header: the icon, the name and, where the tile can be touched ([onOpen]), the arrow
+ * that says the cap has a page of its own; the header opens it. Its own touch, inside the tile's:
+ * TalkBack reads the tile as one control and offers the same page by name.
+ */
+@Composable
+private fun CapHeader(icon: ImageVector, name: String, onOpen: (() -> Unit)?) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = if (onOpen != null) 4.dp else 16.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .then(if (onOpen != null) Modifier.clickable(onClick = onOpen) else Modifier)
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        CapBadge(icon)
+        Spacer(Modifier.size(12.dp))
+        CapName(name, Modifier.weight(1f, fill = false))
+        if (onOpen != null) {
+            Icon(
+                TettoIcons.ChevronRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 2.dp).size(18.dp),
+            )
         }
     }
 }
@@ -145,7 +208,10 @@ fun CapRow(
         shape = GroupShape,
         color = MaterialTheme.colorScheme.surfaceContainer,
     ) {
-        Row(Modifier.padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            Modifier.padding(start = 16.dp, end = if (enabled) 4.dp else 16.dp, top = 10.dp, bottom = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             CapBadge(icon)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
@@ -165,6 +231,16 @@ fun CapRow(
                 )
                 Spacer(Modifier.height(4.dp))
                 CapBar(bar = bar, mark = mark, over = over, ahead = ahead)
+            }
+            // The arrow to the cap's sheet, as on a tile (owner, 6 Nov 2026).
+            if (enabled) {
+                IconButton(onClick = onLongClick) {
+                    Icon(
+                        TettoIcons.ChevronRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
     }
@@ -214,17 +290,31 @@ private fun CapName(name: String, modifier: Modifier = Modifier) {
 }
 
 /**
- * A cap's figure with the word that says what it is, on a tile: "ancora / 12 €" where the
- * language puts the word first, "€12 / left" where it follows. The figure keeps a line of its own,
- * so it is never broken, and the tile is as tall whatever the amount.
+ * A cap's figure with the word that says what it is, on a tile, on one line and their baseline:
+ * "ancora 12 €" where the language puts the word first, "€12 left" where it follows. The word is
+ * measured first and the figure takes the rest, stepping down only where a long amount would not
+ * fit beside it ([RollingText]): one line always, never broken, so every tile is as tall whatever
+ * the amount, and the bars of a row stand level.
  */
 @Composable
 private fun CapFigure(figure: String, figureValue: Long, over: Boolean) {
     val first = booleanResource(R.bool.cap_word_first)
-    Column {
-        if (first) FigureWord(over)
-        RollingText(text = figure, value = figureValue, style = TettoTheme.type.readingValue, color = figureInk(over))
-        if (!first) FigureWord(over)
+    Row(Modifier.fillMaxWidth()) {
+        if (first) {
+            FigureWord(over, Modifier.alignByBaseline())
+            Spacer(Modifier.width(6.dp))
+        }
+        RollingText(
+            text = figure,
+            value = figureValue,
+            style = TettoTheme.type.readingValue,
+            color = figureInk(over),
+            modifier = Modifier.weight(1f, fill = false).alignByBaseline(),
+        )
+        if (!first) {
+            Spacer(Modifier.width(6.dp))
+            FigureWord(over, Modifier.alignByBaseline())
+        }
     }
 }
 
@@ -331,15 +421,19 @@ fun CapBadge(icon: ImageVector, modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * The reserve, as a small chip in the tertiary container: a role that is amber in neither dress,
+ * so the chip never reads as the attention ink of a bar ahead of the days (owner, 6 Nov 2026).
+ */
 @Composable
-private fun ReserveChip(text: String) {
+private fun ReserveChip(text: String, modifier: Modifier = Modifier) {
     Text(
         text,
         style = MaterialTheme.typography.labelMedium.tabular(),
-        color = MaterialTheme.colorScheme.onSecondaryContainer,
-        modifier = Modifier
+        color = MaterialTheme.colorScheme.onTertiaryContainer,
+        modifier = modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .background(MaterialTheme.colorScheme.tertiaryContainer)
             .padding(horizontal = 8.dp, vertical = 4.dp),
     )
 }

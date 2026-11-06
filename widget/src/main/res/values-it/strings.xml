@@ -40,12 +40,12 @@
     <string name="widget_pace">circa %s al giorno</string>
     <string name="widget_pace_short">%s al giorno</string>
 
-    <string name="widget_note_pace">Circa %s al giorno</string>
-    <string name="widget_note_ahead_pace">In anticipo sui giorni: circa %s al giorno</string>
-    <string name="widget_note_ahead">Spese in anticipo sui giorni</string>
-    <string name="widget_note_ahead_short">In anticipo sui giorni</string>
-    <string name="widget_note_reserve">Con %s di riserva</string>
-    <string name="widget_note_forgiven">Condonato quando riparte</string>
+    <string name="widget_note_pace">circa %s al giorno</string>
+    <string name="widget_note_ahead_pace">in anticipo sui giorni: circa %s al giorno</string>
+    <string name="widget_note_ahead">spese in anticipo sui giorni</string>
+    <string name="widget_note_ahead_short">in anticipo sui giorni</string>
+    <string name="widget_note_reserve">con %s di riserva</string>
+    <string name="widget_note_forgiven">condonato quando riparte</string>
 
     <string name="widget_description_left">%1$s, ancora %2$s su %3$s, %4$s</string>
     <string name="widget_description_over">%1$s, sotto di %2$s su un tetto di %3$s, riparte %4$s</string>

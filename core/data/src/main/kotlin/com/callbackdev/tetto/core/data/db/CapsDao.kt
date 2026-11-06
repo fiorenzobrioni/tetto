@@ -65,6 +65,10 @@ interface CapsDao {
     @Query("SELECT * FROM spends WHERE cap_id = :capId AND period_start = :periodStart ORDER BY added_at DESC, id DESC")
     suspend fun spends(capId: Long, periodStart: Long): List<SpendEntity>
 
+    /** The amounts of the cap's last [limit] spends, of any period, newest first: the numpad's habits. */
+    @Query("SELECT amount FROM spends WHERE cap_id = :capId ORDER BY added_at DESC, id DESC LIMIT :limit")
+    suspend fun lastAmounts(capId: Long, limit: Int): List<Long>
+
     @Query("UPDATE spends SET amount = :amount WHERE id = :id")
     suspend fun setSpendAmount(id: Long, amount: Long): Int
 

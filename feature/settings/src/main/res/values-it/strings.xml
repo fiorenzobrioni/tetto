@@ -63,6 +63,9 @@
     <string name="settings_preview_over_name">Shopping</string>
     <string name="settings_preview_detail">su %s · fino a domenica</string>
     <string name="settings_preview_detail_over">su %s · riparte lunedì</string>
+    <string name="settings_preview_of">su %s</string>
+    <string name="settings_preview_until">fino a domenica</string>
+    <string name="settings_preview_again">riparte lunedì</string>
 
     <string name="settings_group_language">Lingua</string>
     <string name="settings_language">Lingua dell’app</string>

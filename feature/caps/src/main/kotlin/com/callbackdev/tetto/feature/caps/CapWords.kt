@@ -130,6 +130,16 @@ internal fun detailWords(state: CapState, format: MoneyFormat, today: LocalDate)
     stringResource(R.string.tile_detail, format.short(state.cap.amount), untilWords(state.lastDay, today))
 }
 
+/** A tile's two lines under its figure: "of €20" and "until Sunday", or, over, "starts again on Monday". */
+@Composable
+@ReadOnlyComposable
+internal fun tileLines(state: CapState, format: MoneyFormat, today: LocalDate): Pair<String, String> =
+    stringResource(R.string.tile_of, format.short(state.cap.amount)) to if (state.over) {
+        stringResource(R.string.tile_again, againWords(state.startsAgain, today))
+    } else {
+        untilWords(state.lastDay, today)
+    }
+
 @Composable
 @ReadOnlyComposable
 internal fun paceWords(state: CapState, format: MoneyFormat): String? =

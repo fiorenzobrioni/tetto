@@ -447,6 +447,20 @@ class CapsRepositoryTest {
     }
 
     @Test
+    fun `the numpad's amounts are the cap's habits, across its periods`() = runTest {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(3), DAY)
+        val tea = repository.addCap("Tea", COFFEE, euros(3), DAY)
+        assertThat(repository.recentAmounts(coffee)).isEmpty()
+        spend(coffee, euros(1, 20))
+        spend(tea, euros(2))
+        clock.at("2026-11-06T09:00")
+        spend(coffee, euros(1, 20))
+        spend(coffee, euros(1, 50))
+        // Yesterday's spend counts though its period has closed; the other cap's does not.
+        assertThat(repository.recentAmounts(coffee)).containsExactly(euros(1, 20), euros(1, 50)).inOrder()
+    }
+
+    @Test
     fun `undo of an add deletes that spend, by its id`() = runTest {
         val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
         val kept = spend(coffee, euros(1))
