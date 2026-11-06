@@ -12,7 +12,8 @@ import java.time.LocalDate
  * @property daysLeft the days from today to the period's end, today counted: at least 1.
  * @property bar what was spent of the cap and its reserve, held to 0..1; [over] says the rest.
  * @property todayMark where today falls in the period, today counted; none for a day.
- * @property aheadOfDays spending runs ahead of the days: not over, and the bar past the mark.
+ * @property aheadOfDays spending runs ahead of the days: not over, and the bar past the mark by
+ *   more than a step of the period that fades by its end (PLANNING.md §4.6).
  * @property pace about how much a day is left until the end, in whole units of the currency;
  *   none for a day, when over, on the last day, or under one unit.
  * @property renewedToday a period closed today and this one began with it.

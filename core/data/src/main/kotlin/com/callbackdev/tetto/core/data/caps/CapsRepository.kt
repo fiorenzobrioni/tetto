@@ -19,6 +19,7 @@ import com.callbackdev.tetto.core.domain.cap.YourMonth
 import com.callbackdev.tetto.core.domain.money.Rescale
 import com.callbackdev.tetto.core.domain.period.Days
 import com.callbackdev.tetto.core.model.AppCurrency
+import com.callbackdev.tetto.core.model.Cap
 import com.callbackdev.tetto.core.model.CapDraft
 import com.callbackdev.tetto.core.model.CapIcon
 import com.callbackdev.tetto.core.model.CapState
@@ -26,6 +27,7 @@ import com.callbackdev.tetto.core.model.ClosedPeriod
 import com.callbackdev.tetto.core.model.DateRange
 import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.PeriodKind
+import com.callbackdev.tetto.core.model.PeriodRule
 import com.callbackdev.tetto.core.model.Spend
 import com.callbackdev.tetto.core.model.UserSettings
 import kotlinx.coroutines.NonCancellable
@@ -261,10 +263,12 @@ constructor(
     }
 
     /**
-     * Changes the cap [capId] (§4.5). Its name, icon and amount change nothing else: a new amount
-     * applies to the open period at once, and the reserve stays. A new [kind] replaces the open
-     * period by the new one that holds today, and moves the open period's spends into it; closed
-     * periods and their spends stay as they are. False when the cap is gone.
+     * Changes the cap [capId] (§4.5). Its name and icon change nothing else. A new amount applies
+     * to the open period at once, and the reserve is held to it, the limit the next close would
+     * hold it to. A new [kind] replaces the open period by the new one that holds today
+     * ([CapChanges.replace]): the days already past are kept as a closed line where the new period
+     * starts later, and the rest of the open spends move into it; closed periods and their spends
+     * stay as they are. False when the cap is gone.
      */
     suspend fun changeCap(capId: Long, name: String, icon: CapIcon, amount: Money, kind: PeriodKind): Boolean {
         require(name.isNotBlank()) { "A cap needs a name" }
@@ -273,11 +277,12 @@ constructor(
             val cap = dao.cap(capId)?.toModel() ?: return@afterCatchUp false
             dao.setCapLooks(capId, name.trim(), icon.key, amount.minor)
             if (kind != cap.kind) {
-                val today = moment.today
                 val lastClosedEnd = dao.lastClosedEnd(capId)?.let(LocalDate::ofEpochDay)
-                val start = CapChanges.replacedOpenStart(settings.rule(kind, phone), today, lastClosedEnd)
-                dao.moveSpends(capId, cap.openStart.toEpochDay(), start.toEpochDay())
-                dao.setCapPeriod(capId, kind.name, start.toEpochDay())
+                val oldRule = settings.rule(cap.kind, phone)
+                replaceOpenLocked(cap, oldRule, settings.rule(kind, phone), amount, lastClosedEnd, moment)
+            } else {
+                val held = CapChanges.heldReserve(cap.reserve, amount)
+                if (held != cap.reserve) dao.setReserve(capId, held.minor)
             }
             true
         }
@@ -397,11 +402,34 @@ constructor(
             }
             if (!changed) continue
             val lastClosedEnd = row.lastClosedEnd?.let(LocalDate::ofEpochDay)
-            val start = CapChanges.replacedOpenStart(newRule, moment.today, lastClosedEnd)
-            if (start == cap.openStart) continue
-            dao.moveSpends(cap.id, cap.openStart.toEpochDay(), start.toEpochDay())
-            dao.setCapPeriod(cap.id, cap.kind.name, start.toEpochDay())
+            replaceOpenLocked(cap, oldRule, newRule, cap.amount, lastClosedEnd, moment)
         }
+    }
+
+    /**
+     * Runs inside a transaction: [cap]'s open period, made by [oldRule], replaced by [newRule]'s
+     * that holds today, with [newAmount] the cap from then on (§4.5, [CapChanges.replace]). The
+     * days kept, where the new period starts later, are those before its first instant in the zone
+     * of asking: a spend added before it stays in them, one added from it on moves.
+     */
+    private suspend fun replaceOpenLocked(
+        cap: Cap,
+        oldRule: PeriodRule,
+        newRule: PeriodRule,
+        newAmount: Money,
+        lastClosedEnd: LocalDate?,
+        moment: Moment,
+    ) {
+        val start = CapChanges.replacedOpenStart(newRule, moment.today, lastClosedEnd)
+        if (start == cap.openStart && newRule.kind == cap.kind && newAmount == cap.amount) return
+        val from = cap.openStart.toEpochDay()
+        val cut = Days.instantsOf(start, moment.zone).first.toEpochMilli()
+        val spentBefore = if (start > cap.openStart) Money(dao.spentBefore(cap.id, from, cut)) else Money.ZERO
+        val plan = CapChanges.replace(cap, oldRule, start, newAmount, spentBefore)
+        plan.closed?.let { dao.insertClosedPeriods(listOf(it.toEntity())) }
+        dao.moveSpends(cap.id, from, start.toEpochDay(), since = if (plan.closed != null) cut else Long.MIN_VALUE)
+        dao.setCapPeriod(cap.id, newRule.kind.name, start.toEpochDay())
+        dao.setReserve(cap.id, plan.reserve.minor)
     }
 
     /**

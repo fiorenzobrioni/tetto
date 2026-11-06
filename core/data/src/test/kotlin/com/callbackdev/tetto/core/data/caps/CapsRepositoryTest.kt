@@ -179,28 +179,36 @@ class CapsRepositoryTest {
     }
 
     @Test
-    fun `the kind mid-period, month to week, moves the open spends and leaves the closed ones`() = runTest {
-        clock.at("2026-10-20T12:00")
-        val groceries = repository.addCap("Groceries", GROCERIES, euros(300), MONTH)
-        val october = spend(groceries, euros(40))
-        clock.at("2026-11-03T12:00")
-        val first = spend(groceries, euros(15))
-        clock.at("2026-11-05T12:00")
-        val second = spend(groceries, euros(10))
-        val closedBefore = repository.closedPeriods(groceries)
-        assertThat(closedBefore.single().reserveAfter).isEqualTo(euros(260))
+    fun `the kind mid-period, month to week, keeps the day before the week, moves the rest, leaves the closed`() =
+        runTest {
+            clock.at("2026-10-20T12:00")
+            val groceries = repository.addCap("Groceries", GROCERIES, euros(300), MONTH)
+            val octoberSpend = spend(groceries, euros(40))
+            clock.at("2026-11-03T12:00")
+            val first = spend(groceries, euros(15))
+            clock.at("2026-11-05T12:00")
+            val second = spend(groceries, euros(10))
+            val closedBefore = repository.closedPeriods(groceries)
+            assertThat(closedBefore.single().reserveAfter).isEqualTo(euros(260))
 
-        assertThat(repository.changeCap(groceries, "Groceries", GROCERIES, euros(80), WEEK)).isTrue()
+            assertThat(repository.changeCap(groceries, "Groceries", GROCERIES, euros(80), WEEK)).isTrue()
 
-        val state = repository.currentStates().single()
-        assertThat(state.period).isEqualTo(DateRange(date(2026, 11, 2), date(2026, 11, 9)))
-        assertThat(state.spent).isEqualTo(euros(25))
-        // The reserve stays; the new cap is its limit at the next close.
-        assertThat(state.cap.reserve).isEqualTo(euros(260))
-        assertThat(repository.openSpends(groceries).map { it.id }).containsExactly(second.id, first.id).inOrder()
-        assertThat(repository.closedPeriods(groceries)).isEqualTo(closedBefore)
-        assertThat(dao.spend(october.id)?.periodStart).isEqualTo(date(2026, 10, 1).toEpochDay())
-    }
+            val state = repository.currentStates().single()
+            assertThat(state.period).isEqualTo(DateRange(date(2026, 11, 2), date(2026, 11, 9)))
+            assertThat(state.spent).isEqualTo(euros(25))
+            // The reserve is held to the new cap at once, the limit a close would hold it to: a
+            // month's €260 never rides on a week's €80 (owner, 6 Nov 2026).
+            assertThat(state.cap.reserve).isEqualTo(euros(80))
+            assertThat(repository.openSpends(groceries).map { it.id }).containsExactly(second.id, first.id).inOrder()
+            // Sunday 1 Nov, the month's day before the week, is kept as a line of its own (a
+            // thirtieth of €300), and the closed month stays as it was.
+            val (kept, october) = repository.closedPeriods(groceries)
+            assertThat(kept.range).isEqualTo(DateRange(date(2026, 11, 1), date(2026, 11, 2)))
+            assertThat(kept.cap).isEqualTo(euros(10))
+            assertThat(kept.spent).isEqualTo(Money.ZERO)
+            assertThat(october).isEqualTo(closedBefore.single())
+            assertThat(dao.spend(octoberSpend.id)?.periodStart).isEqualTo(date(2026, 10, 1).toEpochDay())
+        }
 
     @Test
     fun `the kind mid-period, week to month, with nothing closed takes the whole month`() = runTest {
@@ -214,17 +222,81 @@ class CapsRepositoryTest {
     }
 
     @Test
-    fun `the kind mid-period, to a day, moves the week's spends into today`() = runTest {
+    fun `the kind mid-period, to a day, keeps the days past and moves only today's spends`() = runTest {
         clock.at("2026-11-03T12:00")
         val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
-        spend(coffee, euros(4))
+        val tuesday = spend(coffee, euros(4))
         clock.at("2026-11-05T12:00")
-        spend(coffee, euros(2))
+        val thursday = spend(coffee, euros(2))
         repository.changeCap(coffee, "Coffee", COFFEE, euros(3), DAY)
+
         val state = repository.currentStates().single()
         assertThat(state.period).isEqualTo(DateRange(date(2026, 11, 5), date(2026, 11, 6)))
-        assertThat(state.spent).isEqualTo(euros(6))
-        assertThat(state.over).isTrue()
+        // Today's spend only: Tuesday's never makes Thursday's day look over.
+        assertThat(state.spent).isEqualTo(euros(2))
+        assertThat(state.over).isFalse()
+        assertThat(repository.openSpends(coffee).map { it.id }).containsExactly(thursday.id)
+        // Monday to Wednesday kept as a line: three sevenths of €20, €8.57, with Tuesday's €4;
+        // €4.57 left over, held to the day's €3.
+        val kept = repository.closedPeriods(coffee).single()
+        assertThat(kept.range).isEqualTo(DateRange(date(2026, 11, 2), date(2026, 11, 5)))
+        assertThat(kept.cap).isEqualTo(euros(8, 57))
+        assertThat(kept.spent).isEqualTo(euros(4))
+        assertThat(kept.reserveAfter).isEqualTo(euros(3))
+        assertThat(kept.forgiven).isEqualTo(Money.ZERO)
+        assertThat(state.cap.reserve).isEqualTo(euros(3))
+        assertThat(dao.spend(tuesday.id)?.periodStart).isEqualTo(date(2026, 11, 2).toEpochDay())
+    }
+
+    @Test
+    fun `the days kept close as any period, and an overspend the reserve cannot cover is forgiven`() = runTest {
+        clock.at("2026-11-02T12:00")
+        val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        spend(coffee, euros(15))
+        clock.at("2026-11-05T12:00")
+        repository.changeCap(coffee, "Coffee", COFFEE, euros(3), DAY)
+        val kept = repository.closedPeriods(coffee).single()
+        assertThat(kept.cap).isEqualTo(euros(8, 57))
+        assertThat(kept.forgiven).isEqualTo(euros(6, 43))
+        assertThat(kept.reserveAfter).isEqualTo(Money.ZERO)
+        assertThat(repository.currentStates().single().left).isEqualTo(euros(3))
+    }
+
+    @Test
+    fun `a month start moved forward keeps the days before it`() = runTest {
+        clock.at("2026-11-01T10:00")
+        val groceries = repository.addCap("Groceries", GROCERIES, euros(300), MONTH)
+        val sunday = spend(groceries, euros(50))
+        clock.at("2026-11-04T10:00")
+        val wednesday = spend(groceries, euros(20))
+        clock.at("2026-11-05T10:00")
+
+        repository.changeMonthStartDay(3)
+
+        val state = repository.currentStates().single()
+        assertThat(state.period).isEqualTo(DateRange(date(2026, 11, 3), date(2026, 12, 3)))
+        assertThat(state.spent).isEqualTo(euros(20))
+        assertThat(repository.openSpends(groceries).map { it.id }).containsExactly(wednesday.id)
+        // The 1st and 2nd: two thirtieths of €300, €20, with Sunday's €50; €30 over, forgiven.
+        val kept = repository.closedPeriods(groceries).single()
+        assertThat(kept.range).isEqualTo(DateRange(date(2026, 11, 1), date(2026, 11, 3)))
+        assertThat(kept.cap).isEqualTo(euros(20))
+        assertThat(kept.spent).isEqualTo(euros(50))
+        assertThat(kept.forgiven).isEqualTo(euros(30))
+        assertThat(dao.spend(sunday.id)?.periodStart).isEqualTo(date(2026, 11, 1).toEpochDay())
+    }
+
+    @Test
+    fun `the amount lowered holds the reserve to it, raised keeps it`() = runTest {
+        clock.at("2026-10-28T09:00")
+        val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        clock.at("2026-11-05T09:00")
+        assertThat(repository.currentStates().single().cap.reserve).isEqualTo(euros(20))
+
+        repository.changeCap(coffee, "Coffee", COFFEE, euros(12), WEEK)
+        assertThat(repository.currentStates().single().cap.reserve).isEqualTo(euros(12))
+        repository.changeCap(coffee, "Coffee", COFFEE, euros(30), WEEK)
+        assertThat(repository.currentStates().single().cap.reserve).isEqualTo(euros(12))
     }
 
     @Test
@@ -250,7 +322,7 @@ class CapsRepositoryTest {
     }
 
     @Test
-    fun `the amount mid-period applies at once, and the reserve stays`() = runTest {
+    fun `the amount mid-period applies at once, and a reserve under it stays`() = runTest {
         clock.at("2026-10-28T09:00")
         val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
         spend(coffee, euros(12))

@@ -20,7 +20,10 @@ import java.time.temporal.ChronoUnit
  * - The bar: `spent / (cap + reserve)`, held to 0..1.
  * - The mark for today, for a week, a month or a year: `(today − start + 1) / length`, today
  *   counted.
- * - Ahead of the days: not over, and the bar past the mark. No fixed threshold.
+ * - Ahead of the days: not over, and the bar past the mark by more than a slack that starts at
+ *   one step of the period (a day of a week, a week of a month, a month of a year) and fades to
+ *   nothing by its last day (owner, 6 Nov 2026): a big shop on the first of the month is not a
+ *   warning for weeks, while a cap nearly spent with days to go still is. [aheadLine].
  * - The pace, for a week, a month or a year, not over, with two days left or more:
  *   `left / daysLeft`, rounded down to a whole unit; none under one unit.
  */
@@ -47,7 +50,7 @@ object CapStates {
             val counted = ChronoUnit.DAYS.between(period.start, today).toInt() + 1
             Share(counted.coerceIn(1, length).toLong(), length.toLong())
         }
-        val aheadOfDays = !over && todayMark != null && bar > todayMark
+        val aheadOfDays = !over && todayMark != null && bar > aheadLine(cap.kind, todayMark, daysLeft)
 
         val pace = if (cap.kind != PeriodKind.DAY && !over && daysLeft >= 2) {
             val unit = currency.unit.minor
@@ -71,4 +74,27 @@ object CapStates {
             renewedToday = lastClosedEnd == today && period.start == today,
         )
     }
+
+    /**
+     * The share past which spending runs ahead of the days: the mark for today ([mark], `counted /
+     * length`) and a slack of [slackDays] days of the period, faded by the days left: `counted /
+     * length + slack / length × daysLeft / length`, kept exact as one share. On the first day it is
+     * the mark and a whole step (a week's: two days of seven); on the last, the mark and almost
+     * nothing.
+     */
+    fun aheadLine(kind: PeriodKind, mark: Share, daysLeft: Int): Share {
+        val length = mark.whole
+        return Share(mark.part * length + slackDays(kind) * daysLeft, length * length)
+    }
+
+    /** One step of a period of [kind]: a day of a week, a week of a month, a month of a year. */
+    private fun slackDays(kind: PeriodKind): Long = when (kind) {
+        PeriodKind.DAY -> 0
+        PeriodKind.WEEK -> 1
+        PeriodKind.MONTH -> DAYS_IN_WEEK
+        PeriodKind.YEAR -> DAYS_IN_MONTH
+    }
+
+    private const val DAYS_IN_WEEK = 7L
+    private const val DAYS_IN_MONTH = 30L
 }

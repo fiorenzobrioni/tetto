@@ -71,9 +71,21 @@ interface CapsDao {
     @Query("DELETE FROM spends WHERE id = :id")
     suspend fun deleteSpend(id: Long): Int
 
-    /** Moves the open period's spends into the period that replaces it (§4.5). */
-    @Query("UPDATE spends SET period_start = :to WHERE cap_id = :capId AND period_start = :from")
-    suspend fun moveSpends(capId: Long, from: Long, to: Long): Int
+    /**
+     * Moves the open period's spends added at [since] or after (epoch milliseconds) into the
+     * period that replaces it (§4.5): all of them where the new period holds the old one's days,
+     * those of its own days where it starts later.
+     */
+    @Query(
+        "UPDATE spends SET period_start = :to WHERE cap_id = :capId AND period_start = :from AND added_at >= :since",
+    )
+    suspend fun moveSpends(capId: Long, from: Long, to: Long, since: Long): Int
+
+    /** What the open period's spends added before [until] (epoch milliseconds) come to: the days kept (§4.5). */
+    @Query(
+        "SELECT COALESCE(SUM(amount), 0) FROM spends WHERE cap_id = :capId AND period_start = :from AND added_at < :until",
+    )
+    suspend fun spentBefore(capId: Long, from: Long, until: Long): Long
 
     /** Whether any spend was added within `[from, until)`, in epoch milliseconds. */
     @Query("SELECT EXISTS(SELECT 1 FROM spends WHERE added_at >= :from AND added_at < :until)")
