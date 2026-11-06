@@ -172,11 +172,10 @@ class NumpadTest {
     fun `correcting a spend starts from its amount, and counts it back in what is left`() {
         draw(correcting = euros(3, 20))
         compose.onNodeWithText("Correcting a spend").assertExists()
+        // Its decimals in full, as the cap's sheet lists it (owner, 6 Nov 2026).
+        readout().assertTextEquals("€3.20", "€16 left")
         compose.onNodeWithTag(CapsTags.CONFIRM).assertTextEquals("Save €3.20")
-        preview().assertTextEquals("€16 left")
-        compose.onNodeWithContentDescription("Delete").performClick()
-        compose.onNodeWithContentDescription("Delete").performClick()
-        compose.onNodeWithContentDescription("Delete").performClick()
+        repeat(4) { compose.onNodeWithContentDescription("Delete").performClick() }
         preview().assertTextEquals("€19.20 left")
         type("1")
         preview().assertTextEquals("€18.20 left")

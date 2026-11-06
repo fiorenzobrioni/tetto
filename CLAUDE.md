@@ -82,7 +82,9 @@ owner, 5 Nov 2026). Java 21.
 - **On Windows, Room's `MigrationTestHelper` cannot open its database** under Robolectric: its
   driver looks for the file name after a `/`, and the path there has `\` (Room 2.8.5). It works on
   CI (Linux). `SchemaTest` builds version 1 from the exported JSON instead; a migration test that
-  takes the helper runs on CI only, and says so.
+  takes the helper runs on CI only, and says so. Likewise **three tests of `DataViewModelTest`**
+  (those that write or read a file through `Uri.fromFile`) time out on Windows, the untouched code
+  too, and pass on CI (6 Nov 2026).
 - **Maven Central answers HTTP 429** (Too Many Requests; it happens in the Claude Code cloud
   sandbox): add `--init-script gradle/google-maven-mirror.init.gradle.kts` to any command. It
   puts Google's mirror of Maven Central first, and points Robolectric's own `android-all`

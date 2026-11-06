@@ -111,9 +111,10 @@ class MoneyInputTest {
     }
 
     @Test
-    fun `a spend's amount is typed back for a correction`() {
+    fun `a spend's amount is typed back for a correction, its decimals in full`() {
         assertThat(MoneyInput.of(euros(5), EUR)).isEqualTo(typed("5"))
-        assertThat(MoneyInput.of(euros(5, 50), EUR)).isEqualTo(typed("5,5"))
+        assertThat(MoneyInput.of(euros(5, 50), EUR)).isEqualTo(typed("5,50"))
+        assertThat(MoneyInput.of(euros(3, 20), EUR)).isEqualTo(typed("3,20"))
         assertThat(MoneyInput.of(euros(5, 5), EUR)).isEqualTo(typed("5,05"))
         assertThat(MoneyInput.of(Money(1250), JPY)).isEqualTo(typed("1250", JPY))
         assertThat(MoneyInput.of(euros(5, 5), EUR).amount).isEqualTo(euros(5, 5))
