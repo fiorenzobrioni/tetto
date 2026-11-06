@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.callbackdev.tetto.core.data.caps.CapsRepository
 import com.callbackdev.tetto.core.data.settings.SettingsRepository
 import com.callbackdev.tetto.core.data.time.TodaySource
+import com.callbackdev.tetto.core.data.widget.HomeCard
+import com.callbackdev.tetto.core.data.widget.HomeScreenCards
 import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.AppFont
 import com.callbackdev.tetto.core.model.AppPalette
@@ -29,7 +31,8 @@ import javax.inject.Inject
 /**
  * What Settings shows: the settings as stored, the currency and the week in force (the reader's,
  * else the phone's), today (for the month's dates), how many caps there are (a change of currency
- * asks first when there are some to relabel), and the version.
+ * asks first when there are some to relabel), the version, and whether the launcher can place a
+ * card on request ([canPinCards]: the home screen's group is drawn only then).
  */
 data class SettingsUiState(
     val settings: UserSettings,
@@ -38,6 +41,7 @@ data class SettingsUiState(
     val today: LocalDate,
     val capCount: Int,
     val version: String,
+    val canPinCards: Boolean = false,
 ) {
     val weekStart: DayOfWeek get() = settings.weekStart ?: phoneWeekStart
 }
@@ -57,7 +61,10 @@ constructor(
     caps: CapsRepository,
     private val clock: TodaySource,
     private val reminder: EveningReminder,
+    private val cards: HomeScreenCards,
 ) : ViewModel() {
+    private val canPin: Boolean = cards.canPin()
+
     private val version: String = runCatching {
         context.packageManager.getPackageInfo(context.packageName, 0).versionName
     }.getOrNull().orEmpty()
@@ -68,7 +75,7 @@ constructor(
             repository.currency,
             caps.states.map { it.size }.distinctUntilChanged(),
         ) { settings, currency, count ->
-            SettingsUiState(settings, currency, repository.phoneWeekStart(), clock.today(), count, version)
+            SettingsUiState(settings, currency, repository.phoneWeekStart(), clock.today(), count, version, canPin)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), null)
 
     fun setCurrency(code: String) = launch { repository.setCurrency(code) }
@@ -88,6 +95,11 @@ constructor(
     fun setReminder(on: Boolean) = launch { repository.setReminder(on) }
 
     fun setReminderTime(time: LocalTime) = launch { repository.setReminderTime(time) }
+
+    /** Asks the launcher to place [card] (PLANNING.md §8): it shows its own dialog, and the reader decides there. */
+    fun pinCard(card: HomeCard) {
+        cards.pin(card)
+    }
 
     /** Android is about to ask for the permission: from now on, a refusal may be for good. */
     fun noteNotificationsAsked() = launch { repository.noteNotificationsAsked() }

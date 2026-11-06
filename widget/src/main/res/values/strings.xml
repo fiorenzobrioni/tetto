@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The two cards, as the launcher's picker names them (PLANNING.md §7). -->
+    <string name="widget_glance_label">At a glance</string>
+    <string name="widget_glance_desc">Your caps, each with what is left and a slim bar. A touch on one adds a spend.</string>
+    <string name="widget_words_label">In words</string>
+    <string name="widget_words_desc">One cap in a ring, and what is left in words. A touch adds a spend.</string>
+
+    <!-- The static previews: sample values only. -->
+    <string name="widget_preview_left">€12 left</string>
+    <string name="widget_preview_line">Coffee · until Sunday</string>
+    <string name="widget_preview_pace">about €4\na day</string>
+    <string name="widget_preview_cap1">Coffee</string>
+    <string name="widget_preview_fig1">€12</string>
+    <string name="widget_preview_cap2">Groceries</string>
+    <string name="widget_preview_fig2">€62</string>
+    <string name="widget_preview_cap3">Eating out</string>
+    <string name="widget_preview_fig3">€48</string>
+    <string name="widget_preview_cap4">Transport</string>
+    <string name="widget_preview_cap5">Fun</string>
+
+    <!-- Until when: the period's last day, included; and when a cap over starts again. -->
+    <string name="widget_until_today">today</string>
+    <string name="widget_until_tomorrow">until tomorrow</string>
+    <string name="widget_until_day">until %s</string>
+    <string name="widget_again_tomorrow">tomorrow</string>
+    <string name="widget_again_day">on %s</string>
+    <!-- How a date beyond the next six days is written, as a date skeleton. -->
+    <string name="widget_skeleton_date" translatable="false">dMMM</string>
+
+    <!-- What is left: "€12 left", "€30 over"; the word alone, under a one-cell figure. -->
+    <string name="widget_left">%s left</string>
+    <string name="widget_over">%s over</string>
+    <string name="widget_word_left">left</string>
+    <string name="widget_word_over">over</string>
+    <!-- Whether the word stands over the figure ("ancora / 12 €") or under it ("€12 / left"). -->
+    <bool name="widget_word_above">false</bool>
+
+    <!-- The lines under it. -->
+    <string name="widget_detail">of %1$s · %2$s</string>
+    <string name="widget_detail_over">of %1$s · starts again %2$s</string>
+    <string name="widget_line">%1$s · %2$s</string>
+    <string name="widget_line_over">%1$s · starts again %2$s</string>
+    <string name="widget_of">of %s</string>
+    <string name="widget_starts_again">starts again %s</string>
+    <string name="widget_pace">about %s a day</string>
+    <string name="widget_pace_short">%s a day</string>
+
+    <!-- «In words»'s sentence, on a tall card (PLANNING.md §7). -->
+    <string name="widget_note_pace">About %s a day</string>
+    <string name="widget_note_ahead_pace">Ahead of the days: about %s a day</string>
+    <string name="widget_note_ahead">Spending ahead of the days</string>
+    <string name="widget_note_ahead_short">Ahead of the days</string>
+    <string name="widget_note_reserve">With %s in reserve</string>
+    <string name="widget_note_forgiven">Forgiven when it starts again</string>
+
+    <!-- What TalkBack reads for a cap, one sentence, as on the caps screen. -->
+    <string name="widget_description_left">%1$s, %2$s left of %3$s, %4$s</string>
+    <string name="widget_description_over">%1$s, %2$s over its cap of %3$s, starts again %4$s</string>
+    <string name="widget_description_ahead">spending ahead of the days</string>
+    <string name="widget_description_pace">about %s a day</string>
+    <string name="widget_description_reserve">with %s in reserve</string>
+    <string name="widget_description_add">Add a spend</string>
+
+    <!-- What does not fit, counted. -->
+    <plurals name="widget_more">
+        <item quantity="one">%d more</item>
+        <item quantity="other">%d more</item>
+    </plurals>
+    <plurals name="widget_more_short">
+        <item quantity="one">+%d</item>
+        <item quantity="other">+%d</item>
+    </plurals>
+
+    <!-- A card with nothing to show. -->
+    <string name="widget_no_caps_title">No caps yet</string>
+    <string name="widget_no_caps_hint">Touch to make one in Tetto</string>
+    <string name="widget_gone_title">This cap is no longer here</string>
+    <string name="widget_gone_hint">Choose another in this card’s settings</string>
+    <string name="widget_unavailable_title">The caps could not be read</string>
+    <string name="widget_unavailable_hint">Touch to open Tetto</string>
+    <string name="widget_open_tetto">Open Tetto</string>
+
+    <!-- The card's settings screen (PLANNING.md §7): the family's, with Tetto's content. -->
+    <string name="widget_config_title">This card</string>
+    <string name="widget_config_preview_desc">Card preview</string>
+    <string name="widget_config_preview_sample">With sample caps: yours will be here once you make one.</string>
+    <string name="widget_config_size_placed">As placed</string>
+    <string name="widget_config_resize_hint">On the home screen, hold the card and drag its edges: it lays itself out again.</string>
+    <string name="widget_config_background">Background</string>
+    <string name="widget_bg_light">Light</string>
+    <string name="widget_bg_dark">Dark</string>
+    <string name="widget_bg_system">Same as the phone</string>
+    <string name="widget_bg_color">A colour</string>
+    <string name="widget_color_blue">Blue</string>
+    <string name="widget_color_azure">Light blue</string>
+    <string name="widget_color_green">Green</string>
+    <string name="widget_color_teal">Sea green</string>
+    <string name="widget_color_plum">Violet</string>
+    <string name="widget_color_clay">Terracotta</string>
+    <string name="widget_config_opacity">Background opacity</string>
+    <string name="widget_opacity_full">Solid</string>
+    <string name="widget_opacity_transparent">See-through</string>
+    <string name="widget_opacity_percent">%1$d%%</string>
+    <string name="widget_config_caps">Caps</string>
+    <string name="widget_config_all_caps">Every cap</string>
+    <string name="widget_config_all_caps_note">In your order, as many as the card holds; the rest counted.</string>
+    <string name="widget_config_chosen_caps_note">Only the caps ticked here, in your order. A cap you make later is not added.</string>
+    <string name="widget_config_cap">The cap</string>
+    <string name="widget_config_closest">The closest to its cap</string>
+    <string name="widget_config_closest_note">Whichever has the least left for its cap today, or the first one over.</string>
+    <string name="widget_config_sentence">The sentence</string>
+    <string name="widget_config_sentence_note">Under what is left, on a card two rows high or more: about how much a day, or spending ahead of the days. Off, the card says what is left and until when, and the ring takes the room.</string>
+    <string name="widget_config_no_caps">No caps yet: the card will show them as soon as you make one.</string>
+    <string name="widget_config_reset">Reset this card</string>
+    <string name="widget_config_done">Done</string>
+</resources>

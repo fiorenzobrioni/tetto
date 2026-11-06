@@ -89,7 +89,8 @@ fun NumpadSheet(
 }
 
 /**
- * The numpad's content, its typed amount kept across a rotation. Each key earns the phone's own
+ * The numpad's content, its typed amount kept across a rotation; [initial] types an amount in
+ * before the reader does (the numpad over the home screen, back after Undo). Each key earns the phone's own
  * keyboard tap, or its reject when the buffer refuses it (the tenth digit, a third decimal); Add
  * earns a confirm. A hardware keyboard types too: digits, a dot or a comma, Backspace, Enter.
  */
@@ -101,10 +102,11 @@ fun Numpad(
     onOpenCap: (() -> Unit)?,
     modifier: Modifier = Modifier,
     correcting: Money? = null,
+    initial: Money? = null,
 ) {
     val format = rememberMoneyFormat(currency)
     var input by rememberSaveable(stateSaver = moneyInputSaver(currency)) {
-        mutableStateOf(correcting?.let { MoneyInput.of(it, currency) } ?: MoneyInput.empty(currency))
+        mutableStateOf((correcting ?: initial)?.let { MoneyInput.of(it, currency) } ?: MoneyInput.empty(currency))
     }
     val haptic = LocalHapticFeedback.current
     val press: (MoneyInput.Key) -> Unit = { key ->

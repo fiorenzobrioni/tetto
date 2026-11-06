@@ -80,6 +80,15 @@ constructor(
             .map { currentStates() }
             .distinctUntilChanged()
 
+    /**
+     * Each change of the caps, their spends or their closed periods, once its transaction is
+     * committed, from the first after collection: the home screen's cards and the launcher's
+     * shortcuts redraw on it (PLANNING.md §7, §8). Whatever wrote it, this repository's writes, a
+     * restore or an erase.
+     */
+    val changes: Flow<Unit> =
+        database.invalidationTracker.createFlow(*TettoDatabase.CAP_TABLES, emitInitialState = false).map { }
+
     /** The open period's spends of the cap [capId], newest first, as they change: the cap's sheet. */
     fun observeOpenSpends(capId: Long): Flow<List<Spend>> = changes().map { openSpends(capId) }.distinctUntilChanged()
 

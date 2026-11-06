@@ -107,15 +107,21 @@ dependencies {
     implementation(project(":feature:caps"))
     implementation(project(":feature:onboarding"))
     implementation(project(":feature:settings"))
+    implementation(project(":widget"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    // The first run's last page has a ViewModel of its own (the shell's HomeOffer).
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.android)
 
     testImplementation(project(":core:testing"))
+    // The first run's last page is drawn from caps' states, as the engine makes them.
+    testImplementation(project(":core:domain"))
     testImplementation(libs.androidx.junit)
 }

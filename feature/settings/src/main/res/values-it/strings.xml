@@ -159,4 +159,10 @@
     <string name="data_failed_damaged_body">È incompleto, o è stato modificato a mano, quindi le sue cifre non sono affidabili. Non è cambiato nulla.</string>
     <string name="data_failed_restore_title">Il backup non si è potuto ripristinare</string>
     <string name="data_failed_restore_body">Qualcosa è andato storto durante la scrittura. I tuoi tetti e le impostazioni sono com’erano.</string>
+
+    <string name="settings_group_home">Schermata Home</string>
+    <string name="settings_card_glance">Colpo d’occhio</string>
+    <string name="settings_card_glance_note">I tuoi tetti, ciascuno con quanto resta. Tocca per mettere la scheda.</string>
+    <string name="settings_card_words">In parole</string>
+    <string name="settings_card_words_note">Un tetto in un anello, e quanto resta a parole. Tocca per mettere la scheda.</string>
 </resources>

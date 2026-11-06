@@ -124,4 +124,10 @@
     <string name="arrange_done">Fatto</string>
     <string name="arrange_move_up">Sposta su</string>
     <string name="arrange_move_down">Sposta giù</string>
+
+    <string name="quick_after">%1$s %2$s</string>
+    <string name="quick_after_over">%1$s · riparte %2$s</string>
+    <string name="quick_gone_title">Questo tetto non c’è più</string>
+    <string name="quick_gone_body">È stato eliminato in Tetto dopo che la scheda o la scorciatoia sono state create.</string>
+    <string name="quick_open_app">Apri Tetto</string>
 </resources>

@@ -23,8 +23,15 @@ import com.callbackdev.tetto.core.model.PeriodKind.MONTH
 import com.callbackdev.tetto.core.model.PeriodKind.WEEK
 import com.callbackdev.tetto.core.model.PeriodKind.YEAR
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -80,6 +87,20 @@ class CapsRepositoryTest {
         assertThat(states[0].left).isEqualTo(euros(20))
         assertThat(states[1].cap.name).isEqualTo("Groceries")
         assertThat(states[1].period.start).isEqualTo(date(2026, 11, 1))
+    }
+
+    @Test
+    fun `each committed write is a change the cards hear, a read that closes nothing is none`() = runBlocking {
+        val heard = Channel<Unit>(Channel.UNLIMITED)
+        val listening = launch(Dispatchers.IO) { repository.changes.collect { heard.send(Unit) } }
+        delay(LISTEN_MILLIS)
+        val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        withTimeout(WAIT_MILLIS) { heard.receive() }
+        repository.currentStates()
+        assertThat(withTimeoutOrNull(QUIET_MILLIS) { heard.receive() }).isNull()
+        spend(coffee, euros(3))
+        withTimeout(WAIT_MILLIS) { heard.receive() }
+        listening.cancel()
     }
 
     @Test
@@ -499,5 +520,12 @@ class CapsRepositoryTest {
             assertThat(repository.closedPeriods(coffee)).isEmpty()
             cancelAndIgnoreRemainingEvents()
         }
+    }
+
+    private companion object {
+        /** Room registers a new listener on its own thread: a moment before the first write. */
+        const val LISTEN_MILLIS = 300L
+        const val WAIT_MILLIS = 5_000L
+        const val QUIET_MILLIS = 600L
     }
 }

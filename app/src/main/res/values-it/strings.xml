@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_add_long">Aggiungi una spesa a %s</string>
+    <string name="shortcut_gone">Questo tetto non c’è più</string>
+
+    <string name="home_offer_title">I tuoi tetti sulla schermata Home</string>
+    <string name="home_offer_body">Una scheda mostra con un colpo d’occhio quanto resta di ogni tetto, e toccandone uno si apre il tastierino sopra la schermata Home: due tocchi e l’importo.</string>
+    <string name="home_offer_add">Aggiungi la scheda</string>
+    <string name="home_offer_added">Sulla tua schermata Home</string>
+    <string name="home_offer_later">Non ora</string>
+    <string name="home_offer_done">Fatto</string>
+    <string name="home_offer_note">Tieni premuta la scheda sulla schermata Home per sceglierne il colore e i tetti, o per ingrandirla.</string>
+</resources>

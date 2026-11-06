@@ -17,8 +17,8 @@
 ## State
 
 - **Released**: nothing yet.
-- **Done**: Phase 0, the foundations (5 Nov 2026): green on GitHub, the release workflow rehearsed with the release key, the mark in the owner's colours. Phase 1, the cap engine (5 Nov 2026): `:core:domain` and `:core:data`, 117 tests, green on GitHub (`c762455`, 5 min 29 s). Phase 2, the caps screen and the numpad (5 Nov 2026): `:feature:caps` and the shell, green on GitHub (`4a40d7a`, 6 min 39 s). Phase 3, the first run and Settings (5 Nov 2026): `:feature:onboarding` and `:feature:settings`, 224 tests in all, green on GitHub (`e1f6b0d`, 8 min 16 s). Phase 4, your data and the reminder (5 Nov 2026): `:core:reminder` joins, 313 tests in all; its device checks wait for the owner's phone (§11 Phase 4).
-- **Next**: Phase 5, the widgets and the launcher's shortcuts (`:widget` joins with it).
+- **Done**: Phase 0, the foundations (5 Nov 2026): green on GitHub, the release workflow rehearsed with the release key, the mark in the owner's colours. Phase 1, the cap engine (5 Nov 2026): `:core:domain` and `:core:data`, 117 tests, green on GitHub (`c762455`, 5 min 29 s). Phase 2, the caps screen and the numpad (5 Nov 2026): `:feature:caps` and the shell, green on GitHub (`4a40d7a`, 6 min 39 s). Phase 3, the first run and Settings (5 Nov 2026): `:feature:onboarding` and `:feature:settings`, 224 tests in all, green on GitHub (`e1f6b0d`, 8 min 16 s). Phase 4, your data and the reminder (5 Nov 2026): `:core:reminder` joins, 313 tests in all; its device checks wait for the owner's phone (§11 Phase 4). Phase 5, the widgets and the launcher's shortcuts (5 Nov 2026): `:widget` joins, 424 tests in all; its device checks wait for the owner's phone (§11 Phase 5).
+- **Next**: Phase 6, the guide, accessibility and polish (`:feature:guide` joins with it).
 - **Later, and optional**: Phase 8, Google Play (§11).
 
 ---
@@ -310,7 +310,8 @@ One `WidgetLook` per `appWidgetId`: the card's ground (light, dark, system, one 
 - **`CapsSentence`**: the caps screen's sentence, and «In words»'s (§4.6).
 - **`ReminderSchedule`**: the next moment the reminder fires, from the time, today and now; across a daylight-saving change (as Passo's `EveningReminder`).
 - **`BackupCodec`**, **`CsvExport`**: §5.
-- **`GlanceFit`** (pure arithmetic, as the family's `GlanceLayout` / `AgendaFit`): given a card's granted size in dp and the text sizes measured in the system face, which form the card takes and how many caps fit; pinned by tests at the family's reference grants (one row ≈ 85 dp tall, two ≈ 189; widths 2 cells ≈ 159 dp, 3 ≈ 250, 4 ≈ 340).
+- **`GlanceFit`** (pure arithmetic, as the family's `GlanceLayout` / `AgendaFit`): given a card's granted size in dp and the text sizes measured in the system face, which form the card takes and how many caps fit; pinned by tests at the family's reference grants (one row ≈ 85 dp tall, two ≈ 189; widths 2 cells ≈ 159 dp, 3 ≈ 250, 4 ≈ 340), with the family's widget scale (`WidgetType`) and its text metrics.
+- **`WidgetCaps`**, **`CapNote`**: which caps a card shows (the reader's choice, or every cap; «In words»'s chosen cap, or the one closest to its cap: the first over, else the lowest share left), and what «In words» says of its cap under the figure (the pace, ahead of the days, the reserve, forgiven when it starts again), a structure, never a string.
 
 ---
 
@@ -354,8 +355,8 @@ At 115% and 130% text the two-by-two's band grows and its circle stands at 44 dp
 | Form | When | The ring | The words |
 |---|---|---|---|
 | CELL | one cell wide | The cell's circle, centred; the cap's icon inside | What is left under it ("€12"), at the label step, only where it fits under the circle, which is never made smaller for it |
-| ROW | one row | The row's circle at the leading edge, 12 dp from the words | What is left ("€12 left", 20 sp, Medium; 16 sp on a narrow row, down to 14) over the cap's name and its renewal ("Coffee · until Monday", 16 sp; 14, 13, 12 on a narrow row); the pace at the far edge where the words keep 120 dp |
-| TALL | two rows and up | The tall circle in the top trailing corner | From the bottom leading corner, the band the circle budgets: what is left (34 sp, the hero, tabular figures; "€12 left", "€30 over"), the cap's sentence (16 sp, up to two lines under three cells wide, one from three: the pace, "about €4 a day until Monday", or "ahead of the days"), and "of €20 · until Monday" (16 sp); the cap's name beside the circle where 56 dp are left, else over the amount |
+| ROW | one row | The row's circle at the leading edge, 12 dp from the words | What is left ("€12 left", 20 sp, Medium; 16 sp on a narrow row, down to 14) over the cap's name and its renewal ("Coffee · until Monday", 16 sp; 14, 13, 12 on a narrow row; else "until Monday", else "Coffee", the fullest that stays whole); the pace at the far edge where those words stay whole beside it |
+| TALL | two rows and up | The tall circle in the top trailing corner | From the bottom leading corner, the band the circle budgets: what is left (34 sp, the hero, smaller only where the width cannot hold it; "€12 left", "€30 over"), the cap's sentence (16 sp, up to two lines under three cells wide, one from three: the pace, "about €4 a day", "ahead of the days", the reserve, or, over, "forgiven when it starts again"), and the last words (16 sp: "of €20 · until Monday" on one line, else broken at its separator over two, else the day alone); the cap's name beside the circle where 56 dp are left (16 sp, 14 or 13 before a word of it breaks), else in the last words in the amount's place ("Coffee · until Monday"), so the circle never yields to a name |
 
 - **«The sentence»** («La frase»), a switch on «In words»'s settings, on by default, as Passo's card hides its sentence and Tempo's its «day's note»: off, a tall card says the amount and "of €20 · until Monday" alone, and its circle takes the band they leave (95 dp two rows high), the size the sisters' circles take without theirs. One cell and one row are unchanged: they never show the sentence.
 - **The ring** is what was spent of the cap and its reserve: its track, and the arc in the accent; in the *attention* ink when spending runs ahead of the days; full past the cap, with "over" in the words ("€30 over"). It is a bitmap painted at the size shown, capped at 416 px a side, one per card (Passo's rule), with the cap's icon drawn in its middle.
@@ -365,7 +366,7 @@ At 115% and 130% text the two-by-two's band grows and its circle stands at 44 dp
 ### Rendering
 
 - **No scrolling container**: a Glance `Column`/`Row`, never `LazyColumn`. Glance drops the eleventh child of a container silently: caps go in groups of at most five, counted.
-- Inks resolved against the ground the card really has (`widgetInk`, Chiaro's rule), never left to the launcher's day/night resolution. Amounts in tabular figures where the system face has them.
+- Inks resolved against the ground the card really has (`widgetInk`, Chiaro's rule), never left to the launcher's day/night resolution. Figures as the launcher's face draws them: Glance cannot ask a `TextView` for tabular figures.
 - A cap over its cap says "over" in words on the card too; never a colour alone.
 - Previews: a static `previewLayout`, and generated previews on Android 15+ (`providePreview`) from sample caps, once per version, as Tempo's.
 
@@ -376,7 +377,7 @@ At 115% and 130% text the two-by-two's band grows and its circle stands at 44 dp
 
 ### Update strategy (battery-aware)
 
-- **A write** (a spend added, edited or deleted; a cap or a setting changed): the repository asks the cards to redraw once the transaction is committed.
+- **A write** (a spend added, edited or deleted; a cap or a setting changed): the cards redraw once the transaction is committed, heard from Room's invalidation of the caps' tables and from the settings (`WidgetUpdater`, started by the application), whatever wrote it.
 - **Midnight**: while a card is placed, one `AlarmManager.set(RTC, next local midnight)`, inexact and **non-wakeup**, armed after every render: delivered when the phone is next awake, which is when someone can see the card. The card's render runs the catch-up first.
 - **Clock, zone, language**: `TIME_SET`, `TIMEZONE_CHANGED`, `LOCALE_CHANGED`, exempt from the implicit-broadcast limits, received in the manifest.
 - **Boot and update**: the system sends the cards their update; the alarm is armed again from it.
@@ -425,7 +426,7 @@ The export, the restore and the CSV go through the Storage Access Framework (`AC
 
 `checkForbiddenPermissions` (build-logic, `ForbiddenPermissionPatterns`) checks every variant's merged manifest, is wired to `check`, and runs in CI and in the release workflow. A library that adds one is removed or patched with `tools:node="remove"`.
 
-No service in the merged manifest (§9): Room declares `MultiInstanceInvalidationService`, for a database shared between processes, which Tetto never asks for; the app's manifest removes it (Phase 1).
+No service of Tetto's own in the merged manifest (§9): Room declares `MultiInstanceInvalidationService`, for a database shared between processes, which Tetto never asks for; the app's manifest removes it (Phase 1). From Phase 5 the merged manifest holds the services Glance and WorkManager declare, as in the family (`GlanceRemoteViewsService`, `RemoteViewsCompatService`, WorkManager's job, alarm and foreground services): Glance runs its sessions on them; Tetto's own code starts none.
 
 ---
 
@@ -549,19 +550,29 @@ Each phase ends with a merged PR, green CI and its acceptance criteria met. Phas
 
 ### Phase 5 — The widgets and the launcher's shortcuts
 
-- [ ] `GlanceFit` (pure, §6) with tests at the reference grants; the forms of §7; «In words»'s circle (the family's three functions) and type steps (`WidgetType`) copied from the sisters' and pinned at every reference grant, with the sentence and without; `docs/adr/0003-widgets.md`
-- [ ] «At a glance» and «In words» in Glance on the family's card; the ring painted as the family's (a bitmap, 416 px at most); the per-widget settings screen with its live preview; the previews (static and generated)
-- [ ] `QuickAddActivity`: the numpad over the home screen, its confirmation line with Undo; from a card's cap and from a shortcut
+- [x] `GlanceFit` (pure, §6) with tests at the reference grants; the forms of §7; «In words»'s circle (the family's three functions) and type steps (`WidgetType`) copied from the sisters' and pinned at every reference grant, with the sentence and without; `docs/adr/0003-widgets.md`
+  - `:core:domain`'s `widget/`: `GlanceFit`, `WidgetType`, the text metrics, `WidgetCaps`, `CapNote`; 40 tests (`GlanceFitTest`: the circle's table, the owner's two-by-two, 115 and 130% text, every form's words in their height).
+- [x] «At a glance» and «In words» in Glance on the family's card; the ring painted as the family's (a bitmap, 416 px at most); the per-widget settings screen with its live preview; the previews (static and generated)
+  - `:widget` joins. The ring carries the cap's icon (`CapIconDrawing`, the badges' path data) and the mark for today; the bars are boxes. The settings screen draws the real card, composed into `RemoteViews`; sample caps, said so, before any cap exists.
+- [x] `QuickAddActivity`: the numpad over the home screen, its confirmation line with Undo; from a card's cap and from a shortcut
   - A spend added from it takes the evening reminder back from the shade, as the app's return does (`EveningReminder.appOpened`; §15, Phase 4).
-- [ ] The refresh (§7): after every write, the midnight alarm, the exempt broadcasts; the catch-up in `provideGlance`
-- [ ] The dynamic launcher shortcuts (§8)
-- [ ] The pin request, in the first run and in Settings
-- [ ] `WidgetGalleryTest` draws every form to `widget/build/screenshots`; `WidgetFitTest` fails on anything cut
+  - Undo puts the amount back on the numpad (§15, Phase 5). `QuickAddViewModel` and the sheet in `:feature:caps`, the activity in `:app`; the door named in `:core:data` (`QuickAdd`).
+- [x] The refresh (§7): after every write, the midnight alarm, the exempt broadcasts; the catch-up in `provideGlance`
+  - `WidgetUpdater` (Room's invalidation and the settings), `MidnightAlarm` (`set(RTC)`, a second past midnight, only while a card is placed), `WidgetSystemReceiver`; every render reads `currentStates()`.
+- [x] The dynamic launcher shortcuts (§8)
+  - `CapShortcuts`: the first four caps, each its icon as an adaptive bitmap; published again on a change of the caps, their order, names, icons or palette, and of the app's language; never resent unchanged.
+- [x] The pin request, in the first run and in Settings
+  - The first run's last page (`HomeOffer`, the shell's), after a run that made caps, where the launcher takes the request and no card is placed yet; Settings' «Home screen» group, where it takes it.
+- [x] `WidgetGalleryTest` draws every form to `widget/build/screenshots`; `WidgetFitTest` fails on anything cut
+  - Both cards at twelve grants, three text sizes, three caps (at ease, ahead, over), with the sentence and without, every line 5% wider than measured: nothing cut but a cap's name; and the ring's side on the card as drawn, the family's at every grant. The screenshots looked at (§15, Phase 5).
 
 **Acceptance:**
 - [ ] On the owner's phone, beside the sisters' cards: the same card, the same colours; «In words» beside Passo's and Tempo's ring cards of the same size, its ring and its lines at their sizes.
+  - Under Robolectric: the ring at the family's sides at every reference grant (`WidgetFitTest`), the type steps the family's (`WidgetTypeTest`). Waits for the owner's phone.
 - [ ] From the home screen, a spend is two touches and the amount, and the card shows it at once.
+  - `QuickAddViewModelTest` on a real Room database (the touch opens the numpad on the cap, the amount and Add write the spend, Undo takes it back); `CapsRepositoryTest`: a committed write is a change the cards hear. Waits for the owner's phone.
 - [ ] With the screen off, `dumpsys alarm` shows no wake-up alarm of Tetto's but the reminder's.
+  - `MidnightAlarmTest`: one `RTC` alarm (non-wakeup) a second past the next local midnight, only while a card is placed, none after the last goes. Waits for the owner's phone, with §9's checks.
 
 ### Phase 6 — The guide, accessibility and polish
 
@@ -772,3 +783,20 @@ Built as §11 Phase 4 lists it: in `:core:domain` the backup file (`BackupCodec`
 - **The status-bar icon** is the mark's roof alone, three strokes on the 24-unit grid, drawn by `tools/draw_launcher_icon.py` at a lighter stroke than the launcher's (at the launcher's weight the slopes and the chimney ran into one blot at 24 dp; drawn and looked at both ways).
 - **Settings' order**: the money, the reminder, the appearance, the language, «Your data» (the privacy statement first, its words now saying the data leaves the phone only in a file the reader saves or in Android's backup if turned on; then the three rows; erasing apart, below), about, the credits. The «Privacy» header became «Your data», as VISION names the group.
 - **Left for the owner's phone**: the `bmgr` check of Android's backup, a restore on a clean install, the reminder's delivery and its silence, and §9's alarm checks (§11 Phase 4, its two open boxes). Left for Phase 5: `QuickAddActivity` should take the reminder back too when a spend is added from the home screen, as the app's return does.
+
+### 5 Nov 2026 — Phase 5: the widgets and the launcher's shortcuts (owner: "Implementa la fase 5 di Tetto")
+
+Built as §11 Phase 5 lists it: in `:core:domain` the widgets' arithmetic (`GlanceFit`, `WidgetType`, `WidgetCaps`, `CapNote`); `:widget` joins (the two cards, their settings screen, the refresh, the previews); the numpad over the home screen (`QuickAddActivity` in `:app`, its ViewModel and sheet in `:feature:caps`), the launcher's shortcuts and the first run's last page in `:app`; the pin request in Settings. 424 tests in all (313 at Phase 4); CI's sequence green locally. §6, §7 and §10 are updated in place; the choices are `docs/adr/0003-widgets.md`'s. No question was open, and none was opened; what changes a line of §7 as first written, and the choices of design made on the way, each with its reason:
+
+- **«In words»'s name, where the circle leaves it no room** (§7, the TALL row): "else over the amount" would put a line in the band the family's circle does not budget, and the circle would yield to a name: 66.75 dp instead of 95 on a two-by-two without the sentence, 95.75 instead of 104 on the owner's (found by `GlanceFitTest`). The name goes into the last words instead, in the amount's place ("Coffee · until Monday"), and the circle is the family's at every grant, with the sentence and without. Beside the circle, a long name steps down to 14 and 13 sp before a word of it breaks ("Grocerie / s" on the gallery's first draw).
+- **The tall card's last words take the fullest form the card has the lines for**: "of €20 · until Sunday" is wider than a two-by-two (it was ellipsized in `WidgetFitTest`'s first run), so it is said on one line where it fits, broken at its separator over two ("of €20" / "until Sunday") where it does not, and as the day alone where the card has one line left (a two-by-two without the sentence, whose circle takes the band). They come before the sentence, which is whole or not at all.
+- **The sentence says how much a day, not until when** (§7 had "about €4 a day until Monday"): the day is the last words', and said twice it took a line the card does not have. Over, the sentence is "Forgiven when it starts again", Tetto's own rule, kind to the bad week, which the hero ("€30 over") and the last words ("starts again on Monday") leave unsaid.
+- **The band is counted as the family's counts it** (1.32 em a line at the reader's text size, no rounding pixel, no gap under the circle): at the default text size the circle and the fullest band stand together exactly, as on the sisters' ring cards, where the ring stands about 12 dp over the hero's capitals through the line's own leading.
+- **A row's second line and its pace**: the pace at the far edge only where the words beside it stay whole ("Groceries · until 30 N…" for "about €3 a day" on the first draw); on a narrow row, the fullest second line that stays whole ("until Sunday", else the name).
+- **Over on the cards**: "€30 over" in Material's `error` of the dress, 4.5:1 or better on every solid ground and on the six colours (`WidgetInkTest`); on a one-cell «In words» with no room under the ring, the word inside it, in the icon's place; on a row's slot, the word in the name's place. Never the ring's or the bar's colour alone.
+- **«At a glance»**: one cell is one cap, its figure the hero; a row, slots of 60 dp at least (two, three, four on two, three, four cells), the last counting the rest ("+3"); a grid of one, two or three columns of items on one line (icon, name, figure, bar), "3 more" where they do not all fit. No container holds more than five groups.
+- **The refresh after a write is heard, not called** (§7, "A write"): `WidgetUpdater`, started by the application, listens to Room's invalidation of the caps' tables (after the commit) and to the settings, so every writer is covered (the caps screen, the numpad over the home screen, the first run, a restore, an erase, a change of currency) without a call in each. A render's own catch-up at midnight is one more redraw, which writes nothing.
+- **Undo over the home screen puts the amount back on the numpad**: a spend undone at once is most often a key pressed wrong; the reader fixes it in one touch more, or a touch outside closes the sheet. The line after Add says what is left after it ("€15 left until Sunday").
+- **The first run's last page**: offered after a run that made caps, where the launcher takes a pin request and no card of Tetto's is placed: the real «At a glance», drawn from the reader's new caps, «Add the card», «Not now». The caps and the flag are written by «Done» as before; the shell keeps the page until it is left, and a process ended on it loses nothing and makes nothing twice. Settings' «Home screen» group has a row per card, where the launcher takes the request.
+- **The shortcuts**: the cap's name as the short label, "Add a spend to Coffee" as the long; the cap's symbol on the dress's container, as an adaptive bitmap; a shortcut whose cap is gone is disabled with the words that say why, and the numpad over the home screen says it too, should one be touched before.
+- **Left for the owner's phone**: the three acceptance checks of §11 Phase 5 (the cards beside the sisters', a spend from the home screen, `dumpsys alarm` with the screen off), and the launcher's pin dialog and shortcuts. Phase 4's two device checks stay open with them.

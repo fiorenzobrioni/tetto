@@ -72,6 +72,7 @@ import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.callbackdev.tetto.core.data.widget.HomeCard
 import com.callbackdev.tetto.core.designsystem.components.CapTile
 import com.callbackdev.tetto.core.designsystem.components.CurrencyPickerDialog
 import com.callbackdev.tetto.core.designsystem.components.DENSE_TARGETS_TAG
@@ -193,6 +194,7 @@ fun SettingsRoute(
                 if (on && reach.block == ReminderBlock.APP && reach.askable) askPermission()
             },
             setReminderTime = viewModel::setReminderTime,
+            pinCard = viewModel::pinCard,
             fixNotifications = {
                 if (reach.block == ReminderBlock.APP && reach.askable) {
                     askPermission()
@@ -221,6 +223,7 @@ class SettingsActions(
     val setDynamicColor: (Boolean) -> Unit = {},
     val setReminder: (Boolean) -> Unit = {},
     val setReminderTime: (LocalTime) -> Unit = {},
+    val pinCard: (HomeCard) -> Unit = {},
     val fixNotifications: () -> Unit = {},
     val openLanguage: () -> Unit = {},
     val openUrl: (String) -> Unit = {},
@@ -247,7 +250,7 @@ data class ReminderReach(val block: ReminderBlock, val askable: Boolean) {
 /**
  * Settings (PLANNING.md §11 Phases 3 and 4): every group on one rounded ground under a header in
  * the accent; the money first, then the evening reminder, a live preview of the appearance above
- * the choices that change it, the language, your data (the privacy statement, the backup, the
+ * the choices that change it, the home screen's cards (where the launcher can place one), the language, your data (the privacy statement, the backup, the
  * restore, the spends for a spreadsheet, erasing everything), about and the credits. The guide's
  * card joins with Phase 6: no entry is drawn before what it opens exists.
  */
@@ -388,6 +391,31 @@ private fun SettingsList(
                     onChange = actions.setDynamicColor,
                     modifier = Modifier.testTag(SettingsTags.DYNAMIC_COLOR),
                 )
+            }
+        }
+
+        // The home screen's cards, where the launcher can place one on request (PLANNING.md §8):
+        // a row that could not do what it says is not drawn.
+        if (state.canPinCards) {
+            item { GroupHeader(stringResource(R.string.settings_group_home)) }
+            item {
+                SettingsGroup {
+                    ValueRow(
+                        label = stringResource(R.string.settings_card_glance),
+                        value = stringResource(R.string.settings_card_glance_note),
+                        icon = TettoIcons.Widgets,
+                        onClick = { actions.pinCard(HomeCard.AT_A_GLANCE) },
+                        modifier = Modifier.testTag(SettingsTags.CARD_GLANCE),
+                    )
+                    GroupDivider()
+                    ValueRow(
+                        label = stringResource(R.string.settings_card_words),
+                        value = stringResource(R.string.settings_card_words_note),
+                        icon = TettoIcons.Widgets,
+                        onClick = { actions.pinCard(HomeCard.IN_WORDS) },
+                        modifier = Modifier.testTag(SettingsTags.CARD_WORDS),
+                    )
+                }
             }
         }
 
@@ -975,6 +1003,8 @@ object SettingsTags {
     const val REMINDER_TIME_SAVE = "settings_reminder_time_save"
     const val REMINDER_BLOCKED = "settings_reminder_blocked"
     const val DATA = "settings_data"
+    const val CARD_GLANCE = "settings_card_glance"
+    const val CARD_WORDS = "settings_card_words"
 
     fun day(day: Int) = "settings_day_$day"
 }

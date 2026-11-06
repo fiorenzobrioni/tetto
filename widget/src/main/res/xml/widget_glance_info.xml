@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  «At a glance» (PLANNING.md §7): the caps, each its icon, what is left and a slim bar. Placed four
+  cells by two; at least one cell (40 dp by the platform's 70 × n − 30); no maximum (a launcher
+  turns a dp maximum into the smallest cell count across its grids). Every form has a layout for
+  any grant (GlanceFit).
+
+  updatePeriodMillis is 0: the cards are pushed (a write in the app, the midnight alarm, the
+  exempt broadcasts), never polled. The settings screen is optional, so a card is placed at once
+  with its defaults; a long press opens it.
+
+  previewLayout is what the picker shows before the launcher asks for a generated preview (API
+  35+, GlanceAppWidget.providePreview): a static drawing of the default card, sample values only.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="com.callbackdev.tetto.widget.config.WidgetConfigActivity"
+    android:description="@string/widget_glance_desc"
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:minWidth="250dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="40dp"
+    android:minResizeHeight="40dp"
+    android:previewLayout="@layout/widget_glance_preview"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="4"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen"
+    android:widgetFeatures="reconfigurable|configuration_optional" />

@@ -12,6 +12,7 @@ import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.callbackdev.tetto.core.data.backup.DataContents
+import com.callbackdev.tetto.core.data.widget.HomeCard
 import com.callbackdev.tetto.core.designsystem.components.CurrencyPickerTags
 import com.callbackdev.tetto.core.designsystem.theme.TettoTheme
 import com.callbackdev.tetto.core.domain.backup.Backup
@@ -71,10 +72,13 @@ class SettingsScreenTest {
 
     private val euro = AppCurrency("EUR", 2)
 
+    private var pinned: HomeCard? = null
+
     private fun state(
         settings: UserSettings = UserSettings(currency = "EUR", onboardingCompleted = true),
         capCount: Int = 3,
-    ) = SettingsUiState(settings, euro, DayOfWeek.MONDAY, LocalDate.of(2026, 11, 5), capCount, "0.1.0")
+        canPinCards: Boolean = false,
+    ) = SettingsUiState(settings, euro, DayOfWeek.MONDAY, LocalDate.of(2026, 11, 5), capCount, "0.1.0", canPinCards)
 
     private fun draw(
         state: SettingsUiState?,
@@ -107,6 +111,7 @@ class SettingsScreenTest {
                         setReminder = { reminder = it },
                         setReminderTime = { reminderTime = it },
                         fixNotifications = { fixed = true },
+                        pinCard = { pinned = it },
                     ),
                 )
             }
@@ -253,6 +258,29 @@ class SettingsScreenTest {
     fun `on an open foldable, a centred column`() {
         draw(state())
         compose.walkPage(hasTestTag(SettingsTags.LIST), "settings-foldable")
+    }
+
+    // The home screen's cards (PLANNING.md §8, Phase 5).
+
+    @Test
+    fun `where the launcher can place a card, each card's row asks for it`() {
+        draw(state(canPinCards = true))
+        scrollTo(SettingsTags.CARD_WORDS)
+        compose.onNodeWithText("Home screen").assertExists()
+        compose.onNodeWithTag(SettingsTags.CARD_GLANCE).performClick()
+        assertThat(pinned).isEqualTo(HomeCard.AT_A_GLANCE)
+        compose.onNodeWithTag(SettingsTags.CARD_WORDS).performClick()
+        assertThat(pinned).isEqualTo(HomeCard.IN_WORDS)
+        compose.assertAccessible()
+        compose.writeScreenshot("settings-home-screen")
+    }
+
+    @Test
+    fun `where it cannot, no row promises it`() {
+        draw(state(canPinCards = false))
+        compose.onNodeWithTag(SettingsTags.LIST).performScrollToNode(hasTestTag(SettingsTags.DATA))
+        compose.onNodeWithTag(SettingsTags.CARD_GLANCE).assertDoesNotExist()
+        compose.onNodeWithText("Home screen").assertDoesNotExist()
     }
 
     // The evening reminder (PLANNING.md §11 Phase 4).
