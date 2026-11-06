@@ -131,8 +131,14 @@ a ledger** (history screens, statistics, accounts, income). Its speed comes from
 - **Live while visible**: a page open across midnight closes the periods that end and starts the
   new ones, without a restart.
 - **States**: no cap yet (one line and "New cap"), every cap over, a cap just renewed.
-- **No total.** Caps with different periods do not add up; a sum of a weekly and a yearly cap
-  would mean nothing.
+- **No total of the caps.** Caps with different periods do not add up; a sum of a weekly and a
+  yearly cap would mean nothing, and a sum of what is left would undo the envelopes.
+- **Your month**, last on the page, under the caps (owner, 6 Nov 2026): what was added to the
+  caps in the reader's month so far (the month from the day chosen in Settings, payday for a
+  reader who wants it) and in the month before, and what the caps are worth in a month, about,
+  to set against a salary. Two sums of what the reader added and one planning figure: no
+  statistics, no month before the last, no chart, no choice of period, and only what is added in
+  Tetto, which the guide says.
 
 ### The numpad (a bottom sheet)
 
@@ -262,7 +268,8 @@ sisters' «At a glance» and «In words»:
   search, a history screen. Tetto is fast because it has none; a reader who wants one has Saldo.
 - **Moving money between caps** (covering one cap's overspend from another): the reserve and
   forgiveness are the whole mechanism.
-- **A total budget** across caps: periods differ, sums would mislead.
+- **A total budget** across caps: periods differ, sums would mislead. (What was added in the
+  reader's month, and what the caps are worth in one, are said under the caps: «Your month».)
 - **Spend details**: notes, tags, payees, photos, receipts, dates other than now.
 - **Bank connections, SMS or notification reading, receipt scanning**: no network, no camera, no
   SMS, no notification access.

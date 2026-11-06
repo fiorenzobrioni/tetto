@@ -3,6 +3,7 @@ package com.callbackdev.tetto.feature.caps
 import com.callbackdev.tetto.core.domain.cap.CapChanges
 import com.callbackdev.tetto.core.domain.cap.CapStates
 import com.callbackdev.tetto.core.domain.cap.CapsSentence
+import com.callbackdev.tetto.core.domain.cap.YourMonth
 import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.Cap
 import com.callbackdev.tetto.core.model.CapIcon
@@ -64,8 +65,21 @@ internal object CapsSample {
 
     val underCaps = listOf(coffee, groceries, restaurants, lunch)
 
-    fun ui(caps: List<CapState>, currency: AppCurrency = EUR, layout: CapsLayout = CapsLayout.TILES) =
-        CapsUiState(today, currency, caps, CapsSentence.of(caps), layout = layout)
+    fun ui(
+        caps: List<CapState>,
+        currency: AppCurrency = EUR,
+        layout: CapsLayout = CapsLayout.TILES,
+        month: YourMonth? = null,
+    ) = CapsUiState(today, currency, caps, CapsSentence.of(caps), layout = layout, month = month)
+
+    /** November from the 1st: €842 added so far, €1,130 in October, caps worth about €1,250. */
+    fun month(added: Money = euros(842), addedLastMonth: Money = euros(1130)) = YourMonth(
+        month = DateRange(LocalDate.of(2026, 11, 1), LocalDate.of(2026, 12, 1)),
+        added = added,
+        lastMonth = DateRange(LocalDate.of(2026, 10, 1), LocalDate.of(2026, 11, 1)),
+        addedLastMonth = addedLastMonth,
+        worth = euros(1250),
+    )
 
     private val zone = ZoneId.of("Europe/Rome")
 

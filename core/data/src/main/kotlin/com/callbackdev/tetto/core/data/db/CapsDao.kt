@@ -79,6 +79,10 @@ interface CapsDao {
     @Query("SELECT EXISTS(SELECT 1 FROM spends WHERE added_at >= :from AND added_at < :until)")
     suspend fun anySpendBetween(from: Long, until: Long): Boolean
 
+    /** What every cap's spends added between two instants come to, closed periods' included. */
+    @Query("SELECT COALESCE(SUM(amount), 0) FROM spends WHERE added_at >= :from AND added_at < :until")
+    suspend fun addedBetween(from: Long, until: Long): Long
+
     @Insert
     suspend fun insertClosedPeriods(periods: List<ClosedPeriodEntity>)
 

@@ -69,7 +69,9 @@ What 1.0 will do ([VISION.md](./VISION.md) has the full scope):
 - 👀 **What is left, first**: one sentence on top ("All under your caps. Restaurants is the
   closest: €12 left until 30 Nov."), then a tile per cap with what is left, the cap, its last
   day, and a bar with a mark for today, so you see at once whether spending runs ahead of the days.
-  With many caps, a list fits more of them on a screen: one shorter row per cap.
+  With many caps, a list fits more of them on a screen: one shorter row per cap. Under them,
+  your month: what you added to your caps in it and in the month before, and what your caps are
+  worth in a month, to set against your salary (your month can start on payday).
 - 🔢 **Two touches and the amount**: a numpad that shows what will be left before you add, and an
   undo after every change. Any spend of the current period can be corrected or deleted.
 - 🛟 **Kind by design**: what a period leaves over becomes a reserve (up to one period's cap); an

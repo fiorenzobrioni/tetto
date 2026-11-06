@@ -14,6 +14,8 @@ import com.callbackdev.tetto.core.data.time.TodaySource
 import com.callbackdev.tetto.core.domain.cap.CapChanges
 import com.callbackdev.tetto.core.domain.cap.CapStates
 import com.callbackdev.tetto.core.domain.cap.CatchUp
+import com.callbackdev.tetto.core.domain.cap.MonthSums
+import com.callbackdev.tetto.core.domain.cap.YourMonth
 import com.callbackdev.tetto.core.domain.money.Rescale
 import com.callbackdev.tetto.core.domain.period.Days
 import com.callbackdev.tetto.core.model.AppCurrency
@@ -21,6 +23,7 @@ import com.callbackdev.tetto.core.model.CapDraft
 import com.callbackdev.tetto.core.model.CapIcon
 import com.callbackdev.tetto.core.model.CapState
 import com.callbackdev.tetto.core.model.ClosedPeriod
+import com.callbackdev.tetto.core.model.DateRange
 import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.PeriodKind
 import com.callbackdev.tetto.core.model.Spend
@@ -36,6 +39,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -98,6 +102,41 @@ constructor(
 
     private fun changes(): Flow<Set<String>> =
         database.invalidationTracker.createFlow(*TettoDatabase.CAP_TABLES).conflate()
+
+    /**
+     * The reader's month at the end of the caps screen (owner, 6 Nov 2026), computed again whenever
+     * a spend, a cap or a setting changes; a page open across midnight asks again at its tick, as
+     * for [states].
+     */
+    val yourMonth: Flow<YourMonth> =
+        combine(database.invalidationTracker.createFlow(*TettoDatabase.CAP_TABLES), preferences.settings) { _, _ -> }
+            .conflate()
+            .map { currentMonth() }
+            .distinctUntilChanged()
+
+    /**
+     * What was added to the caps in the reader's month (from the month start day of Settings) and
+     * in the one before, in the zone of the moment of asking, and what the caps are worth in a
+     * month. Spends of closed periods count: they were added in the month all the same.
+     */
+    suspend fun currentMonth(): YourMonth = afterCatchUp { settings ->
+        val zone = clock.zone()
+        val month = MonthSums.month(clock.today(), settings.monthStartDay)
+        val last = MonthSums.previous(month, settings.monthStartDay)
+        val caps = dao.allCaps().map { it.toModel() }
+        YourMonth(
+            month = month,
+            added = added(month, zone),
+            lastMonth = last,
+            addedLastMonth = added(last, zone),
+            worth = MonthSums.worth(caps, month, settings.resolvedCurrency(phone)),
+        )
+    }
+
+    private suspend fun added(range: DateRange, zone: ZoneId): Money {
+        val (from, until) = Days.instantsOf(range, zone)
+        return Money(dao.addedBetween(from.toEpochMilli(), until.toEpochMilli()))
+    }
 
     /** The caps' states once, for a card's render, the reminder, the numpad over the home screen. */
     suspend fun currentStates(): List<CapState> = afterCatchUp { settings ->

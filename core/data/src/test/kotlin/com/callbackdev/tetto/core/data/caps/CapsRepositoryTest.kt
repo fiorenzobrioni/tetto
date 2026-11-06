@@ -427,6 +427,56 @@ class CapsRepositoryTest {
     }
 
     @Test
+    fun `the reader's month, what was added in it and in the one before, closed periods' spends too`() = runTest {
+        clock.at("2026-10-20T10:00")
+        val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        repository.addCap("Groceries", COFFEE, euros(300), MONTH)
+        spend(coffee, euros(5))
+        clock.at("2026-10-31T23:30")
+        spend(coffee, euros(1))
+
+        clock.at("2026-11-05T10:00")
+        spend(coffee, euros(3))
+        spend(coffee, euros(4))
+
+        val month = repository.currentMonth()
+        assertThat(month.month).isEqualTo(DateRange(date(2026, 11, 1), date(2026, 12, 1)))
+        assertThat(month.added).isEqualTo(euros(7))
+        assertThat(month.lastMonth).isEqualTo(DateRange(date(2026, 10, 1), date(2026, 11, 1)))
+        // The October spends belong to weeks that have closed since: counted all the same.
+        assertThat(month.addedLastMonth).isEqualTo(euros(6))
+        // €300, and €20 a week over November's 30 days (85.71): about €386.
+        assertThat(month.worth).isEqualTo(euros(386))
+    }
+
+    @Test
+    fun `the reader's month follows the month start day, the salary's`() = runTest {
+        clock.at("2026-10-26T10:00")
+        val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        spend(coffee, euros(5))
+        clock.at("2026-10-27T10:00")
+        spend(coffee, euros(2))
+        clock.at("2026-11-05T10:00")
+        repository.changeMonthStartDay(27)
+
+        val month = repository.currentMonth()
+        assertThat(month.month).isEqualTo(DateRange(date(2026, 10, 27), date(2026, 11, 27)))
+        assertThat(month.added).isEqualTo(euros(2))
+        assertThat(month.addedLastMonth).isEqualTo(euros(5))
+    }
+
+    @Test
+    fun `the reader's month hears a spend as it is added`() = runBlocking {
+        val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
+        val heard = Channel<Money>(Channel.UNLIMITED)
+        val listening = launch(Dispatchers.IO) { repository.yourMonth.collect { heard.send(it.added) } }
+        assertThat(withTimeout(WAIT_MILLIS) { heard.receive() }).isEqualTo(Money.ZERO)
+        spend(coffee, euros(3))
+        assertThat(withTimeout(WAIT_MILLIS) { heard.receive() }).isEqualTo(euros(3))
+        listening.cancel()
+    }
+
+    @Test
     fun `the reader's order`() = runTest {
         val a = repository.addCap("A", COFFEE, euros(1), DAY)
         val b = repository.addCap("B", COFFEE, euros(1), DAY)

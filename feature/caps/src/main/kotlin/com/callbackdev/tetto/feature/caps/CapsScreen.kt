@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
@@ -26,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -36,6 +38,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -52,11 +56,15 @@ import com.callbackdev.tetto.core.designsystem.format.MoneyFormat
 import com.callbackdev.tetto.core.designsystem.format.rememberMoneyFormat
 import com.callbackdev.tetto.core.designsystem.icons.TettoIcons
 import com.callbackdev.tetto.core.designsystem.icons.symbol
+import com.callbackdev.tetto.core.designsystem.theme.GroupShape
 import com.callbackdev.tetto.core.designsystem.theme.ScreenMargin
 import com.callbackdev.tetto.core.designsystem.theme.TettoMotion
+import com.callbackdev.tetto.core.designsystem.theme.TettoTheme
 import com.callbackdev.tetto.core.designsystem.theme.padding
 import com.callbackdev.tetto.core.designsystem.theme.pageGutter
 import com.callbackdev.tetto.core.designsystem.theme.reducedMotion
+import com.callbackdev.tetto.core.designsystem.theme.tabular
+import com.callbackdev.tetto.core.domain.cap.YourMonth
 import com.callbackdev.tetto.core.model.CapState
 import com.callbackdev.tetto.core.model.CapsLayout
 import java.time.LocalDate
@@ -142,6 +150,79 @@ fun CapsScreen(
             Spacer(Modifier.height(16.dp))
             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 TextButton(onClick = onChangeOrder) { Text(stringResource(R.string.change_order)) }
+            }
+        }
+        val month = state.month
+        if (month != null && state.caps.isNotEmpty()) {
+            Spacer(Modifier.height(24.dp))
+            MonthCard(month, format, state.today)
+        }
+    }
+}
+
+/**
+ * The reader's month, last on the page (owner, 6 Nov 2026): what was added to the caps in it so
+ * far, what the caps are worth in a month, and what was added in the month before, to set the
+ * caps against a salary. Under the caps, so the page still leads with what is left; quieter than
+ * a tile, and one sentence for TalkBack. The month before is not drawn where nothing was added.
+ */
+@Composable
+private fun MonthCard(month: YourMonth, format: MoneyFormat, today: LocalDate) {
+    val range = rangeWords(month.month, today)
+    val added = format.short(month.added)
+    val worth = stringResource(R.string.month_worth, format.short(month.worth))
+    val last = month.addedLastMonth.takeIf { it.isPositive }
+        ?.let { stringResource(R.string.month_last, format.short(it)) }
+    val addedWords = if (month.added.isPositive) {
+        stringResource(R.string.month_added_description, added)
+    } else {
+        stringResource(R.string.month_added_none)
+    }
+    val description = listOfNotNull(stringResource(R.string.month_description, range), addedWords, worth, last)
+        .joinToString(" ")
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = GroupShape,
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(CapsTags.MONTH)
+            .clearAndSetSemantics { contentDescription = description },
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                stringResource(R.string.month_title, range),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (month.added.isPositive) {
+                Row {
+                    Text(
+                        added,
+                        style = TettoTheme.type.readingValue,
+                        modifier = Modifier.alignByBaseline(),
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        stringResource(R.string.month_added),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.alignByBaseline(),
+                    )
+                }
+            } else {
+                Text(stringResource(R.string.month_added_none), style = MaterialTheme.typography.bodyLarge)
+            }
+            Text(
+                worth,
+                style = MaterialTheme.typography.bodyMedium.tabular(),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (last != null) {
+                Text(
+                    last,
+                    style = MaterialTheme.typography.bodyMedium.tabular(),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }
@@ -326,6 +407,7 @@ object CapsTags {
     const val PAGE = "caps_page"
     const val SETTINGS = "caps_settings"
     const val TIP = "caps_tip"
+    const val MONTH = "caps_month"
     const val NUMPAD = "numpad"
     const val AMOUNT = "numpad_amount"
     const val PREVIEW = "numpad_preview"

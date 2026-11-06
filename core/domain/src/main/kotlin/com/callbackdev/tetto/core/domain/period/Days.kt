@@ -1,5 +1,6 @@
 package com.callbackdev.tetto.core.domain.period
 
+import com.callbackdev.tetto.core.model.DateRange
 import com.callbackdev.tetto.core.model.NearDay
 import java.time.Instant
 import java.time.LocalDate
@@ -28,6 +29,10 @@ object Days {
      */
     fun instantsOf(date: LocalDate, zone: ZoneId): Pair<Instant, Instant> =
         date.atStartOfDay(zone).toInstant() to date.plusDays(1).atStartOfDay(zone).toInstant()
+
+    /** The instants of [range]'s days in [zone], as [instantsOf] gives a day's: the reader's month. */
+    fun instantsOf(range: DateRange, zone: ZoneId): Pair<Instant, Instant> =
+        range.start.atStartOfDay(zone).toInstant() to range.endExclusive.atStartOfDay(zone).toInstant()
 
     /** How near [date] is to [today], for the words that name it. */
     fun near(date: LocalDate, today: LocalDate): NearDay = when (ChronoUnit.DAYS.between(today, date)) {
