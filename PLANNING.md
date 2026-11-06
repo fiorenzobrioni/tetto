@@ -17,8 +17,8 @@
 ## State
 
 - **Released**: nothing yet.
-- **Done**: Phase 0, the foundations (5 Nov 2026): green on GitHub, the release workflow rehearsed with the release key, the mark in the owner's colours. Phase 1, the cap engine (5 Nov 2026): `:core:domain` and `:core:data`, 117 tests, green on GitHub (`c762455`, 5 min 29 s). Phase 2, the caps screen and the numpad (5 Nov 2026): `:feature:caps` and the shell, green on GitHub (`4a40d7a`, 6 min 39 s). Phase 3, the first run and Settings (5 Nov 2026): `:feature:onboarding` and `:feature:settings`, 224 tests in all, green on GitHub (`e1f6b0d`, 8 min 16 s). Phase 4, your data and the reminder (5 Nov 2026): `:core:reminder` joins, 313 tests in all; its device checks wait for the owner's phone (§11 Phase 4). Phase 5, the widgets and the launcher's shortcuts (5 Nov 2026): `:widget` joins, 424 tests in all; its device checks wait for the owner's phone (§11 Phase 5). Phase 6, the guide, accessibility and polish (6 Nov 2026): `:feature:guide` joins; the start-up's measure waits for the owner's phone (§11 Phase 6).
-- **Next**: Phase 7, the 1.0 release on GitHub, after the device checks of Phases 4 to 6.
+- **Done**: Phase 0, the foundations (5 Nov 2026): green on GitHub, the release workflow rehearsed with the release key, the mark in the owner's colours. Phase 1, the cap engine (5 Nov 2026): `:core:domain` and `:core:data`, 117 tests, green on GitHub (`c762455`, 5 min 29 s). Phase 2, the caps screen and the numpad (5 Nov 2026): `:feature:caps` and the shell, green on GitHub (`4a40d7a`, 6 min 39 s). Phase 3, the first run and Settings (5 Nov 2026): `:feature:onboarding` and `:feature:settings`, 224 tests in all, green on GitHub (`e1f6b0d`, 8 min 16 s). Phase 4, your data and the reminder (5 Nov 2026): `:core:reminder` joins, 313 tests in all. Phase 5, the widgets and the launcher's shortcuts (5 Nov 2026): `:widget` joins, 424 tests in all. Phase 6, the guide, accessibility and polish (6 Nov 2026): `:feature:guide` joins, 447 tests in all, green on GitHub (PR #3). The device checks of Phases 4 to 6, TalkBack and the start-up's measure among them, done on the owner's phone (6 Nov 2026).
+- **Next**: Phase 7, the 1.0 release on GitHub.
 - **Later, and optional**: Phase 8, Google Play (§11).
 
 ---
@@ -509,7 +509,7 @@ Each phase ends with a merged PR, green CI and its acceptance criteria met. Phas
 - [x] From the caps screen, a spend is two touches and the amount; Undo puts the figure back.
   - `CapsViewModelTest`, on a real Room database: the tile's touch opens the numpad on its cap, the amount and Add write the spend, Undo puts €20 back. Not yet tried on a phone.
 - [x] TalkBack reads a tile as one sentence ("Coffee, €12 left of €20, until Monday") and the preview as it changes.
-  - "Coffee, €16 left of €20, until Sunday, about €4 a day, with €4 in reserve" (`CapsScreenTest`); the preview a polite live region (`NumpadTest`). Not yet heard with TalkBack on a phone.
+  - "Coffee, €16 left of €20, until Sunday, about €4 a day, with €4 in reserve" (`CapsScreenTest`); the preview a polite live region (`NumpadTest`). Heard with TalkBack on the owner's phone (owner, 6 Nov 2026).
 - [x] At twice the text size nothing is cut, and the tiles stand in one column.
   - Walked at 2× by every screen's test; the tiles stacked (`CapsScreenTest`); the numpad's amount steps down to fit, never cut.
 
@@ -530,8 +530,8 @@ Each phase ends with a merged PR, green CI and its acceptance criteria met. Phas
 
 ### Phase 4 — Your data and the reminder
 
-- [ ] Android's backup: `data_extraction_rules.xml`, the allowlist of §5; checked with `bmgr` on a device
-  - The allowlist names the files the code writes (`TettoDatabase.NAME`, `UserPreferencesDataSource.FILE_NAME`, the WAL), in force since Phase 0; `docs/adr/0004-your-data.md`. The `bmgr` check (`adb shell bmgr backupnow com.callbackdev.tetto.debug`, then a restore on a clean install) waits for the owner's phone.
+- [x] Android's backup: `data_extraction_rules.xml`, the allowlist of §5; checked with `bmgr` on a device
+  - The allowlist names the files the code writes (`TettoDatabase.NAME`, `UserPreferencesDataSource.FILE_NAME`, the WAL), in force since Phase 0; `docs/adr/0004-your-data.md`. The `bmgr` check (`adb shell bmgr backupnow com.callbackdev.tetto.debug`, then a restore on a clean install): Done on the owner's phone (owner, 6 Nov 2026).
 - [x] The backup file: `BackupCodec` with its tests (damaged, newer, not a Tetto backup, the round trip); export (`ACTION_CREATE_DOCUMENT`); restore (`ACTION_OPEN_DOCUMENT`, read whole and checked, replace after a confirmation, the catch-up after)
   - `BackupCodec` (20 tests), `BackupRepository` (`:core:data`, 9 tests), `DataViewModel` on real files (6 tests); the restore's dialog names the file's caps and what it replaces (`docs/adr/0004-your-data.md`).
 - [x] The CSV export (`CsvExport`, with its tests)
@@ -545,8 +545,8 @@ Each phase ends with a merged PR, green CI and its acceptance criteria met. Phas
 **Acceptance:**
 - [x] An export restored on a clean install reproduces the caps, the reserves, the open spends and the closed periods exactly.
   - `BackupRepositoryTest`: a month of spending on one phone, encoded, decoded and restored on a clean install of another (another region, another first day of the week): every cap's state, open spends and closed lines equal, and a backup of the restored phone is the same file. Not yet tried on a phone.
-- [ ] On the phone: the reminder arrives near its time on a day with no spend, and not on a day with one; with it off, `dumpsys alarm` shows no alarm of Tetto's.
-  - Waits for the owner's phone, with §9's checks (`dumpsys alarm | grep tetto`, `batterystats`, Doze). Under Robolectric: the alarm is `RTC_WAKEUP`, allowed while idle, one at a time, none while off or blocked.
+- [x] On the phone: the reminder arrives near its time on a day with no spend, and not on a day with one; with it off, `dumpsys alarm` shows no alarm of Tetto's.
+  - Done on the owner's phone (owner, 6 Nov 2026), with §9's checks (`dumpsys alarm | grep tetto`, `batterystats`, Doze). Under Robolectric: the alarm is `RTC_WAKEUP`, allowed while idle, one at a time, none while off or blocked.
 
 ### Phase 5 — The widgets and the launcher's shortcuts
 
@@ -567,23 +567,23 @@ Each phase ends with a merged PR, green CI and its acceptance criteria met. Phas
   - Both cards at twelve grants, three text sizes, three caps (at ease, ahead, over), with the sentence and without, every line 5% wider than measured: nothing cut but a cap's name; and the ring's side on the card as drawn, the family's at every grant. The screenshots looked at (§15, Phase 5).
 
 **Acceptance:**
-- [ ] On the owner's phone, beside the sisters' cards: the same card, the same colours; «In words» beside Passo's and Tempo's ring cards of the same size, its ring and its lines at their sizes.
-  - Under Robolectric: the ring at the family's sides at every reference grant (`WidgetFitTest`), the type steps the family's (`WidgetTypeTest`). Waits for the owner's phone.
-- [ ] From the home screen, a spend is two touches and the amount, and the card shows it at once.
-  - `QuickAddViewModelTest` on a real Room database (the touch opens the numpad on the cap, the amount and Add write the spend, Undo takes it back); `CapsRepositoryTest`: a committed write is a change the cards hear. Waits for the owner's phone.
-- [ ] With the screen off, `dumpsys alarm` shows no wake-up alarm of Tetto's but the reminder's.
-  - `MidnightAlarmTest`: one `RTC` alarm (non-wakeup) a second past the next local midnight, only while a card is placed, none after the last goes. Waits for the owner's phone, with §9's checks.
+- [x] On the owner's phone, beside the sisters' cards: the same card, the same colours; «In words» beside Passo's and Tempo's ring cards of the same size, its ring and its lines at their sizes.
+  - Under Robolectric: the ring at the family's sides at every reference grant (`WidgetFitTest`), the type steps the family's (`WidgetTypeTest`). Done on the owner's phone (owner, 6 Nov 2026).
+- [x] From the home screen, a spend is two touches and the amount, and the card shows it at once.
+  - `QuickAddViewModelTest` on a real Room database (the touch opens the numpad on the cap, the amount and Add write the spend, Undo takes it back); `CapsRepositoryTest`: a committed write is a change the cards hear. Done on the owner's phone (owner, 6 Nov 2026).
+- [x] With the screen off, `dumpsys alarm` shows no wake-up alarm of Tetto's but the reminder's.
+  - `MidnightAlarmTest`: one `RTC` alarm (non-wakeup) a second past the next local midnight, only while a card is placed, none after the last goes. Done on the owner's phone (owner, 6 Nov 2026), with §9's checks.
 
 ### Phase 6 — The guide, accessibility and polish
 
 - [x] `feature:guide`, in the family's shape and style (owner, 5 Nov 2026), from Tempo's `GuideScreen` and the family's prose kit: the card first in Settings, as the sisters'; a first-day tip on the caps screen (once dismissed or followed, never again; a `DataStore` flag); short chapters (what the caps screen answers; a period, the reserve and forgiveness; the numpad and correcting a spend; the home screen; your data; what Tetto does not do, and what kind of app does: an expense tracker, never named, as no sister is in a string the app shows). It never teaches a control; the app's own components as examples, each captioned as one; no view model where nothing depends on the reader's settings. UI tests for every chapter, the dark theme, Italian, twice the text size, an open foldable; a README screenshot
   - `:feature:guide`: six chapters; three examples drawn by the engine (`CapStates`, `Rollover`, `SpendPreview`) through the design system's own tile, bar and badge, in the reader's currency and week, so it has a view model (`GuideViewModel`, the one thing it reads). The tip (`caps_tip_seen`, over the tiles) and the guide's card (first in Settings); `GuideScreenTest` (12 tests), the tip in `CapsScreenTest`, the card in `SettingsScreenTest`. The screenshots looked at (§15, Phase 6).
 - [x] The accessibility pass: contrast (`ContrastTest`), labels, targets, twice the text size, foldables, the numpad with TalkBack
-  - `ContrastTest` pins a status card's softened body on its three grounds; the numpad's amount and preview are one polite live region ("€4.50, €11.50 left" at each key) and its decimal key is named; a tile drawn as a picture (`CapTile(enabled = false)`) is no longer a button; Settings' group headers and the guide's chapters are headings. Every screen's tests already walk twice the text size and an open foldable, and the guide and the tip join them. Not yet heard with TalkBack on a phone.
+  - `ContrastTest` pins a status card's softened body on its three grounds; the numpad's amount and preview are one polite live region ("€4.50, €11.50 left" at each key) and its decimal key is named; a tile drawn as a picture (`CapTile(enabled = false)`) is no longer a button; Settings' group headers and the guide's chapters are headings. Every screen's tests already walk twice the text size and an open foldable, and the guide and the tip join them. Heard with TalkBack on the owner's phone (owner, 6 Nov 2026).
 - [x] README screenshots (`ReadmeScreenshots`, sample caps, English) and their table in the README
   - Eight pictures from five modules (the caps, dark with one over, the numpad, a cap's sheet, the cards, the first run, Settings, the guide), looked at.
-- [ ] Start-up measured; a Baseline Profile if it is slow
-  - Waits for the owner's phone (no device here; §15, Phase 6). The start was read instead: nothing on the main thread but the reminder's channel; the activity draws one bare frame until the settings are read; Compose's own baseline profiles reach the phone already, through `androidx.profileinstaller` in the merged manifest.
+- [x] Start-up measured; a Baseline Profile if it is slow
+  - Measured on the owner's phone (owner, 6 Nov 2026); no Baseline Profile asked for. Read in the code before (§15, Phase 6): nothing on the main thread but the reminder's channel; the activity draws one bare frame until the settings are read; Compose's own baseline profiles reach the phone already, through `androidx.profileinstaller` in the merged manifest.
 
 ### Phase 7 — Release on GitHub (v1.0.0)
 
@@ -840,3 +840,7 @@ The owner accepted Phase 6's proposal, which closes in Open. `MoneyInput.of` typ
 Asked with it, the numpad for a cap's amount (the editor, the first run) instead of the phone's keyboard: not advised, and not built. The numpad is made for the act repeated several times a day, where every touch counts and its preview says what a spend leaves; a cap's amount is set at the first run and changed rarely, with nothing to preview. It stands in a form beside a name, which takes the phone's keyboard anyway, and on the first run one amount per area. A keypad of the app's own in a form would leave out what an input method gives: TalkBack's braille keyboard, voice typing, pasting, moving the cursor to fix one digit. The rule that matters is shared already: `MoneyField` types through the numpad's own buffer (`MoneyInput`), so it takes the locale's separator, a dot or a comma from a keyboard that shows only one, nine digits and the currency's decimals, and refuses what the numpad would.
 
 Phase 6's CI on GitHub (PR #3, runs 42196860934 and 42196882885) is green, `DataViewModelTest` included: its three file tests time out on Windows only, and CLAUDE.md says so, which closes the item in Open.
+
+### 6 Nov 2026 — The device checks of Phases 4 to 6 (owner: "I controlli delle fasi 4 e 5 sono stati già fatti e anche il talkback e la misura dell'avvio")
+
+The owner ran on their phone the checks §11 left for it, and reported them done: Phase 4's (Android's backup with `bmgr` and a restore on a clean install; the evening reminder's delivery and its silence, with §9's alarm checks), Phase 5's three acceptance checks (the cards beside the sisters', a spend from the home screen, `dumpsys alarm` with the screen off), TalkBack, and the start-up's measure. Their boxes are ticked in §11. No figure was handed over with them, and none is written here; no Baseline Profile was asked for, so none is built. Phase 6 closes; next is Phase 7, the 1.0 release.

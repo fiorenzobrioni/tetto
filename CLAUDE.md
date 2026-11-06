@@ -24,8 +24,8 @@ the numpad over the home screen (`QuickAddActivity`) and the launcher's shortcut
 the caps screen's first-day tip, the accessibility pass and the README's screenshots; the modules
 in the build are `:app`, `:core:model`, `:core:domain`, `:core:data`, `:core:reminder`,
 `:core:designsystem`, `:core:testing`, `:feature:caps`, `:feature:onboarding`,
-`:feature:settings`, `:feature:guide` and `:widget`. The device checks of Phases 4 to 6 wait for
-the owner's phone (PLANNING.md §11); Phase 7 is the 1.0 release.
+`:feature:settings`, `:feature:guide` and `:widget`. The device checks of Phases 4 to 6 are done
+on the owner's phone (6 Nov 2026); Phase 7 is the 1.0 release.
 
 **Tetto and Saldo are two separate apps, alternatives to each other** (owner, 5 Nov 2026).
 Tetto takes the family's look and structure from its sisters, so the apps are recognisable;
