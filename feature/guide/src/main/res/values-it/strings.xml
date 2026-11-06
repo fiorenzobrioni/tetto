@@ -15,6 +15,8 @@
     <string name="guide_caps_pace_body">Su un tetto di una settimana o più, con qualche giorno ancora davanti: circa quanto al giorno ti tiene sotto il tetto fino alla fine.</string>
     <string name="guide_caps_list_title">Tanti tetti</string>
     <string name="guide_caps_list_body">Con molti tetti, l’elenco ne mostra di più in una schermata: un tetto per riga, la cifra accanto al nome. Quanto al giorno e la riserva stanno allora nel foglio del tetto, a una pressione lunga. Si sceglie in Impostazioni, sotto Aspetto.</string>
+    <string name="guide_caps_month_title">Il tuo mese</string>
+    <string name="guide_caps_month_body">In fondo alla schermata: quanto hai aggiunto ai tetti nel tuo mese finora, e nel mese prima, da mettere accanto allo stipendio. Il tuo mese parte dal giorno scelto nelle Impostazioni, quello dello stipendio se vuoi. Accanto, quanto valgono i tuoi tetti in un mese, circa: un tetto settimanale per i giorni del mese, uno annuale per un dodicesimo. Conta solo ciò che aggiungi in Tetto: bollette e spese che non segni restano fuori.</string>
     <string name="guide_caps_live_title">Viva mentre guardi</string>
     <string name="guide_caps_live_body">Lasciata aperta oltre la mezzanotte, la schermata gira il giorno da sola: un periodo che finisce si chiude, e si apre il successivo.</string>
 

@@ -2,6 +2,7 @@ package com.callbackdev.tetto.feature.caps
 
 import com.callbackdev.tetto.core.data.caps.ClearedReserve
 import com.callbackdev.tetto.core.domain.cap.CapsSentence
+import com.callbackdev.tetto.core.domain.cap.YourMonth
 import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.CapState
 import com.callbackdev.tetto.core.model.CapsLayout
@@ -12,7 +13,8 @@ import java.time.LocalDate
 
 /**
  * The caps screen (PLANNING.md §11 Phase 2): today, the currency, the caps in the reader's order, the
- * sentence; whether the first-day tip was seen (Phase 6); tiles or rows, as the reader chose.
+ * sentence; whether the first-day tip was seen (Phase 6); tiles or rows, as the reader chose; the
+ * reader's [month] at the end (owner, 6 Nov 2026), once it is read.
  */
 data class CapsUiState(
     val today: LocalDate,
@@ -21,6 +23,7 @@ data class CapsUiState(
     val sentence: CapsSentence,
     val tipSeen: Boolean = true,
     val layout: CapsLayout = CapsLayout.TILES,
+    val month: YourMonth? = null,
 ) {
     fun cap(id: Long): CapState? = caps.firstOrNull { it.cap.id == id }
 

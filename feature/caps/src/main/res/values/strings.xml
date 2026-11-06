@@ -29,6 +29,16 @@
         <item quantity="other">%1$s and %2$d other caps start again today.</item>
     </plurals>
 
+    <!-- The reader's month, last on the caps screen (owner, 6 Nov 2026): what was added to the caps,
+         what they are worth in a month, what was added in the month before. -->
+    <string name="month_title">Your month · %s</string>
+    <string name="month_description">Your month, %s.</string>
+    <string name="month_added">added to your caps so far</string>
+    <string name="month_added_description">%s added to your caps so far.</string>
+    <string name="month_added_none">Nothing added to your caps yet this month.</string>
+    <string name="month_worth">Your caps are worth about %s a month.</string>
+    <string name="month_last">Last month: %s.</string>
+
     <!-- Until when: the period's last day, included ("until Sunday"); and when a cap over starts again. -->
     <string name="until_today">today</string>
     <string name="until_tomorrow">until tomorrow</string>

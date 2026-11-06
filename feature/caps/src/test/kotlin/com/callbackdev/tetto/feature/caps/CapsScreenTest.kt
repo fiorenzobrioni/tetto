@@ -14,6 +14,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -273,6 +274,49 @@ class CapsScreenTest {
         draw(CapsSample.ui(CapsSample.underCaps))
         // "Restaurants" would need 18 sp for two lines: three lines, then, at 24 sp, never shrunk for nothing.
         assertThat(sentenceHeight("Il più vicino è Restaurants")).isWithin(1f).of(96f)
+    }
+
+    @Test
+    fun `your month, last on the page, in one sentence for TalkBack`() {
+        draw(CapsSample.ui(CapsSample.underCaps, month = CapsSample.month()))
+        compose.onNodeWithTag(CapsTags.PAGE).performScrollToNode(hasTestTag(CapsTags.MONTH))
+        compose.onNodeWithTag(CapsTags.MONTH).assertIsDisplayed()
+        val words = description(CapsTags.MONTH)
+        assertThat(words).startsWith("Your month, 1")
+        assertThat(words).endsWith(
+            "Nov. €842 added to your caps so far. Your caps are worth about €1,250 a month. Last month: €1,130.",
+        )
+        compose.assertAccessible()
+        compose.writeScreenshot("caps-month")
+    }
+
+    @Test
+    @Config(qualifiers = "it-rIT-w393dp-h851dp-xxhdpi")
+    fun `your month, in Italian, with nothing added yet and no month before`() {
+        draw(CapsSample.ui(CapsSample.underCaps, month = CapsSample.month(Money.ZERO, Money.ZERO)))
+        compose.onNodeWithTag(CapsTags.PAGE).performScrollToNode(hasTestTag(CapsTags.MONTH))
+        val words = description(CapsTags.MONTH)
+        assertThat(words).contains("Ancora nessuna spesa aggiunta ai tetti in questo mese.")
+        assertThat(words).contains("I tuoi tetti valgono circa 1.250")
+        assertThat(words).doesNotContain("mese scorso")
+        compose.writeScreenshot("caps-month-it")
+    }
+
+    @Test
+    fun `your month under the list too, the same card`() {
+        draw(CapsSample.ui(CapsSample.underCaps, layout = CapsLayout.LIST, month = CapsSample.month()))
+        compose.onNodeWithTag(CapsTags.PAGE).performScrollToNode(hasTestTag(CapsTags.MONTH))
+        compose.onNodeWithTag(CapsTags.MONTH).assertIsDisplayed()
+        val last = compose.onNodeWithTag(CapsTags.tile(5)).fetchSemanticsNode().boundsInRoot
+        assertThat(compose.onNodeWithTag(CapsTags.MONTH).fetchSemanticsNode().boundsInRoot.top)
+            .isGreaterThan(last.bottom)
+        compose.writeScreenshot("caps-list-month")
+    }
+
+    @Test
+    fun `no month drawn without caps`() {
+        draw(CapsSample.ui(emptyList(), month = CapsSample.month()))
+        compose.onNodeWithTag(CapsTags.MONTH).assertDoesNotExist()
     }
 
     @Test

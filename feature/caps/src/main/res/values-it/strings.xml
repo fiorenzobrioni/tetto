@@ -31,6 +31,16 @@
         <item quantity="other">%1$s e altri %2$d tetti ripartono oggi.</item>
     </plurals>
 
+    <!-- Il tuo mese, in fondo alla schermata dei tetti: quanto aggiunto ai tetti, quanto valgono in
+         un mese, quanto aggiunto nel mese prima. -->
+    <string name="month_title">Il tuo mese · %s</string>
+    <string name="month_description">Il tuo mese, %s.</string>
+    <string name="month_added">aggiunti ai tetti finora</string>
+    <string name="month_added_description">%s aggiunti ai tetti finora.</string>
+    <string name="month_added_none">Ancora nessuna spesa aggiunta ai tetti in questo mese.</string>
+    <string name="month_worth">I tuoi tetti valgono circa %s al mese.</string>
+    <string name="month_last">Il mese scorso: %s.</string>
+
     <!-- Fino a quando: l'ultimo giorno del periodo, incluso; e quando riparte un tetto sforato. -->
     <string name="until_today">oggi</string>
     <string name="until_tomorrow">fino a domani</string>
