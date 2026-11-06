@@ -1,13 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Written by tools/draw_launcher_icon.py: change the script and run it, never this file.
-     The status-bar icon of the evening reminder: the mark's roof alone, its three strokes
+     The status-bar icon of the evening reminder: the mark's house alone, its window cut out,
      on the 24-unit grid. White on transparent, as status-bar icons must be: the system tints it. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
-    <path android:pathData="M 4.50,17.84 L 4.18,18.06 L 3.81,18.19 L 3.42,18.22 L 3.04,18.15 L 2.68,17.98 L 2.39,17.73 L 2.16,17.40 L 2.03,17.03 L 2.00,16.64 L 2.07,16.26 L 2.24,15.90 L 2.50,15.61 L 11.00,7.95 L 11.32,7.73 L 11.69,7.60 L 12.08,7.57 L 12.46,7.64 L 12.82,7.81 L 13.11,8.06 L 13.34,8.39 L 13.47,8.76 L 13.50,9.15 L 13.43,9.53 L 13.26,9.88 L 13.00,10.18 Z" android:fillColor="#FFFFFFFF"/>
-    <path android:pathData="M 21.50,15.61 L 21.76,15.90 L 21.93,16.26 L 22.00,16.64 L 21.97,17.03 L 21.84,17.40 L 21.61,17.73 L 21.32,17.98 L 20.96,18.15 L 20.58,18.22 L 20.19,18.19 L 19.82,18.06 L 19.50,17.84 L 11.00,10.18 L 10.74,9.88 L 10.57,9.53 L 10.50,9.15 L 10.53,8.76 L 10.66,8.39 L 10.89,8.06 L 11.18,7.81 L 11.54,7.64 L 11.92,7.57 L 12.31,7.60 L 12.68,7.73 L 13.00,7.95 Z" android:fillColor="#FFFFFFFF"/>
-    <path android:pathData="M 15.42,7.28 L 15.47,6.89 L 15.62,6.53 L 15.86,6.22 L 16.17,5.98 L 16.53,5.83 L 16.92,5.78 L 17.31,5.83 L 17.67,5.98 L 17.98,6.22 L 18.22,6.53 L 18.37,6.89 L 18.42,7.28 L 18.42,13.50 L 18.37,13.89 L 18.22,14.25 L 17.98,14.56 L 17.67,14.80 L 17.31,14.95 L 16.92,15.00 L 16.53,14.95 L 16.17,14.80 L 15.86,14.56 L 15.62,14.25 L 15.47,13.89 L 15.42,13.50 Z" android:fillColor="#FFFFFFFF"/>
+<group>
+    <clip-path android:pathData="M 0,0 H 24 V 24 H 0 Z M 8.80,12.22 A 0.41,0.41 0 0,0 8.38,12.64 L 8.38,14.59 A 0.41,0.41 0 0,0 8.80,15.01 L 10.76,15.01 A 0.41,0.41 0 0,0 11.17,14.59 L 11.17,12.64 A 0.41,0.41 0 0,0 10.76,12.22 L 8.80,12.22 Z"/>
+<group>
+    <clip-path android:pathData="M 0,0 H 24 V 24 H 0 Z M 13.24,12.22 A 0.41,0.41 0 0,0 12.83,12.64 L 12.83,14.59 A 0.41,0.41 0 0,0 13.24,15.01 L 15.20,15.01 A 0.41,0.41 0 0,0 15.62,14.59 L 15.62,12.64 A 0.41,0.41 0 0,0 15.20,12.22 L 13.24,12.22 Z"/>
+<group>
+    <clip-path android:pathData="M 0,0 H 24 V 24 H 0 Z M 8.80,16.67 A 0.41,0.41 0 0,0 8.38,17.08 L 8.38,19.04 A 0.41,0.41 0 0,0 8.80,19.45 L 10.76,19.45 A 0.41,0.41 0 0,0 11.17,19.04 L 11.17,17.08 A 0.41,0.41 0 0,0 10.76,16.67 L 8.80,16.67 Z"/>
+<group>
+    <clip-path android:pathData="M 0,0 H 24 V 24 H 0 Z M 13.24,16.67 A 0.41,0.41 0 0,0 12.83,17.08 L 12.83,19.04 A 0.41,0.41 0 0,0 13.24,19.45 L 15.20,19.45 A 0.41,0.41 0 0,0 15.62,19.04 L 15.62,17.08 A 0.41,0.41 0 0,0 15.20,16.67 L 13.24,16.67 Z"/>
+<path android:pathData="M 10.81,2.83 A 1.78,1.78 0 0,1 13.19,2.83 L 21.25,10.09 A 1.78,1.78 0 0,1 21.84,11.41 L 21.84,20.22 A 1.78,1.78 0 0,1 20.06,22.00 L 3.94,22.00 A 1.78,1.78 0 0,1 2.16,20.22 L 2.16,11.41 A 1.78,1.78 0 0,1 2.75,10.09 L 10.81,2.83 Z M 16.15,3.07 A 1.07,1.07 0 0,1 17.22,2.00 L 19.11,2.00 A 1.07,1.07 0 0,1 20.18,3.07 L 20.18,8.13 A 1.07,1.07 0 0,1 19.11,9.20 L 17.22,9.20 A 1.07,1.07 0 0,1 16.15,8.13 L 16.15,3.07 Z" android:fillColor="#FFFFFFFF"/>
+</group>
+</group>
+</group>
+</group>
 </vector>

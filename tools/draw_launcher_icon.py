@@ -4,21 +4,33 @@ the status-bar icon (core/reminder/src/main/res/drawable/ic_stat_tetto.xml).
 
     python3 tools/draw_launcher_icon.py
 
-The mark is the family's ring (radius 21, stroke 10) on a warm white, cut by an amber emblem:
-Tetto's roof, at the lower right (owner, 5 Nov 2026: the place the other money app's emblem
-takes, since a reader most often installs one of the two). The roof stands upright, as a roof
-does, whatever the ring's angle: two slopes and a chimney, each a stroke with round ends, so it
-reads as a drawn roof and not as a caret or an arrow. The ring shades clockwise from just past
-the roof round to it again, light to dark: fuchsia to wine, the owner's choice (PLANNING.md §15,
-5 Nov 2026), clearly apart from every sister's ring, under deuteranopia too.
+The mark is the family's ring (radius 21, stroke 10) on a warm white, cut by an amber emblem at
+the lower right (owner, 5 Nov 2026: the place the other money app's emblem takes, since a reader
+most often installs one of the two). The emblem is a house (owner, 6 Nov 2026): walls, a gable at
+42 degrees, a chimney on the right-hand slope, and a window of four panes cut out of its front,
+as a clock's hands are cut out of its face. A house is as compact as the family's round emblems,
+so it weighs what they weigh (213 square units against their 211 to 222) and still reads at
+36 px; the window, where a door would be expected, keeps it from reading as a launcher's home
+key. The roof alone, drawn first as three strokes and then as a solid slab, read as a caret
+beside the family's filled emblems.
 
-The status-bar icon is the roof alone, the mark's emblem, its three strokes where the launcher
-draws them, scaled to the 24-unit grid with 2 units clear on each side and a lighter stroke: a ring
-with a cut would read as a blot at that size, and a roof reads as Tetto's.
+The ring is slate (owner, 6 Nov 2026), shading clockwise from just past the house round to it
+again, light to dark: the blue grey of a slate roof, nearly opposite the amber on the colour
+wheel, so the ring stays quiet and the house is the brightest thing in the mark. Its lightness is
+the family's (Oklab L 0.57 on average against 0.56 to 0.66), so the marks weigh the same side by
+side on a home screen.
+
+Every shape is a convex core grown by a radius (a point grown is a circle, a segment a capsule, a
+polygon a polygon with round corners), so the gap round each shape, where it cuts the ring, is the
+same shape grown by GAP, and its outline is exact: straight edges and arcs.
+
+The status-bar icon is the house alone, its window cut out, as large as the 24-unit grid allows
+with 2 units clear on each side: a ring with a cut would read as a blot at that size, and the
+house is the mark's.
 
 Re-running this script IS the drawing: ic_launcher_foreground.xml, ic_launcher_monochrome.xml and
-ic_stat_tetto.xml are its output and are not edited by hand. Only the standard library is used, so any Python 3
-runs it.
+ic_stat_tetto.xml are its output and are not edited by hand. Only the standard library is used,
+so any Python 3 runs it.
 """
 
 import math
@@ -29,35 +41,41 @@ RES = ROOT / "app/src/main/res/drawable"
 STAT = ROOT / "core/reminder/src/main/res/drawable/ic_stat_tetto.xml"
 STAT_SIZE = 24.0
 STAT_MARGIN = 2.0
-# The status-bar roof's stroke on the 24-unit grid: lighter than the launcher's, whose weight is
-# set to stand beside the ring, so the slopes and the chimney stay apart at 24 dp (at the
-# launcher's weight they ran together into one blot).
-STAT_STROKE = 3.0
 
 CENTRE = 54.0
 RING_RADIUS = 21.0
 RING_WIDTH = 10.0
 SAFE_RADIUS = 33.0  # every launcher mask keeps this circle whole
-ROOF_ANGLE = 40.0  # degrees clockwise from three o'clock: the lower right
+HOUSE_ANGLE = 40.0  # degrees clockwise from three o'clock: the lower right
+GAP = 3.0  # the clear band around the house, where it cuts the ring: the family's gap
 
-# The roof, around the emblem's point on the ring, as strokes with round ends: (from, to), in
-# units of the 108 grid. Two slopes meeting at the ridge, at 42 degrees, and a chimney standing
-# on the right-hand slope, its top level with the ridge. The stroke is heavy (6.2) so the roof
-# weighs on the ring what the sisters' filled emblems do: at 4.6 it read as a thin tool.
-SLOPE = math.radians(42.0)
-RIDGE = (0.0, -4.8)
-EAVE = 7.6  # half the roof's span, ridge to eave, along x
-STROKE = 6.2
-CHIMNEY_X = 4.4
-CHIMNEY_TOP = -6.4
-GAP = 3.0  # the clear band around the roof, where it cuts the ring: the sisters' gap
+# The house, in units of the 108 grid, around the emblem's point on the ring (x right, y down).
+HALF_WIDTH = 8.3
+EAVE = -1.4  # where the walls meet the gable
+PITCH = 42.0  # the gable's slope, in degrees
+BOTTOM = 8.2
+CORNER = 1.5  # the round of the house's corners: the family's emblems have no sharp point
+# The chimney's sides, and the round of its corners. It stands on the right-hand slope and
+# rises to just under the ridge; its foot is buried in the roof.
+CHIMNEY = (3.5, 6.9)
+CHIMNEY_CORNER = 0.9
+# The window: its middle (y), half the width of the cross between its panes, a pane's side and
+# the round of a pane's corners. Large enough that the four panes stay four at 36 px.
+WINDOW_MIDDLE = 3.0
+MULLION = 0.7
+PANE = 2.35
+PANE_CORNER = 0.35
+# The house sits a little above the ring's point: its foot is its widest part, and the lower
+# right is where the safe circle is nearest.
+LIFT = -0.6
 
-# The ring, from just past the roof round to it again: (position along the sweep, colour).
-# Fuchsia to wine (owner, 5 Nov 2026), chosen from two proposals drawn beside the sisters' marks
-# (raspberry to deep plum was the other): bright where the sisters' rings are green, blue or
-# brick, and a hue none of them wears.
-RING_STOPS = [(0.0, "FF9AD5"), (0.45, "E0218A"), (1.0, "7A0B4E")]
-AMBER = ("FFC658", "EF8618")  # the emblem's amber, every sister's
+# The ring, from just past the house round to it again: (position along the sweep, colour).
+# Slate (owner, 6 Nov 2026), chosen from nine rings drawn beside the family's marks on light
+# and dark grounds, under deuteranopia and in grey (PLANNING.md §15, 6 Nov 2026).
+RING_STOPS = [(0.0, "A4C2DC"), (0.45, "58769D"), (1.0, "273857")]
+AMBER = ("FFC658", "EF8618")  # the emblem's amber, the family's, light at the upper left
+
+FULL = "M 0,0 H 108 V 108 H 0 Z"
 
 
 def f(v):
@@ -70,7 +88,7 @@ def point(deg, r=RING_RADIUS, c=CENTRE):
 
 
 def circle(cx, cy, r):
-    """A circle walked counter-clockwise (sweep flag 0): filled on its own, a hole in a clip."""
+    """A circle walked counter-clockwise (sweep flag 0)."""
     return f"M {f(cx - r)},{f(cy)} a {f(r)},{f(r)} 0 1,0 {f(2 * r)},0 a {f(r)},{f(r)} 0 1,0 {f(-2 * r)},0 z"
 
 
@@ -80,49 +98,120 @@ def mix(a, b, t):
     return "".join(f"{round(x + (y - x) * t):02X}" for x, y in zip(ca, cb))
 
 
-def signed_area(poly):
-    return sum(a[0] * b[1] - b[0] * a[1] for a, b in zip(poly, poly[1:] + poly[:1])) / 2
+def shoelace(pts):
+    return sum(a[0] * b[1] - b[0] * a[1] for a, b in zip(pts, pts[1:] + pts[:1]))
 
 
-def strokes():
-    """The roof's three strokes, on the canvas: the two slopes from the ridge, and the chimney
-    from the right-hand slope up."""
-    ox, oy = point(ROOF_ANGLE)
-    eave_y = RIDGE[1] + EAVE * math.tan(SLOPE)
-    chimney_foot = RIDGE[1] + CHIMNEY_X * math.tan(SLOPE)
-    local = [
-        (RIDGE, (-EAVE, eave_y)),
-        (RIDGE, (EAVE, eave_y)),
-        ((CHIMNEY_X, chimney_foot), (CHIMNEY_X, CHIMNEY_TOP)),
+class Shape:
+    """A convex core (one or more points) grown by [r]."""
+
+    def __init__(self, core, r):
+        self.core = [tuple(p) for p in core]
+        self.r = r
+
+    def moved(self, dx, dy, scale=1.0):
+        return Shape([(dx + x * scale, dy + y * scale) for x, y in self.core], self.r * scale)
+
+    def reach(self, centre):
+        """How far the shape reaches from [centre]: exact, since the farthest point of a grown
+        convex core is a core point plus the radius."""
+        return max(math.dist(centre, p) for p in self.core) + self.r
+
+    def bounds(self):
+        xs = [x for x, _ in self.core]
+        ys = [y for _, y in self.core]
+        return min(xs) - self.r, min(ys) - self.r, max(xs) + self.r, max(ys) + self.r
+
+    def outline(self, grow=0.0, hole=False):
+        """The outline as path data, walked clockwise on screen; as a [hole] it is walked against
+        the canvas, so it cuts a clip under the nonzero rule."""
+        R = self.r + grow
+        if len(self.core) == 1:
+            (x, y) = self.core[0]
+            sweep = 0 if hole else 1
+            return (f"M {f(x - R)},{f(y)} A {f(R)},{f(R)} 0 1,{sweep} {f(x + R)},{f(y)} "
+                    f"A {f(R)},{f(R)} 0 1,{sweep} {f(x - R)},{f(y)} Z")
+        pts = self.core
+        if len(pts) > 2 and shoelace(pts) < 0:
+            pts = pts[::-1]
+        n = len(pts)
+        normals = []  # the outward normal of the edge from point i to point i + 1
+        for i in range(n):
+            (x0, y0), (x1, y1) = pts[i], pts[(i + 1) % n]
+            length = math.hypot(x1 - x0, y1 - y0)
+            normals.append(((y1 - y0) / length, (x0 - x1) / length))
+        # At each corner the outline comes in along the previous edge, offset by R, turns round
+        # the corner on an arc and leaves along the next edge.
+        turns = []
+        for i in range(n):
+            (vx, vy), (ax, ay), (bx, by) = pts[i], normals[i - 1], normals[i]
+            turns.append(((vx + ax * R, vy + ay * R), (vx + bx * R, vy + by * R)))
+        if not hole:
+            d = f"M {f(turns[0][0][0])},{f(turns[0][0][1])}"
+            for i, (_, out) in enumerate(turns):
+                d += f" A {f(R)},{f(R)} 0 0,1 {f(out[0])},{f(out[1])}"
+                nxt = turns[(i + 1) % n][0]
+                d += f" L {f(nxt[0])},{f(nxt[1])}"
+            return d + " Z"
+        d = f"M {f(turns[0][1][0])},{f(turns[0][1][1])}"
+        for i in range(n):
+            into, _ = turns[-i % n]
+            d += f" A {f(R)},{f(R)} 0 0,0 {f(into[0])},{f(into[1])}"
+            prev = turns[(-i - 1) % n][1]
+            d += f" L {f(prev[0])},{f(prev[1])}"
+        return d + " Z"
+
+
+def rounded(pts, r):
+    """A convex polygon of the given final corners, rounded by [r]: its core is the polygon with
+    each edge pulled in by [r]."""
+    if shoelace(pts) < 0:
+        pts = pts[::-1]
+    n = len(pts)
+    lines = []
+    for i in range(n):
+        (x0, y0), (x1, y1) = pts[i], pts[(i + 1) % n]
+        length = math.hypot(x1 - x0, y1 - y0)
+        nx, ny = (y1 - y0) / length, (x0 - x1) / length
+        lines.append(((x0 - nx * r, y0 - ny * r), (x1 - x0, y1 - y0)))
+    core = []
+    for i in range(n):
+        (p, d), (q, e) = lines[i - 1], lines[i]
+        s = ((q[0] - p[0]) * e[1] - (q[1] - p[1]) * e[0]) / (d[0] * e[1] - d[1] * e[0])
+        core.append((p[0] + s * d[0], p[1] + s * d[1]))
+    return Shape(core, r)
+
+
+def box(x0, y0, x1, y1, r):
+    return rounded([(x0, y0), (x1, y0), (x1, y1), (x0, y1)], r)
+
+
+def house():
+    """The house's filled shapes and the panes cut out of it, on the canvas."""
+    top = EAVE - HALF_WIDTH * math.tan(math.radians(PITCH))
+    walls = rounded([(0, top), (HALF_WIDTH, EAVE), (HALF_WIDTH, BOTTOM), (-HALF_WIDTH, BOTTOM), (-HALF_WIDTH, EAVE)], CORNER)
+    chimney = box(CHIMNEY[0], top + 0.2, CHIMNEY[1], EAVE - 1.2, CHIMNEY_CORNER)
+    c, g, p = WINDOW_MIDDLE, MULLION, PANE
+    panes = [
+        box(-g - p, c - g - p, -g, c - g, PANE_CORNER),
+        box(g, c - g - p, g + p, c - g, PANE_CORNER),
+        box(-g - p, c + g, -g, c + g + p, PANE_CORNER),
+        box(g, c + g, g + p, c + g + p, PANE_CORNER),
     ]
-    return [((ox + ax, oy + ay), (ox + bx, oy + by)) for (ax, ay), (bx, by) in local]
+    ox, oy = point(HOUSE_ANGLE)
+    oy += LIFT
+    return [s.moved(ox, oy) for s in (walls, chimney)], [s.moved(ox, oy) for s in panes]
 
 
-def capsule(a, b, r, hole):
-    """A stroke from [a] to [b] with round ends of radius [r], as a polygon. As a [hole] it is
-    walked against the canvas (negative area), so it cuts a clip under the nonzero rule."""
-    angle = math.atan2(b[1] - a[1], b[0] - a[0])
-    corners = []
-    for (ex, ey), start in ((b, angle - math.pi / 2), (a, angle + math.pi / 2)):
-        for i in range(13):
-            t = start + math.pi * i / 12
-            corners.append((ex + r * math.cos(t), ey + r * math.sin(t)))
-    if (signed_area(corners) > 0) == hole:
-        corners.reverse()
-    return "M " + " L ".join(f"{f(x)},{f(y)}" for x, y in corners) + " Z"
-
-
-def check_safe():
+def check_safe(solids):
     """The whole mark inside the launcher's safe circle, with room to spare."""
-    farthest = max(
-        math.dist((CENTRE, CENTRE), end) + STROKE / 2 for stroke in strokes() for end in stroke
-    )
-    assert farthest <= SAFE_RADIUS - 1.0, f"the roof reaches {farthest:.2f}, past the safe circle"
-    return farthest
+    reach = max(s.reach((CENTRE, CENTRE)) for s in solids)
+    assert reach <= SAFE_RADIUS - 1.0, f"the house reaches {reach:.2f}, past the safe circle"
+    return reach
 
 
 def ring_stops():
-    """The ring as one sweep (which starts at three o'clock): its seam hides under the roof."""
+    """The ring as one sweep (which starts at three o'clock): its seam hides under the house."""
 
     def colour_at(t):
         for (t0, c0), (t1, c1) in zip(RING_STOPS, RING_STOPS[1:]):
@@ -131,34 +220,36 @@ def ring_stops():
         raise ValueError(t)
 
     def colour(deg):
-        return colour_at(((deg - ROOF_ANGLE) % 360) / 360)
+        return colour_at(((deg - HOUSE_ANGLE) % 360) / 360)
 
     stops = [(0.0, colour(0.0))]
-    stops += [((ROOF_ANGLE + t * 360) % 360, c) for t, c in RING_STOPS[1:-1]]
-    stops += [(ROOF_ANGLE - 0.2, RING_STOPS[-1][1]), (ROOF_ANGLE + 0.2, RING_STOPS[0][1]), (360.0, colour(360.0))]
+    stops += [((HOUSE_ANGLE + t * 360) % 360, c) for t, c in RING_STOPS[1:-1]]
+    stops += [(HOUSE_ANGLE - 0.2, RING_STOPS[-1][1]), (HOUSE_ANGLE + 0.2, RING_STOPS[0][1]), (360.0, colour(360.0))]
     stops.sort()
     return "\n".join(
         f'                <item android:offset="{d / 360:.4f}" android:color="#FF{c}"/>' for d, c in stops
     )
 
 
-def ring(stroke):
-    """The ring less the band round each of the roof's strokes. One group per stroke: nested
-    clips intersect, so the ring keeps what lies outside all three bands."""
+def ring(solids, stroke):
+    """The ring less the band round each of the house's shapes. One group per shape: nested
+    clips intersect, so the ring keeps what lies outside every band."""
     clips = [
-        f'<group>\n    <clip-path android:pathData="M 0,0 H 108 V 108 H 0 Z {capsule(a, b, STROKE / 2 + GAP, hole=True)}"/>'
-        for a, b in strokes()
+        f'<group>\n    <clip-path android:pathData="{FULL} {s.outline(GAP, hole=True)}"/>' for s in solids
     ]
     body = f'    <path android:pathData="{circle(CENTRE, CENTRE, RING_RADIUS)}" android:strokeWidth="{f(RING_WIDTH)}" android:fillColor="#00000000"{stroke}'
     return "\n".join(clips) + "\n" + body + "\n" + "</group>\n" * len(clips)
 
 
-def roof(fill):
-    return "\n".join(f'<path android:pathData="{capsule(a, b, STROKE / 2, hole=False)}"{fill}' for a, b in strokes())
+def emblem(solids, panes, fill, full=FULL):
+    """The house in one path, inside one group per pane whose clip leaves that pane out."""
+    clips = [f'<group>\n    <clip-path android:pathData="{full} {p.outline(hole=True)}"/>' for p in panes]
+    path = f'<path android:pathData="{" ".join(s.outline() for s in solids)}"{fill}'
+    return "\n".join(clips) + "\n" + path + "\n" + "</group>\n" * len(panes)
 
 
 def amber_fill():
-    cx, cy = point(ROOF_ANGLE)
+    cx, cy = point(HOUSE_ANGLE)
     return f""">
     <aapt:attr name="android:fillColor">
         <gradient android:type="linear" android:startX="{f(cx - 7)}" android:startY="{f(cy - 7)}" android:endX="{f(cx + 7)}" android:endY="{f(cy + 7)}">
@@ -197,61 +288,57 @@ def vector(body, aapt=True):
 """
 
 
-def status_bar():
-    """The roof's strokes moved to the 24-unit grid, as wide as it allows, centred, in white."""
-    ox, oy = point(ROOF_ANGLE)
-    local = [((ax - ox, ay - oy), (bx - ox, by - oy)) for (ax, ay), (bx, by) in strokes()]
-    xs = [x for a, b in local for x, _ in (a, b)]
-    ys = [y for a, b in local for _, y in (a, b)]
-    left, right, top, bottom = min(xs), max(xs), min(ys), max(ys)
-    scale = (STAT_SIZE - 2 * STAT_MARGIN - STAT_STROKE) / max(right - left, bottom - top)
-    middle = ((left + right) / 2, (top + bottom) / 2)
-    r = STAT_STROKE / 2 / scale
-
-    def moved(p):
-        return (STAT_SIZE / 2 + (p[0] - middle[0]) * scale, STAT_SIZE / 2 + (p[1] - middle[1]) * scale)
-
-    paths = "\n".join(
-        f'    <path android:pathData="{capsule(moved(a), moved(b), r * scale, hole=False)}" android:fillColor="#FFFFFFFF"/>'
-        for a, b in local
+def status_bar(solids, panes):
+    """The house moved to the 24-unit grid, as large as it allows, centred, in white."""
+    bounds = [s.bounds() for s in solids]
+    left, top = min(b[0] for b in bounds), min(b[1] for b in bounds)
+    right, bottom = max(b[2] for b in bounds), max(b[3] for b in bounds)
+    scale = (STAT_SIZE - 2 * STAT_MARGIN) / max(right - left, bottom - top)
+    dx = STAT_SIZE / 2 - (left + right) / 2 * scale
+    dy = STAT_SIZE / 2 - (top + bottom) / 2 * scale
+    body = emblem(
+        [s.moved(dx, dy, scale) for s in solids],
+        [p.moved(dx, dy, scale) for p in panes],
+        ' android:fillColor="#FFFFFFFF"/>',
+        full="M 0,0 H 24 V 24 H 0 Z",
     )
     return HEADER.format(
-        what="The status-bar icon of the evening reminder: the mark's roof alone, its three strokes\n"
+        what="The status-bar icon of the evening reminder: the mark's house alone, its window cut out,\n"
         "     on the 24-unit grid. White on transparent, as status-bar icons must be: the system tints it."
     ) + f"""<vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
-{paths}
-</vector>
+{body}</vector>
 """
 
 
 def main():
-    reach = check_safe()
+    solids, panes = house()
+    reach = check_safe(solids)
     RES.mkdir(parents=True, exist_ok=True)
     (RES / "ic_launcher_foreground.xml").write_text(
         HEADER.format(
-            what="The mark: the family's ring, shading light to dark, cut by an amber roof at the\n"
+            what="The mark: the family's ring, shading light to dark, cut by an amber house at the\n"
             "     lower right. Everything sits inside the 33-unit safe circle of every launcher\n"
-            f"     mask (ring edge 26, roof's edge {reach:.1f})."
+            f"     mask (ring edge 26, house's edge {reach:.1f})."
         )
-        + vector(ring(sweep_stroke()) + "\n" + roof(amber_fill())),
+        + vector(ring(solids, sweep_stroke()) + "\n" + emblem(solids, panes, amber_fill())),
         encoding="utf-8",
         newline="\n",
     )
     (RES / "ic_launcher_monochrome.xml").write_text(
         HEADER.format(
             what="The themed icon (Android 13+): the foreground's shapes in one ink, which the system\n"
-            "     tints: the ring with its cut, and the roof."
+            "     tints: the ring with its cut, and the house with its window."
         )
-        + vector(ring(' android:strokeColor="#FF000000"/>') + "\n" + roof(' android:fillColor="#FF000000"/>'), aapt=False),
+        + vector(ring(solids, ' android:strokeColor="#FF000000"/>') + "\n" + emblem(solids, panes, ' android:fillColor="#FF000000"/>'), aapt=False),
         encoding="utf-8",
         newline="\n",
     )
     STAT.parent.mkdir(parents=True, exist_ok=True)
-    STAT.write_text(status_bar(), encoding="utf-8", newline="\n")
+    STAT.write_text(status_bar(solids, panes), encoding="utf-8", newline="\n")
     print("wrote", RES / "ic_launcher_foreground.xml", "and", RES / "ic_launcher_monochrome.xml", f"(reach {reach:.2f})")
     print("wrote", STAT)
 
