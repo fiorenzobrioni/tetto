@@ -1,9 +1,11 @@
 package com.callbackdev.tetto.feature.settings
 
+import android.app.Activity
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.callbackdev.tetto.core.data.caps.CapsRepository
+import com.callbackdev.tetto.core.data.lock.AppLock
 import com.callbackdev.tetto.core.data.settings.SettingsRepository
 import com.callbackdev.tetto.core.data.time.TodaySource
 import com.callbackdev.tetto.core.data.widget.HomeCard
@@ -63,6 +65,7 @@ constructor(
     private val clock: TodaySource,
     private val reminder: EveningReminder,
     private val cards: HomeScreenCards,
+    private val lock: AppLock,
 ) : ViewModel() {
     private val canPin: Boolean = cards.canPin()
 
@@ -98,6 +101,23 @@ constructor(
     fun setReminder(on: Boolean) = launch { repository.setReminder(on) }
 
     fun setReminderTime(time: LocalTime) = launch { repository.setReminderTime(time) }
+
+    /** Whether the phone has a screen lock for Tetto's lock to ask for (read again on each return). */
+    fun lockAvailable(): Boolean = lock.available()
+
+    /**
+     * The lock on or off (owner, 6 Nov 2026). On, at once: the reader is here, and chose it. Off,
+     * only once the phone's own lock says yes over [activity] (with [title]): a borrowed phone does
+     * not turn it off; on a phone that no longer has a screen lock, there is nothing to ask.
+     */
+    suspend fun setAppLock(on: Boolean, activity: Activity?, title: String) {
+        if (on) {
+            lock.markUnlocked()
+            repository.setAppLock(true)
+        } else if (!lock.available() || (activity != null && lock.ask(activity, title))) {
+            repository.setAppLock(false)
+        }
+    }
 
     /** Asks the launcher to place [card] (PLANNING.md §8): it shows its own dialog, and the reader decides there. */
     fun pinCard(card: HomeCard) {

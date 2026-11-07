@@ -49,16 +49,29 @@ object CapChanges {
      *   the old open period's, rounded down; it closes as any period does ([Rollover]), the reserve
      *   held to [newAmount]. What was added from [start] on moves into the new period. So a spend
      *   of Monday never makes Thursday's day look over, and the CSV keeps the week it was added in.
+     *
+     * A one-off cap (owner, 6 Nov 2026) takes the same rules, to it, from it and between two of its
+     * dates; it keeps no reserve, so [reserveLimit] is then nothing. Its new dates can start after
+     * today: the days kept are only those already past, until [keptUntil], and what was added
+     * from today on goes with the new dates.
      */
-    fun replace(cap: Cap, oldRule: PeriodRule, start: LocalDate, newAmount: Money, spentBefore: Money): Replacement {
-        if (start <= cap.openStart) return Replacement(start, minOf(cap.reserve, newAmount), null)
-        val open = PeriodCalendar.openPeriod(cap.openStart, oldRule)
-        val days = ChronoUnit.DAYS.between(cap.openStart, start).coerceAtMost(open.length.toLong())
+    fun replace(
+        cap: Cap,
+        oldRule: PeriodRule,
+        start: LocalDate,
+        newAmount: Money,
+        spentBefore: Money,
+        keptUntil: LocalDate = start,
+        reserveLimit: Money = newAmount,
+    ): Replacement {
+        if (keptUntil <= cap.openStart) return Replacement(start, minOf(cap.reserve, reserveLimit), null)
+        val open = PeriodCalendar.openPeriod(cap, oldRule)
+        val days = ChronoUnit.DAYS.between(cap.openStart, keptUntil).coerceAtMost(open.length.toLong())
         val share = Money(Math.multiplyExact(cap.amount.minor, days) / open.length)
-        val outcome = Rollover.close(share, cap.reserve, spentBefore, limit = newAmount)
+        val outcome = Rollover.close(share, cap.reserve, spentBefore, limit = reserveLimit)
         val kept = ClosedPeriod(
             capId = cap.id,
-            range = DateRange(cap.openStart, start),
+            range = DateRange(cap.openStart, keptUntil),
             cap = share,
             spent = spentBefore,
             reserveBefore = cap.reserve,
@@ -74,4 +87,16 @@ object CapChanges {
      * the limit the next close would hold it to (owner, 6 Nov 2026). A cap raised keeps it all.
      */
     fun heldReserve(reserve: Money, newAmount: Money): Money = minOf(reserve, newAmount)
+
+    /**
+     * The dates a one-off cap runs on, from the [chosen] ones (owner, 6 Nov 2026): never before
+     * [lastClosedEnd], since a closed period is never changed (its earlier dates, a cap it was
+     * before), and never ending before [today], since an end already past would close at once.
+     * The reader's choice where neither applies.
+     */
+    fun oneOffDates(chosen: DateRange, today: LocalDate, lastClosedEnd: LocalDate?): DateRange {
+        val end = maxOf(chosen.endExclusive, today.plusDays(1))
+        val start = maxOf(chosen.start, lastClosedEnd ?: chosen.start)
+        return DateRange(minOf(start, end.minusDays(1)), end)
+    }
 }

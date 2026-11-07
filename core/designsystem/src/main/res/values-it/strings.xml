@@ -20,6 +20,7 @@
     <string name="period_week">Settimana</string>
     <string name="period_month">Mese</string>
     <string name="period_year">Anno</string>
+    <string name="period_once">Una tantum</string>
 
     <!-- Le icone della tavolozza dei tetti, per ciò che rappresentano. -->
     <string name="cap_icon_groceries">Spesa</string>

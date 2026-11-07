@@ -95,6 +95,50 @@ class WidgetGalleryTest {
         board.draw().saveTo(out, "widget-words-states")
     }
 
+    /** The amounts hidden (owner, 6 Nov 2026): every form of both cards, at ease, ahead and over. */
+    @Test
+    fun `with the amounts hidden`() {
+        val board = HomeBoard(context, widthDp = 380)
+        sizes.forEach { size ->
+            board.row(
+                size to renderCard(context, size) { GlanceCardContent(sample(look = WidgetLook(hideAmounts = true))) },
+            )
+        }
+        listOf(1L, 2L, 5L).forEach { cap ->
+            val look = WidgetLook(wordsCap = cap, hideAmounts = true)
+            board.row(
+                Grants.OneByOne to renderCard(context, Grants.OneByOne) { WordsCardContent(sample(look = look)) },
+                Grants.TwoByOne to renderCard(context, Grants.TwoByOne) { WordsCardContent(sample(look = look)) },
+            )
+            board.row(
+                Grants.FourByOne to renderCard(context, Grants.FourByOne) { WordsCardContent(sample(look = look)) },
+            )
+            board.row(
+                Grants.TwoByTwo to renderCard(context, Grants.TwoByTwo) { WordsCardContent(sample(look = look)) },
+                Grants.TwoByTwo to renderCard(context, Grants.TwoByTwo) { WordsCardContent(sample()) },
+            )
+        }
+        board.draw().saveTo(out, "widget-hidden-amounts")
+    }
+
+    /** A one-off chosen for «In words» (owner, 6 Nov 2026): running, and the day after it ended. */
+    @Test
+    fun `in words, a one-off running and ended`() {
+        val board = HomeBoard(context, widthDp = 380)
+        val running = sample().copy(caps = listOf(WidgetSamplesForTests.lisbon(running = true)))
+        val ended = sample(
+            look = WidgetLook(wordsCap = 9L),
+        ).copy(caps = listOf(WidgetSamplesForTests.lisbon(running = false)))
+        listOf(running, ended).forEach { model ->
+            board.row(Grants.FourByOne to renderCard(context, Grants.FourByOne) { WordsCardContent(model) })
+            board.row(
+                Grants.TwoByTwo to renderCard(context, Grants.TwoByTwo) { WordsCardContent(model) },
+                Grants.OneByOne to renderCard(context, Grants.OneByOne) { WordsCardContent(model) },
+            )
+        }
+        board.draw().saveTo(out, "widget-words-one-off")
+    }
+
     @Test
     fun `the grounds and the colours`() {
         val looks = listOf(

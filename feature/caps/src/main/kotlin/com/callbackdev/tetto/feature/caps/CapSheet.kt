@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -97,6 +98,7 @@ class CapSheetActions(
     val onEdit: () -> Unit,
     val onDeleteCap: () -> Unit,
     val onRefund: () -> Unit = {},
+    val onAgain: () -> Unit = onEdit,
 )
 
 @Composable
@@ -108,6 +110,10 @@ internal fun CapSheetContent(
     actions: CapSheetActions,
     modifier: Modifier = Modifier,
 ) {
+    if (state.ended) {
+        EndedSheetContent(state, data, format, today, actions, modifier)
+        return
+    }
     Column(
         modifier
             .fillMaxWidth()
@@ -217,6 +223,139 @@ internal fun CapSheetContent(
             TextButton(onClick = actions.onDeleteCap, modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(R.string.sheet_delete), color = MaterialTheme.colorScheme.error)
             }
+        }
+    }
+}
+
+/**
+ * An ended one-off's sheet (owner, 6 Nov 2026): its dates, what they spent of the cap as a receipt,
+ * with what was left to spare or how far over (forgiven), and its two actions: «Again, with new
+ * dates», which opens the editor with its name, icon and amount kept, and «Delete». No spend can be
+ * added, corrected or given back: its dates are over.
+ */
+@Composable
+private fun EndedSheetContent(
+    state: CapState,
+    data: CapSheetData,
+    format: MoneyFormat,
+    today: LocalDate,
+    actions: CapSheetActions,
+    modifier: Modifier,
+) {
+    Column(
+        modifier
+            .fillMaxWidth()
+            .testTag(CapsTags.SHEET)
+            .verticalScroll(rememberScrollState())
+            .padding(bottom = 24.dp),
+    ) {
+        Row(Modifier.padding(horizontal = ScreenMargin), verticalAlignment = Alignment.CenterVertically) {
+            CapBadge(state.cap.icon.symbol)
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    state.cap.name,
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.semantics { heading() },
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    rangeWords(state.period, today),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        Spacer(Modifier.height(16.dp))
+        CapBar(
+            bar = state.bar,
+            mark = null,
+            over = state.over,
+            ahead = false,
+            muted = true,
+            modifier = Modifier.padding(horizontal = ScreenMargin),
+        )
+        val unit = format.currency.unit.minor
+        val cents = listOf(state.cap.amount, state.spent).any { it.minor % unit != 0L }
+        val figure: (Money) -> String = if (cents) format::full else format::short
+        Spacer(Modifier.height(16.dp))
+        EndedReceipt(state, figure)
+        Text(
+            stringResource(R.string.sheet_ended_note),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = ScreenMargin).padding(top = 16.dp),
+        )
+        if (data.lines.size > 1) {
+            GroupHeader(stringResource(R.string.sheet_last_periods))
+            data.lines.drop(1).forEach { line ->
+                Text(
+                    lineWords(line, state.cap.kind, format, today),
+                    style = MaterialTheme.typography.bodyMedium.tabular(),
+                    modifier = Modifier.padding(horizontal = ScreenMargin, vertical = 6.dp),
+                )
+            }
+        }
+        Spacer(Modifier.height(24.dp))
+        Column(Modifier.padding(horizontal = ScreenMargin), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(
+                onClick = actions.onAgain,
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag(CapsTags.AGAIN),
+            ) {
+                Icon(TettoIcons.Renew, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.sheet_again))
+            }
+            TextButton(onClick = actions.onDeleteCap, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.sheet_delete), color = MaterialTheme.colorScheme.error)
+            }
+        }
+    }
+}
+
+/**
+ * How an ended one-off's dates went, as a receipt: the cap, less what was spent, and under a rule
+ * what was left to spare, or how far over, forgiven. One sentence for TalkBack.
+ */
+@Composable
+private fun EndedReceipt(state: CapState, figure: (Money) -> String) {
+    val result = if (state.over) {
+        stringResource(R.string.sheet_receipt_ended_over, figure(state.overBy))
+    } else {
+        stringResource(R.string.sheet_receipt_ended_spare, figure(state.left))
+    }
+    val parts = listOf(
+        stringResource(R.string.sheet_receipt_cap, figure(state.cap.amount)),
+        stringResource(R.string.sheet_receipt_spent, figure(state.spent)),
+    )
+    val sentence = stringResource(R.string.sheet_receipt_sentence, parts.joinToString(", "), result)
+    Column(
+        Modifier
+            .padding(horizontal = ScreenMargin)
+            .fillMaxWidth()
+            .clip(GroupShape)
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .testTag(CapsTags.RECEIPT)
+            .clearAndSetSemantics { contentDescription = sentence },
+    ) {
+        ReceiptLine(null, stringResource(R.string.sheet_cap), figure(state.cap.amount))
+        ReceiptLine(MINUS, stringResource(R.string.sheet_spent), figure(state.spent))
+        HorizontalDivider(Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant)
+        val ink = if (state.over) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                stringResource(if (state.over) R.string.sheet_ended_forgiven else R.string.sheet_ended_spare),
+                style = MaterialTheme.typography.titleMedium,
+                color = ink,
+                modifier = Modifier.weight(1f).padding(start = SIGN_WIDTH),
+            )
+            Text(
+                figure(if (state.over) state.overBy else state.left),
+                style = TettoTheme.type.readingValue,
+                color = ink,
+            )
         }
     }
 }

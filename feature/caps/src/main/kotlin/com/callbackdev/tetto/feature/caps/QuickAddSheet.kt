@@ -111,7 +111,17 @@ internal fun QuickAddContent(
     val format = rememberMoneyFormat(state.currency)
     val reduced = reducedMotion()
     if (cap == null) {
-        Gone(onOpenApp)
+        Gone(stringResource(R.string.quick_gone_title), stringResource(R.string.quick_gone_body), onOpenApp)
+        return
+    }
+    // An ended one-off takes no spend (owner, 6 Nov 2026): a shortcut or a card made before it
+    // ended says so, and opens the app, where its sheet runs it again.
+    if (cap.ended && phase !is QuickAddPhase.Added) {
+        Gone(
+            stringResource(R.string.quick_ended_title, cap.cap.name),
+            stringResource(R.string.quick_ended_body),
+            onOpenApp,
+        )
         return
     }
     AnimatedContent(
@@ -193,15 +203,20 @@ private fun AddedLine(
 
 /** "€7 left until Sunday"; over, "€3 over · starts again on Monday". */
 @Composable
-private fun afterWords(cap: CapState, format: MoneyFormat, state: QuickAddUiState): String = if (cap.over) {
+private fun afterWords(cap: CapState, format: MoneyFormat, state: QuickAddUiState): String = if (cap.over &&
+    cap.renews
+) {
     stringResource(R.string.quick_after_over, leftWords(cap, format), againWords(cap.startsAgain, state.today))
 } else {
     stringResource(R.string.quick_after, leftWords(cap, format), untilWords(cap.lastDay, state.today))
 }
 
-/** The cap the door named is no longer there: deleted in the app since the card was drawn. */
+/**
+ * The cap the door named takes no spend: deleted in the app since the card was drawn, or a one-off
+ * that has ended. [title] and [body] say which.
+ */
 @Composable
-private fun Gone(onOpenApp: () -> Unit) {
+private fun Gone(title: String, body: String, onOpenApp: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -209,10 +224,10 @@ private fun Gone(onOpenApp: () -> Unit) {
             .padding(bottom = 24.dp)
             .testTag(CapsTags.QUICK_GONE),
     ) {
-        Text(stringResource(R.string.quick_gone_title), style = MaterialTheme.typography.titleMedium)
+        Text(title, style = MaterialTheme.typography.titleMedium)
         Spacer(Modifier.padding(top = 4.dp))
         Text(
-            stringResource(R.string.quick_gone_body),
+            body,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

@@ -8,6 +8,7 @@ import com.callbackdev.tetto.core.data.time.DayTicks
 import com.callbackdev.tetto.core.data.time.TodaySource
 import com.callbackdev.tetto.core.domain.cap.CapsSentence
 import com.callbackdev.tetto.core.model.CapIcon
+import com.callbackdev.tetto.core.model.DateRange
 import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.PeriodKind
 import com.callbackdev.tetto.core.model.Spend
@@ -175,14 +176,20 @@ constructor(
     /** The caps in the order of [capIds]. */
     fun reorder(capIds: List<Long>) = launch { caps.reorder(capIds) }
 
-    /** A new cap, or the cap [capId] changed (§4.5); the id it has. */
-    suspend fun saveCap(capId: Long?, name: String, icon: CapIcon, amount: Money, kind: PeriodKind): Long =
-        if (capId == null) {
-            caps.addCap(name, icon, amount, kind)
-        } else {
-            caps.changeCap(capId, name, icon, amount, kind)
-            capId
-        }
+    /** A new cap, or the cap [capId] changed (§4.5), a one-off with its [dates]; the id it has. */
+    suspend fun saveCap(
+        capId: Long?,
+        name: String,
+        icon: CapIcon,
+        amount: Money,
+        kind: PeriodKind,
+        dates: DateRange? = null,
+    ): Long = if (capId == null) {
+        caps.addCap(name, icon, amount, kind, dates)
+    } else {
+        caps.changeCap(capId, name, icon, amount, kind, dates)
+        capId
+    }
 
     private fun nameOf(capId: Long): String = state.value?.cap(capId)?.cap?.name.orEmpty()
 

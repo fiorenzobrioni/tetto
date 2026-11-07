@@ -56,7 +56,8 @@ constructor(
     fun start() {
         scope.launch {
             combine(caps.states, settings.settings) { states, s ->
-                states.map { ShortcutCap(it.cap.id, it.cap.name, it.cap.icon) } to s.palette
+                // An ended one-off takes no spend: never a shortcut (owner, 6 Nov 2026).
+                states.filterNot { it.ended }.map { ShortcutCap(it.cap.id, it.cap.name, it.cap.icon) } to s.palette
             }
                 .distinctUntilChanged()
                 .collect { (list, palette) ->

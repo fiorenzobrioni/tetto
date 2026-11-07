@@ -105,13 +105,18 @@ fun CapsRoute(
                 },
                 onDeleteCap = { confirmingDelete = sheetCap.cap.id },
                 onRefund = { viewModel.openRefund(sheetCap.cap.id) },
+                // The editor knows an ended one-off: it opens on new dates (owner, 6 Nov 2026).
+                onAgain = {
+                    viewModel.closeSheet()
+                    onEditCap(sheetCap.cap.id)
+                },
             ),
             onDismiss = viewModel::closeSheet,
         )
     }
 
     val target = numpad
-    val numpadCap = target?.capId?.let(current::cap)
+    val numpadCap = target?.capId?.let(current::cap)?.takeUnless { it.ended }
     if (target != null && numpadCap != null) {
         NumpadSheet(
             state = numpadCap,

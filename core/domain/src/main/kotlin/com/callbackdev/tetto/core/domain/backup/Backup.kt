@@ -40,7 +40,10 @@ data class Backup(
     val spendCount: Int get() = caps.sumOf { it.spends.size }
 }
 
-/** A cap as a backup carries it: its four fields, its reserve and open period, and its history. */
+/**
+ * A cap as a backup carries it: its four fields, its reserve and open period, and its history; a
+ * one-off cap's end too, the day after its last (owner, 6 Nov 2026), null for any other kind.
+ */
 data class BackupCap(
     val name: String,
     val icon: CapIcon,
@@ -51,6 +54,7 @@ data class BackupCap(
     val createdAt: Instant,
     val spends: List<BackupSpend>,
     val closed: List<BackupClosed>,
+    val endExclusive: LocalDate? = null,
 )
 
 /** A spend: its amount, when it was added, and the start of the period it counts in (§4.3). */

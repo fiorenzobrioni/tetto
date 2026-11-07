@@ -85,11 +85,15 @@ class SettingsScreenTest {
         canPinCards: Boolean = false,
     ) = SettingsUiState(settings, euro, DayOfWeek.MONDAY, LocalDate.of(2026, 11, 5), capCount, "0.1.0", canPinCards)
 
+    private val locks = mutableListOf<Boolean>()
+    private var security = 0
+
     private fun draw(
         state: SettingsUiState?,
         dark: Boolean = false,
         reach: ReminderReach = ReminderReach.Clear,
         data: DataUiState = DataUiState(DataContents(caps = 4, spends = 37)),
+        lockAvailable: Boolean = true,
     ) {
         compose.setContent {
             TettoTheme(darkTheme = dark) {
@@ -98,6 +102,7 @@ class SettingsScreenTest {
                     onBack = {},
                     reach = reach,
                     data = data,
+                    lockAvailable = lockAvailable,
                     dataActions = DataActions(
                         confirmRestore = { restored = true },
                         cancelRestore = { restoreCancelled = true },
@@ -119,10 +124,38 @@ class SettingsScreenTest {
                         fixNotifications = { fixed = true },
                         pinCard = { pinned = it },
                         openGuide = { guide++ },
+                        setAppLock = { locks += it },
+                        openSecurity = { security++ },
                     ),
                 )
             }
         }
+    }
+
+    @Test
+    fun `the lock is a switch under privacy, the phone's own lock`() {
+        draw(state())
+        compose.onNodeWithTag(SettingsTags.LIST).performScrollToNode(hasTestTag(SettingsTags.LOCK))
+        compose.onNodeWithText("Privacy").assertExists()
+        compose.onNodeWithText("when Tetto opens and after a minute away", substring = true).assertExists()
+        compose.onNodeWithTag(SettingsTags.LOCK).performClick()
+        assertThat(locks).containsExactly(true)
+        compose.onNodeWithTag(SettingsTags.LOCK_SET).assertDoesNotExist()
+        compose.assertAccessible()
+        compose.writeScreenshot("settings-lock")
+    }
+
+    @Test
+    fun `on a phone with no screen lock, the switch says why and leads to where one is set`() {
+        draw(state(), lockAvailable = false)
+        compose.onNodeWithTag(SettingsTags.LIST).performScrollToNode(hasTestTag(SettingsTags.LOCK_SET))
+        compose.onNodeWithText("This phone has no screen lock", substring = true).assertExists()
+        compose.onNodeWithTag(SettingsTags.LOCK).performClick()
+        assertThat(locks).isEmpty()
+        compose.onNodeWithTag(SettingsTags.LOCK_SET).performClick()
+        assertThat(security).isEqualTo(1)
+        compose.assertAccessible()
+        compose.writeScreenshot("settings-lock-none")
     }
 
     @Test

@@ -173,7 +173,7 @@ private class WordsParts(
     val state: CapState,
     val palette: WidgetPalette,
 ) {
-    val words = CardWords(context, model.currency, model.today)
+    val words = CardWords(context, model.currency, model.today, hidden = model.look.hideAmounts)
     val scale = fontScale(context)
     val density = context.resources.displayMetrics.density
     val figure = words.figure(state)
@@ -181,8 +181,11 @@ private class WordsParts(
     val paceForms = words.paceForms(state)
     val noteForms = words.noteForms(state)
 
-    /** Under a one-cell ring: the amount alone, which reads as what is left; over, the words. */
-    val cellForms: List<String> = if (state.over) listOf(figure) else listOf(words.amount(state))
+    /**
+     * Under a one-cell ring: the amount alone, which reads as what is left; over, the words; hidden,
+     * the short word for where the cap is.
+     */
+    val cellForms: List<String> = if (state.over && !words.hidden) listOf(figure) else listOf(words.amount(state))
 
     val figureInk get() = if (state.over) palette.overInk else palette.primaryInk
 

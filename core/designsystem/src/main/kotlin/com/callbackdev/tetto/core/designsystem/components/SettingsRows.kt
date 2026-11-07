@@ -131,7 +131,10 @@ fun InfoRow(label: String, value: String, modifier: Modifier = Modifier) {
     }
 }
 
-/** A switch: the row is the touch target, the switch only shows the state. */
+/**
+ * A switch: the row is the touch target, the switch only shows the state. Not [enabled], the row
+ * still reads its label and its note (which says why), and nothing changes on a touch.
+ */
 @Composable
 fun SwitchRow(
     label: String,
@@ -140,18 +143,27 @@ fun SwitchRow(
     modifier: Modifier = Modifier,
     note: String? = null,
     icon: ImageVector? = null,
+    enabled: Boolean = true,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = { onChange(!checked) }, role = Role.Switch)
+            .clickable(enabled = enabled, onClick = { onChange(!checked) }, role = Role.Switch)
             .padding(horizontal = ScreenMargin, vertical = 14.dp),
     ) {
         if (icon != null) RowIcon(icon)
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(label, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                label,
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (enabled) {
+                    MaterialTheme.colorScheme.onSurface
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+            )
             if (note != null) {
                 Text(
                     note,
@@ -160,7 +172,7 @@ fun SwitchRow(
                 )
             }
         }
-        Switch(checked = checked, onCheckedChange = null)
+        Switch(checked = checked, onCheckedChange = null, enabled = enabled)
     }
 }
 

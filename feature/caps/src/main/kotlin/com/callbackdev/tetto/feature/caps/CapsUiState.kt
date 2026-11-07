@@ -28,6 +28,12 @@ data class CapsUiState(
     fun cap(id: Long): CapState? = caps.firstOrNull { it.cap.id == id }
 
     /**
+     * The caps as the page lays them out: those that run, in the reader's order, then the one-offs
+     * that have ended, last and muted (owner, 6 Nov 2026).
+     */
+    val shown: List<CapState> get() = caps.filterNot { it.ended } + caps.filter { it.ended }
+
+    /**
      * The first-day tip ("How to read a cap"), over the tiles until it is dismissed or followed to
      * the guide; never on an empty page, which has no tile to read and its own words.
      */

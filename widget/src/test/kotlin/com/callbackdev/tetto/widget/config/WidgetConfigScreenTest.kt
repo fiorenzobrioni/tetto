@@ -129,6 +129,17 @@ class WidgetConfigScreenTest {
     }
 
     @Test
+    fun `either card can hide its amounts, the real card above showing what stays`() {
+        show(WidgetKind.GLANCE)
+        scrollTo(WidgetConfigTags.HIDE_AMOUNTS)
+        compose.onNodeWithText("Hide the amounts").assertExists()
+        compose.onNodeWithTag(WidgetConfigTags.HIDE_AMOUNTS).performClick()
+        assertThat(look.hideAmounts).isTrue()
+        compose.assertAccessible()
+        compose.writeScreenshot("widget-config-hidden")
+    }
+
+    @Test
     fun `with no caps yet, it says the card will show them`() {
         show(WidgetKind.WORDS, WidgetSamples.model(context).copy(caps = emptyList()))
         scrollTo(WidgetConfigTags.CLOSEST)

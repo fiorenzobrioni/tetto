@@ -43,8 +43,9 @@ interface CapsDao {
     @Query("UPDATE caps SET name = :name, icon = :icon, amount = :amount WHERE id = :id")
     suspend fun setCapLooks(id: Long, name: String, icon: String, amount: Long): Int
 
-    @Query("UPDATE caps SET kind = :kind, open_start = :openStart WHERE id = :id")
-    suspend fun setCapPeriod(id: Long, kind: String, openStart: Long): Int
+    /** The cap's kind and open start, and a one-off's end (null for any other kind). */
+    @Query("UPDATE caps SET kind = :kind, open_start = :openStart, end_exclusive = :endExclusive WHERE id = :id")
+    suspend fun setCapPeriod(id: Long, kind: String, openStart: Long, endExclusive: Long?): Int
 
     @Query("UPDATE caps SET open_start = :openStart, reserve = :reserve WHERE id = :id")
     suspend fun setOpenPeriod(id: Long, openStart: Long, reserve: Long): Int

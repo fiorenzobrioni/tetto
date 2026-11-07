@@ -33,6 +33,10 @@ import java.time.LocalTime
  *   phone's week can change under the caps (another language, a backup restored on a phone of
  *   another region), and the open periods are then moved to it as a change in Settings would move
  *   them, rather than judged by a week they were not made for. Null until the caps are first read.
+ * @property appLock the lock (owner, 6 Nov 2026): the phone's own fingerprint, face or screen lock
+ *   asked at start and after a minute away. A choice about this phone, guarded by this phone's
+ *   lock: a backup file does not carry it, a restore and erasing everything keep it, and a phone
+ *   with no screen lock never asks (Settings says why).
  */
 data class UserSettings(
     val currency: String? = null,
@@ -49,6 +53,7 @@ data class UserSettings(
     val askedNotifications: Boolean = false,
     val capsTipSeen: Boolean = false,
     val weekInForce: DayOfWeek? = null,
+    val appLock: Boolean = false,
 ) {
     companion object {
         /** Half past eight in the evening: after most days' spending, before most days end. */

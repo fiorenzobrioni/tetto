@@ -16,21 +16,51 @@ import java.time.format.DateTimeFormatter
  * "€12 left", "of €20 · until Sunday", "Coffee · until Sunday", "about €4 a day". The engine never
  * writes a word; the dates are written with the locale's own patterns, the amounts by
  * [MoneyFormat], from the language the card is drawn in.
+ *
+ * With the amounts [hidden] (owner, 6 Nov 2026), no figure is written anywhere, TalkBack's
+ * description included: where a figure stood, the word for where the cap is ("Under its cap",
+ * "Ahead of the days", "Over its cap"); the names, the dates and the words stay, so the forms are
+ * measured from what is really drawn and nothing is blurred.
+ *
+ * A one-off cap (owner, 6 Nov 2026) never starts again: over, it says until when it runs; ended,
+ * the card says so, and what its dates spent.
  */
-internal class CardWords(private val context: Context, currency: AppCurrency, private val today: LocalDate) {
+internal class CardWords(
+    private val context: Context,
+    currency: AppCurrency,
+    private val today: LocalDate,
+    val hidden: Boolean = false,
+) {
     private val res = context.resources
     private val locale = context.widgetLocale()
     val format = MoneyFormat(currency, locale)
 
-    /** "€12 left", "€30 over": what is left, in words. */
-    fun figure(state: CapState): String = if (state.over) {
-        res.getString(R.string.widget_over, format.short(state.overBy))
-    } else {
-        res.getString(R.string.widget_left, format.short(state.left))
+    /** "€12 left", "€30 over": what is left, in words; hidden, where the cap is ([status]). */
+    fun figure(state: CapState): String = when {
+        state.ended -> res.getString(R.string.widget_ended)
+        hidden -> status(state)
+        state.over -> res.getString(R.string.widget_over, format.short(state.overBy))
+        else -> res.getString(R.string.widget_left, format.short(state.left))
     }
 
     /** "€12", "€30": the figure alone, where the word stands on a line of its own ([word]). */
-    fun amount(state: CapState): String = format.short(if (state.over) state.overBy else state.left)
+    fun amount(state: CapState): String = when {
+        state.ended -> res.getString(R.string.widget_ended)
+        hidden -> status(state, short = true)
+        else -> format.short(if (state.over) state.overBy else state.left)
+    }
+
+    /**
+     * Where a cap is, in the words a hidden card says instead of its figure: under its cap, ahead
+     * of the days, over its cap; [short] for a cell's or a slot's narrow room.
+     */
+    fun status(state: CapState, short: Boolean = false): String = res.getString(
+        when {
+            state.over -> if (short) R.string.widget_hidden_over_short else R.string.widget_hidden_over
+            state.aheadOfDays -> if (short) R.string.widget_hidden_ahead_short else R.string.widget_hidden_ahead
+            else -> if (short) R.string.widget_hidden_under_short else R.string.widget_hidden_under
+        },
+    )
 
     /** "left", "over". */
     fun word(state: CapState): String =
@@ -39,19 +69,38 @@ internal class CardWords(private val context: Context, currency: AppCurrency, pr
     /** Whether the language puts the word over the figure ("ancora / 12 €") or under it ("€12 / left"). */
     val wordAbove: Boolean get() = res.getBoolean(R.bool.widget_word_above)
 
-    /** "of €20 · until Sunday"; over, "of €100 · starts again on Monday". */
-    fun detail(state: CapState): String = if (state.over) {
-        res.getString(R.string.widget_detail_over, format.short(state.cap.amount), again(state.startsAgain))
-    } else {
-        res.getString(R.string.widget_detail, format.short(state.cap.amount), until(state.lastDay))
+    /**
+     * "of €20 · until Sunday"; over, "of €100 · starts again on Monday"; ended, "€720 of €800 · on
+     * 20 Nov". Hidden, the day alone.
+     */
+    fun detail(state: CapState): String = when {
+        hidden -> day(state)
+
+        state.ended -> res.getString(
+            R.string.widget_ended_detail,
+            format.short(state.spent),
+            format.short(state.cap.amount),
+            day(state),
+        )
+
+        startsAgain(state) -> res.getString(
+            R.string.widget_detail_over,
+            format.short(state.cap.amount),
+            again(state.startsAgain),
+        )
+
+        else -> res.getString(R.string.widget_detail, format.short(state.cap.amount), until(state.lastDay))
     }
 
     /** "Coffee · until Sunday"; over, "Coffee · starts again on Monday". */
-    fun line(state: CapState): String = if (state.over) {
+    fun line(state: CapState): String = if (startsAgain(state)) {
         res.getString(R.string.widget_line_over, state.cap.name, again(state.startsAgain))
     } else {
-        res.getString(R.string.widget_line, state.cap.name, until(state.lastDay))
+        res.getString(R.string.widget_line, state.cap.name, day(state))
     }
+
+    /** Over a cap that renews: the day it starts again is what to say. A one-off says its last day. */
+    private fun startsAgain(state: CapState): Boolean = state.over && state.renews && !state.ended
 
     /**
      * A tall card's last words, fullest first: on one line, broken at the separator, the day alone
@@ -61,25 +110,38 @@ internal class CardWords(private val context: Context, currency: AppCurrency, pr
      */
     fun lastWords(state: CapState, withName: Boolean): List<String> {
         val day = day(state)
-        return if (withName) {
-            listOf(line(state), state.cap.name + "\n" + day, state.cap.name)
-        } else {
-            listOf(detail(state), res.getString(R.string.widget_of, format.short(state.cap.amount)) + "\n" + day, day)
+        return when {
+            withName -> listOf(line(state), state.cap.name + "\n" + day, state.cap.name)
+
+            // No cap's figure to break off: the day is all there is.
+            hidden -> listOf(day)
+
+            else -> listOf(detail(state), detailHead(state) + "\n" + day, day)
         }
+    }
+
+    /** The last words' first half, broken off the day: "of €20"; ended, "€720 of €800". */
+    private fun detailHead(state: CapState): String = if (state.ended) {
+        res.getString(R.string.widget_ended_of, format.short(state.spent), format.short(state.cap.amount))
+    } else {
+        res.getString(R.string.widget_of, format.short(state.cap.amount))
     }
 
     /** A row's second line, fullest first: "Coffee · until Sunday", "until Sunday", "Coffee". */
     fun rowLines(state: CapState): List<String> = listOf(line(state), day(state), state.cap.name)
 
-    /** The period's last day, or, over, when the cap starts again: "until Sunday", "starts again on Monday". */
-    fun day(state: CapState): String = if (state.over) {
-        res.getString(R.string.widget_starts_again, again(state.startsAgain))
-    } else {
-        until(state.lastDay)
+    /**
+     * The period's last day, or, over, when the cap starts again: "until Sunday", "starts again on
+     * Monday"; an ended one-off's last day, "ended on 20 Nov".
+     */
+    fun day(state: CapState): String = when {
+        state.ended -> res.getString(R.string.widget_ended_on, dateWords(state.lastDay))
+        startsAgain(state) -> res.getString(R.string.widget_starts_again, again(state.startsAgain))
+        else -> until(state.lastDay)
     }
 
-    /** The pace, fullest first ("about €4 a day", "€4 a day"); none where the cap has none. */
-    fun paceForms(state: CapState): List<String> = state.pace?.let {
+    /** The pace, fullest first ("about €4 a day", "€4 a day"); none where the cap has none, or hidden. */
+    fun paceForms(state: CapState): List<String> = state.pace?.takeUnless { hidden }?.let {
         listOf(
             res.getString(R.string.widget_pace, format.short(it)),
             res.getString(R.string.widget_pace_short, format.short(it)),
@@ -87,38 +149,88 @@ internal class CardWords(private val context: Context, currency: AppCurrency, pr
     }.orEmpty()
 
     /** The cap's sentence on a tall card, fullest first ([CapNote]); none where it has nothing to add. */
-    fun noteForms(state: CapState): List<String> = when (val note = CapNote.of(state)) {
-        null -> emptyList()
+    fun noteForms(state: CapState): List<String> = if (hidden) {
+        hiddenNotes(state)
+    } else {
+        when (val note = CapNote.of(state)) {
+            null -> emptyList()
 
-        // The day is the last words' ("until Sunday"): the sentence says how much a day, not until when.
-        is CapNote.Pace -> if (note.ahead) {
-            listOf(
-                res.getString(R.string.widget_note_ahead_pace, format.short(note.perDay)),
+            // The day is the last words' ("until Sunday"): the sentence says how much a day, not until when.
+            is CapNote.Pace -> if (note.ahead) {
+                listOf(
+                    res.getString(R.string.widget_note_ahead_pace, format.short(note.perDay)),
+                    res.getString(R.string.widget_note_ahead_short),
+                )
+            } else {
+                listOf(res.getString(R.string.widget_note_pace, format.short(note.perDay)))
+            }
+
+            CapNote.Ahead -> listOf(
+                res.getString(R.string.widget_note_ahead),
                 res.getString(R.string.widget_note_ahead_short),
             )
-        } else {
-            listOf(res.getString(R.string.widget_note_pace, format.short(note.perDay)))
-        }
 
-        CapNote.Ahead -> listOf(
-            res.getString(R.string.widget_note_ahead),
-            res.getString(R.string.widget_note_ahead_short),
+            is CapNote.Reserve -> listOf(res.getString(R.string.widget_note_reserve, format.short(note.reserve)))
+
+            is CapNote.Forgiven -> listOf(
+                res.getString(if (note.renews) R.string.widget_note_forgiven else R.string.widget_note_forgiven_end),
+            )
+
+            is CapNote.Ended -> if (note.spent > note.cap) {
+                listOf(res.getString(R.string.widget_note_ended_over, format.short(note.spent - note.cap)))
+            } else {
+                listOf(res.getString(R.string.widget_note_ended_under, format.short(note.cap - note.spent)))
+            }
+        }
+    }
+
+    /**
+     * A hidden card's sentence: what can be said without a figure. Over, that it is forgiven; ended,
+     * how it ended; under, nothing the hero has not said already.
+     */
+    private fun hiddenNotes(state: CapState): List<String> = when (val note = CapNote.of(state)) {
+        is CapNote.Forgiven -> listOf(
+            res.getString(if (note.renews) R.string.widget_note_forgiven else R.string.widget_note_forgiven_end),
         )
 
-        is CapNote.Reserve -> listOf(res.getString(R.string.widget_note_reserve, format.short(note.reserve)))
+        is CapNote.Ended -> listOf(statusWords(state))
 
-        is CapNote.Forgiven -> listOf(res.getString(R.string.widget_note_forgiven))
+        else -> emptyList()
     }
+
+    /** Where a cap is, as words inside a sentence: "under its cap", "ahead of the days", "over its cap". */
+    private fun statusWords(state: CapState): String = res.getString(
+        when {
+            state.over -> R.string.widget_note_hidden_over
+            state.aheadOfDays -> R.string.widget_note_ahead_short
+            else -> R.string.widget_note_hidden_under
+        },
+    )
 
     /** What TalkBack reads for a cap, one sentence: "Coffee, €12 left of €20, until Sunday, about €4 a day". */
     fun description(state: CapState): String {
-        val main = if (state.over) {
+        if (hidden) {
+            return if (state.ended) {
+                res.getString(R.string.widget_description_hidden_ended, state.cap.name, day(state), statusWords(state))
+            } else {
+                res.getString(R.string.widget_description_hidden, state.cap.name, statusWords(state), day(state))
+            }
+        }
+        val main = if (state.ended) {
+            res.getString(
+                R.string.widget_description_ended,
+                state.cap.name,
+                day(state),
+                format.short(state.spent),
+                format.short(state.cap.amount),
+            )
+        } else if (state.over) {
             res.getString(
                 R.string.widget_description_over,
                 state.cap.name,
                 format.short(state.overBy),
                 format.short(state.cap.amount),
-                again(state.startsAgain),
+                day(state),
             )
         } else {
             res.getString(

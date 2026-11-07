@@ -5,6 +5,7 @@ import com.callbackdev.tetto.core.model.Cap
 import com.callbackdev.tetto.core.model.ClosedPeriod
 import com.callbackdev.tetto.core.model.DateRange
 import com.callbackdev.tetto.core.model.Money
+import com.callbackdev.tetto.core.model.PeriodKind
 import com.callbackdev.tetto.core.model.PeriodRule
 import java.time.LocalDate
 
@@ -25,9 +26,13 @@ data class CatchUpPlan(val closed: List<ClosedPeriod>, val openStart: LocalDate,
  *   reserve computed period by period: a daily cap left for 400 days writes two lines, not 400.
  * - Today before the open period's start (a clock set back, a flight west) closes nothing: a
  *   period is never reopened, and a new spend counts in the open one.
+ * - A one-off cap (owner, 6 Nov 2026) closes once, the day after its last: one line, what was
+ *   spent and what was forgiven, no reserve; its open start moves to its end and the cap has
+ *   ended. Never a new period, so an absence past its end writes that one line all the same.
  */
 object CatchUp {
     fun plan(cap: Cap, spent: Money, rule: PeriodRule, today: LocalDate): CatchUpPlan? {
+        if (cap.kind == PeriodKind.ONE_OFF) return oneOff(cap, spent, today)
         var period = PeriodCalendar.openPeriod(cap.openStart, rule)
         if (period.endExclusive > today) return null
 
@@ -69,5 +74,23 @@ object CatchUp {
             )
         }
         return CatchUpPlan(closed, period.start, reserve)
+    }
+
+    private fun oneOff(cap: Cap, spent: Money, today: LocalDate): CatchUpPlan? {
+        val dates = cap.oneOffDates ?: return null
+        if (dates.endExclusive > today) return null
+        // Nothing carries: a reserve held to nothing, and what the cap could not cover forgiven.
+        val outcome = Rollover.close(cap.amount, cap.reserve, spent, limit = Money.ZERO)
+        val line = ClosedPeriod(
+            capId = cap.id,
+            range = dates,
+            cap = cap.amount,
+            spent = spent,
+            reserveBefore = cap.reserve,
+            reserveAfter = outcome.reserveAfter,
+            forgiven = outcome.forgiven,
+            periods = 1,
+        )
+        return CatchUpPlan(listOf(line), dates.endExclusive, Money.ZERO)
     }
 }

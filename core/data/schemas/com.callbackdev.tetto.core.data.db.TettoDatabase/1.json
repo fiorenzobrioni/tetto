@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "cf3fd70b937a82717b1398e4e0933ecc",
+    "identityHash": "37a59cb55856653bc7a14c3f98873584",
     "entities": [
       {
         "tableName": "caps",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `icon` TEXT NOT NULL, `amount` INTEGER NOT NULL, `kind` TEXT NOT NULL, `reserve` INTEGER NOT NULL, `open_start` INTEGER NOT NULL, `position` INTEGER NOT NULL, `created_at` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `icon` TEXT NOT NULL, `amount` INTEGER NOT NULL, `kind` TEXT NOT NULL, `reserve` INTEGER NOT NULL, `open_start` INTEGER NOT NULL, `position` INTEGER NOT NULL, `created_at` INTEGER NOT NULL, `end_exclusive` INTEGER)",
         "fields": [
           {
             "fieldPath": "id",
@@ -61,6 +61,11 @@
             "columnName": "created_at",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "endExclusive",
+            "columnName": "end_exclusive",
+            "affinity": "INTEGER"
           }
         ],
         "primaryKey": {
@@ -229,7 +234,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cf3fd70b937a82717b1398e4e0933ecc')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '37a59cb55856653bc7a14c3f98873584')"
     ]
   }
 }

@@ -4,12 +4,21 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
-/** A cap's cycle (PLANNING.md §4.2). */
+/**
+ * A cap's cycle (PLANNING.md §4.2). [ONE_OFF] is no cycle (owner, 6 Nov 2026): a cap of its own
+ * dates, a trip or a festival, which ends once and never renews; its dates are the cap's own
+ * ([Cap.endExclusive]), never a rule's.
+ */
 enum class PeriodKind {
     DAY,
     WEEK,
     MONTH,
     YEAR,
+    ONE_OFF,
+    ;
+
+    /** A period that renews: every kind but [ONE_OFF]. */
+    val renews: Boolean get() = this != ONE_OFF
 }
 
 /**

@@ -54,6 +54,11 @@ internal data class CapDto(
     val createdAtMillis: Long = 0,
     val spends: List<SpendDto> = emptyList(),
     val closed: List<ClosedDto> = emptyList(),
+    /**
+     * A one-off cap's end, the day after its last (owner, 6 Nov 2026); absent for every other
+     * kind, and in a file written before one-off caps were. An added field: `version` stays 1.
+     */
+    val endExclusive: String? = null,
 )
 
 @Serializable

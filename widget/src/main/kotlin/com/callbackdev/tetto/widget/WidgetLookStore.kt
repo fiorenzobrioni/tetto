@@ -47,6 +47,7 @@ class WidgetLookStore internal constructor(private val dataStore: DataStore<Pref
             glanceCaps = prefs[glanceCapsKey(appWidgetId)]?.let(::decodeIds),
             wordsCap = prefs[wordsCapKey(appWidgetId)],
             showSentence = prefs[sentenceKey(appWidgetId)] ?: default.showSentence,
+            hideAmounts = prefs[hiddenKey(appWidgetId)] ?: default.hideAmounts,
         )
     }
 
@@ -67,6 +68,7 @@ class WidgetLookStore internal constructor(private val dataStore: DataStore<Pref
             val cap = look.wordsCap
             if (cap == null) prefs.remove(wordsCapKey(appWidgetId)) else prefs[wordsCapKey(appWidgetId)] = cap
             prefs[sentenceKey(appWidgetId)] = look.showSentence
+            prefs[hiddenKey(appWidgetId)] = look.hideAmounts
         }
     }
 
@@ -74,8 +76,15 @@ class WidgetLookStore internal constructor(private val dataStore: DataStore<Pref
     suspend fun forget(appWidgetIds: IntArray) {
         dataStore.edit { prefs ->
             appWidgetIds.forEach { id ->
-                listOf(groundKey(id), opacityKey(id), colorKey(id), glanceCapsKey(id), wordsCapKey(id), sentenceKey(id))
-                    .forEach { prefs.remove(it) }
+                listOf(
+                    groundKey(id),
+                    opacityKey(id),
+                    colorKey(id),
+                    glanceCapsKey(id),
+                    wordsCapKey(id),
+                    sentenceKey(id),
+                    hiddenKey(id),
+                ).forEach { prefs.remove(it) }
             }
         }
     }
@@ -86,6 +95,7 @@ class WidgetLookStore internal constructor(private val dataStore: DataStore<Pref
     private fun glanceCapsKey(id: Int) = stringPreferencesKey("glance_caps_$id")
     private fun wordsCapKey(id: Int) = longPreferencesKey("words_cap_$id")
     private fun sentenceKey(id: Int) = booleanPreferencesKey("sentence_$id")
+    private fun hiddenKey(id: Int) = booleanPreferencesKey("hide_amounts_$id")
 
     companion object {
         const val FILE_NAME: String = "widgets"

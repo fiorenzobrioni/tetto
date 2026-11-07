@@ -7,6 +7,11 @@ import java.time.LocalDate
  * A cap (PLANNING.md §5): the most [name] may spend in one period of [kind], with the [reserve]
  * past periods left over. [openStart] is the first day of its open period; the period's end
  * follows from the rule in force, so a cap never stores a date that a setting could contradict.
+ *
+ * A one-off cap ([PeriodKind.ONE_OFF], owner, 6 Nov 2026) has its own dates instead, from
+ * [openStart] to [endExclusive], the day after its last; no reserve. Once the catch-up has closed
+ * them, its open start moves to that end and the cap has [ended]: it never opens a new period.
+ * [endExclusive] is null for every other kind.
  */
 data class Cap(
     val id: Long,
@@ -17,7 +22,18 @@ data class Cap(
     val reserve: Money,
     val openStart: LocalDate,
     val position: Int,
-)
+    val endExclusive: LocalDate? = null,
+) {
+    init {
+        require((kind == PeriodKind.ONE_OFF) == (endExclusive != null)) { "A one-off cap, and only one, has an end" }
+    }
+
+    /** A one-off cap whose dates are over and closed: shown last, muted, never added to. */
+    val ended: Boolean get() = endExclusive != null && openStart >= endExclusive
+
+    /** A one-off cap's open dates; null for a cap of another kind, or one that has [ended]. */
+    val oneOffDates: DateRange? get() = endExclusive?.takeIf { it > openStart }?.let { DateRange(openStart, it) }
+}
 
 /**
  * A spend (PLANNING.md §4.3): an amount added to a cap at [addedAt], counting in the period that

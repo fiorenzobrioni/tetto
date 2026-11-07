@@ -284,6 +284,35 @@ object TettoIcons {
         }
     }
 
+    /** A calendar page with two rings and a marked range of days: a one-off cap's dates. */
+    val Calendar: ImageVector by lazy {
+        icon("calendar") {
+            roundRect(4f, 5.5f, 20f, 20f, 2.5f)
+            moveTo(4f, 10f)
+            lineTo(20f, 10f)
+            moveTo(8.5f, 3.5f)
+            lineTo(8.5f, 7f)
+            moveTo(15.5f, 3.5f)
+            lineTo(15.5f, 7f)
+            moveTo(8f, 14.5f)
+            lineTo(16f, 14.5f)
+        }
+    }
+
+    /** A closed padlock: the lock in Settings, and the page that waits for it. */
+    val Lock: ImageVector by lazy {
+        icon("lock") {
+            roundRect(5f, 10.5f, 19f, 20.5f, 2.5f)
+            moveTo(8f, 10.5f)
+            lineTo(8f, 7.5f)
+            curveTo(8f, 5.3f, 9.8f, 3.5f, 12f, 3.5f)
+            curveTo(14.2f, 3.5f, 16f, 5.3f, 16f, 7.5f)
+            lineTo(16f, 10.5f)
+            moveTo(12f, 14.5f)
+            lineTo(12f, 16.5f)
+        }
+    }
+
     private fun PathBuilder.roundRect(left: Float, top: Float, right: Float, bottom: Float, r: Float) {
         moveTo(left + r, top)
         lineTo(right - r, top)

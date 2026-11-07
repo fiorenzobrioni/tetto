@@ -85,6 +85,11 @@ constructor(
         preferences.update { it.copy(askedNotifications = true) }
     }
 
+    /** The lock (owner, 6 Nov 2026): on or off, once the phone's own credential has said yes. */
+    suspend fun setAppLock(on: Boolean) {
+        preferences.update { it.copy(appLock = on) }
+    }
+
     /** The caps screen's first-day tip was dismissed, or followed to the guide: never shown again. */
     suspend fun noteCapsTipSeen() {
         preferences.update { it.copy(capsTipSeen = true) }

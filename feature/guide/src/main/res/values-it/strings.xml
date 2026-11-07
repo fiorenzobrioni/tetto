@@ -30,6 +30,8 @@
     <string name="guide_period_forgiven_body">Uno sforamento attinge prima alla riserva. Quello che la riserva non copre è condonato quando il periodo finisce: il periodo dopo riparte dal tetto intero, mai in debito. Una brutta settimana resta una brutta settimana, e basta. Il giorno in cui un periodo riparte, la frase in alto dice com’è finito il precedente: condonato, coperto dalla riserva, o quanto le ha lasciato.</string>
     <string name="guide_period_calendar_title">Le tue settimane e i tuoi mesi</string>
     <string name="guide_period_calendar_body">Una settimana comincia dal primo giorno della settimana del telefono, un mese dal giorno 1, un anno da quel giorno di gennaio. Tutti e due si cambiano nelle Impostazioni: un mese dal 27, per esempio, per uno stipendio che arriva il 27.</string>
+    <string name="guide_period_once_title">Un tetto per una volta</string>
+    <string name="guide_period_once_body">Un viaggio, un festival, un trasloco: un tetto può valere una volta sola, tra due date sue, invece che ogni giorno, settimana, mese o anno. Non tiene riserva e non riparte mai. Il segno di oggi, il ritmo e il margine sui giorni seguono la sua durata. Il giorno dopo l’ultimo, la frase in cima dice com’è andato; la sua scheda aspetta poi in fondo, più discreta, di ripartire con nuove date o di essere eliminata.</string>
     <string name="guide_period_change_title">Cambiare un tetto</string>
     <string name="guide_period_change_body">Un nuovo importo conta subito, nel periodo in corso, e una riserva più grande scende al nuovo importo: una riserva non supera mai il tetto di un periodo. Un nuovo periodo che contiene i giorni di questo ne prende le spese. Uno che comincia dopo, una settimana fatta diventare giorni di giovedì, chiude i giorni già passati sulla loro parte del tetto, e conta solo quello che spendi dal suo primo giorno.</string>
     <string name="guide_period_closing_title">Chiuso alla prossima occhiata</string>
@@ -58,6 +60,8 @@
     <string name="guide_home_add_body">Un tocco su un tetto in un widget apre il tastierino sopra la schermata Home: due tocchi e l’importo, e sei di nuovo dov’eri. Una pressione prolungata sull’icona di Tetto offre allo stesso modo i tuoi primi quattro tetti.</string>
     <string name="guide_home_dates_title">Giorni, non conti alla rovescia</string>
     <string name="guide_home_dates_body">Un widget dice «fino a domenica», mai quante ore mancano: si ridisegna dopo ogni spesa e a mezzanotte, non a ogni minuto, e un conto alla rovescia sarebbe presto sbagliato.</string>
+    <string name="guide_home_hidden_title">Senza cifre, se preferisci</string>
+    <string name="guide_home_hidden_body">Un widget può non mostrare nessun importo, per una schermata Home che vedono anche altri. Restano le barre, l’anello, i nomi e i giorni, e un tetto superato lo dice ancora a parole.</string>
     <string name="guide_home_reminder_title">Il promemoria serale</string>
     <string name="guide_home_reminder_body">Se lo attivi nelle Impostazioni, una notifica alla sera chiede se c’è qualcosa da aggiungere, e solo in un giorno senza spese aggiunte. Arriva verso l’ora che hai scelto, non al minuto: Tetto non chiede ad Android una sveglia esatta, così il telefono può risparmiare batteria, e alcuni telefoni la trattengono ancora un po’.</string>
 
@@ -66,6 +70,7 @@
     <string name="guide_data_p1">Tetto non ha alcun permesso di accesso a internet: non invia nulla, a nessuno. I tuoi tetti e le tue spese restano su questo telefono.</string>
     <string name="guide_data_p2">Lo lasciano solo in un file che salvi tu (un backup, da ripristinare qui o su un altro telefono, o le tue spese in CSV per un foglio di calcolo) o nel backup di Android, se è attivo: quella copia è di Android, non di Tetto.</string>
     <string name="guide_data_p3">Un file di backup non è cifrato: tienilo dove tieni gli altri file riservati. Ripristinarne uno sostituisce i tetti di questo telefono, dopo aver detto che cosa contiene e che cosa sostituisce.</string>
+    <string name="guide_data_p4">Tetto può anche chiudersi dietro l’impronta, il volto o il blocco schermo del telefono, quando si apre e dopo un minuto fuori; le app recenti allora non ne mostrano l’anteprima. Non tiene nessun segreto suo: controlla il telefono, e Tetto sente solo sì o no.</string>
 
     <!-- Quello che Tetto non fa -->
     <string name="guide_not_title">Quello che Tetto non fa</string>

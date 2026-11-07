@@ -9,7 +9,8 @@ import androidx.room.PrimaryKey
 
 /**
  * A cap (PLANNING.md §5). Amounts in minor units, dates as epoch days, instants as epoch
- * milliseconds; the icon by its key and the kind by its name, never by an ordinal.
+ * milliseconds; the icon by its key and the kind by its name, never by an ordinal. A one-off cap's
+ * end, the day after its last (owner, 6 Nov 2026), is `end_exclusive`, null for any other kind.
  */
 @Entity(tableName = "caps")
 data class CapEntity(
@@ -22,6 +23,7 @@ data class CapEntity(
     @ColumnInfo(name = "open_start") val openStart: Long,
     val position: Int,
     @ColumnInfo(name = "created_at") val createdAt: Long,
+    @ColumnInfo(name = "end_exclusive") val endExclusive: Long? = null,
 )
 
 /**

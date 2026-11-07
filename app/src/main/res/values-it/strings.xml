@@ -9,5 +9,10 @@
     <string name="home_offer_added">Sulla tua schermata Home</string>
     <string name="home_offer_later">Non ora</string>
     <string name="home_offer_done">Fatto</string>
+    <!-- Il blocco (owner, 6 Nov 2026): cosa sta al posto di Tetto finché il blocco del telefono non dice sì. -->
+    <string name="lock_title">Tetto è bloccato</string>
+    <string name="lock_body">Si apre con l’impronta, il volto o il blocco schermo del telefono.</string>
+    <string name="lock_unlock">Sblocca</string>
+    <string name="lock_prompt_title">Sblocca Tetto</string>
     <string name="home_offer_note">Tieni premuta la scheda sulla schermata Home per sceglierne il colore e i tetti, o per ingrandirla.</string>
 </resources>

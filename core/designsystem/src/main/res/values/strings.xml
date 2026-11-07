@@ -20,6 +20,7 @@
     <string name="period_week">Week</string>
     <string name="period_month">Month</string>
     <string name="period_year">Year</string>
+    <string name="period_once">Once</string>
 
     <!-- The cap palette's icons, by what they stand for: TalkBack's names for them, and the first
          run's areas (Phase 3). -->

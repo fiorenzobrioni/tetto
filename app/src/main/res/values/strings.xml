@@ -13,5 +13,10 @@
     <string name="home_offer_added">On your home screen</string>
     <string name="home_offer_later">Not now</string>
     <string name="home_offer_done">Done</string>
+    <!-- The lock (owner, 6 Nov 2026): what stands in Tetto's place until the phone's own lock says yes. -->
+    <string name="lock_title">Tetto is locked</string>
+    <string name="lock_body">Your fingerprint, your face or the phone’s screen lock opens it.</string>
+    <string name="lock_unlock">Unlock</string>
+    <string name="lock_prompt_title">Unlock Tetto</string>
     <string name="home_offer_note">Hold the card on the home screen to choose its colour and its caps, or to make it larger.</string>
 </resources>
