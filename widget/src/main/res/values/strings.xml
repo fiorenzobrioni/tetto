@@ -45,10 +45,14 @@
     <string name="widget_starts_again">starts again %s</string>
     <string name="widget_pace">about %s a day</string>
     <string name="widget_pace_short">%s a day</string>
+    <string name="widget_pace_less">less than %s a day</string>
+    <string name="widget_pace_less_short">under %s a day</string>
 
     <!-- «In words»'s sentence, on a tall card (PLANNING.md §7). -->
     <string name="widget_note_pace">about %s a day</string>
     <string name="widget_note_ahead_pace">ahead of the days: about %s a day</string>
+    <string name="widget_note_pace_less">less than %s a day</string>
+    <string name="widget_note_ahead_pace_less">ahead of the days: less than %s a day</string>
     <string name="widget_note_ahead">spending ahead of the days</string>
     <string name="widget_note_ahead_short">ahead of the days</string>
     <string name="widget_note_reserve">with %s in reserve</string>
@@ -59,6 +63,7 @@
     <string name="widget_description_over">%1$s, %2$s over its cap of %3$s, %4$s</string>
     <string name="widget_description_ahead">spending ahead of the days</string>
     <string name="widget_description_pace">about %s a day</string>
+    <string name="widget_description_pace_less">less than %s a day</string>
     <string name="widget_description_reserve">with %s in reserve</string>
 
     <!-- What does not fit, counted. -->

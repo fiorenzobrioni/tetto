@@ -7,6 +7,7 @@ import com.callbackdev.tetto.core.model.CapState
 import com.callbackdev.tetto.core.model.ClosedPeriod
 import com.callbackdev.tetto.core.model.DateRange
 import com.callbackdev.tetto.core.model.Money
+import com.callbackdev.tetto.core.model.Pace
 import com.callbackdev.tetto.core.model.PeriodKind
 import com.callbackdev.tetto.core.model.PeriodRule
 import com.callbackdev.tetto.core.model.Share
@@ -18,7 +19,8 @@ import java.time.temporal.ChronoUnit
  * today and the currency (for the pace's whole units). Pure; called after the catch-up, so the
  * open period holds today or lies ahead of it (a clock set back), never behind.
  *
- * - `left = cap + reserve − spent`; over below zero.
+ * - `left = cap + reserve − spent`; over below zero. The cap is the period's ([PeriodAmount]): its
+ *   share of the days for a period a change cut short (owner, 7 Nov 2026).
  * - The bar: `spent / (cap + reserve)`, held to 0..1.
  * - The mark for today, for a week, a month or a year: `(today − start + 1) / length`, today
  *   counted.
@@ -26,8 +28,8 @@ import java.time.temporal.ChronoUnit
  *   one step of the period (a day of a week, a week of a month, a month of a year) and fades to
  *   nothing by its last day (owner, 6 Nov 2026): a big shop on the first of the month is not a
  *   warning for weeks, while a cap nearly spent with days to go still is. [aheadLine].
- * - The pace, for a week, a month or a year, not over, with two days left or more:
- *   `left / daysLeft`, rounded down to a whole unit; none under one unit.
+ * - The pace, for a week, a month or a year, with something left and two days or more:
+ *   `left / daysLeft`, rounded down to a whole unit; under one unit, "less than one" ([Pace]).
  * - A one-off cap (owner, 6 Nov 2026): its own dates, no reserve and no renewal; a mark and a pace
  *   over its days (none for a one-off of one day, as for a day), and «ahead of the days» with a
  *   slack of a seventh of its length, at least a day, fading as the others'. Once it has ended,
@@ -46,7 +48,9 @@ object CapStates {
         if (cap.ended) return ended(cap, today, lastClosed)
         val period = PeriodCalendar.openPeriod(cap, rule)
         val length = period.length
-        val base = cap.amount + cap.reserve
+        // A period cut short by a change has its share of the cap (owner, 7 Nov 2026).
+        val amount = PeriodAmount.of(cap, rule)
+        val base = amount + cap.reserve
         val left = base - spent
         val over = left.isNegative
         val daysLeft = ChronoUnit.DAYS.between(today, period.endExclusive).toInt().coerceIn(1, length)
@@ -60,11 +64,12 @@ object CapStates {
         }
         val aheadOfDays = !over && todayMark != null && bar > aheadLine(cap.kind, todayMark, daysLeft)
 
-        val pace = if (cap.kind != PeriodKind.DAY && !over && daysLeft >= 2) {
+        val pace = if (cap.kind != PeriodKind.DAY && left.isPositive && daysLeft >= 2) {
             val unit = currency.unit.minor
             val perDay = left.minor / daysLeft
             val whole = perDay - perDay % unit
-            if (whole >= unit) Money(whole) else null
+            // Under one unit a day it is said so, rather than not at all (owner, 7 Nov 2026).
+            if (whole >= unit) Pace(Money(whole)) else Pace(currency.unit, lessThan = true)
         } else {
             null
         }
@@ -74,6 +79,7 @@ object CapStates {
         return CapState(
             cap = cap,
             period = period,
+            amount = amount,
             spent = spent,
             left = left,
             daysLeft = daysLeft,
@@ -83,6 +89,7 @@ object CapStates {
             pace = pace,
             renewedToday = renewedToday,
             renewal = lastClosed?.takeIf { renewedToday && it.range.endExclusive == today }?.let(Renewals::of),
+            partial = PeriodAmount.partOf(cap, rule),
         )
     }
 
@@ -126,6 +133,7 @@ object CapStates {
         return CapState(
             cap = cap,
             period = period,
+            amount = amount,
             spent = spent,
             left = amount - spent,
             daysLeft = 1,

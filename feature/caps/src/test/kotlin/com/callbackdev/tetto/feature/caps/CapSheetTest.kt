@@ -14,8 +14,10 @@ import androidx.compose.ui.test.swipeLeft
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.callbackdev.tetto.core.designsystem.format.rememberMoneyFormat
 import com.callbackdev.tetto.core.designsystem.theme.TettoTheme
+import com.callbackdev.tetto.core.domain.cap.CapStates
 import com.callbackdev.tetto.core.model.CapState
 import com.callbackdev.tetto.core.model.Money
+import com.callbackdev.tetto.core.model.PeriodKind
 import com.callbackdev.tetto.core.model.Spend
 import com.callbackdev.tetto.core.testing.assertAccessible
 import com.callbackdev.tetto.core.testing.walkPage
@@ -75,6 +77,25 @@ class CapSheetTest {
                 )
             }
         }
+    }
+
+    @Test
+    fun `a period a change cut short says its share of the cap, and of how many days`() {
+        // A daily cap turned into a €70 week this Thursday (owner, 7 Nov 2026): four days of seven.
+        val week = CapStates.of(
+            CapsSample.coffee.cap.copy(openStart = CapsSample.today, amount = CapsSample.euros(70)),
+            spent = CapsSample.euros(8),
+            rule = CapsSample.rule(PeriodKind.WEEK),
+            today = CapsSample.today,
+            currency = CapsSample.EUR,
+        )
+        draw(state = week)
+        compose.onNodeWithText("Cap, 4 days of 7", useUnmergedTree = true).assertExists()
+        compose.onNodeWithTag(CapsTags.RECEIPT).assertContentDescriptionEquals(
+            "€40.00 cap for 4 days of 7, plus €4.00 in reserve, less €8.00 spent: €36.00 left",
+        )
+        compose.assertAccessible()
+        compose.writeScreenshot("cap-sheet-partial")
     }
 
     @Test

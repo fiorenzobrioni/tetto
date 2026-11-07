@@ -29,11 +29,11 @@
     <string name="guide_period_forgiven_title">Il condono</string>
     <string name="guide_period_forgiven_body">Uno sforamento attinge prima alla riserva. Quello che la riserva non copre è condonato quando il periodo finisce: il periodo dopo riparte dal tetto intero, mai in debito. Una brutta settimana resta una brutta settimana, e basta. Il giorno in cui un periodo riparte, la frase in alto dice com’è finito il precedente: condonato, coperto dalla riserva, o quanto le ha lasciato.</string>
     <string name="guide_period_calendar_title">Le tue settimane e i tuoi mesi</string>
-    <string name="guide_period_calendar_body">Una settimana comincia dal primo giorno della settimana del telefono, un mese dal giorno 1, un anno da quel giorno di gennaio. Tutti e due si cambiano nelle Impostazioni: un mese dal 27, per esempio, per uno stipendio che arriva il 27.</string>
+    <string name="guide_period_calendar_body">Una settimana comincia dal primo giorno della settimana del telefono, un mese dal giorno 1, un anno dal 1° gennaio. La settimana e il mese si cambiano nelle Impostazioni: un mese dal 27, per esempio, per uno stipendio che arriva il 27.</string>
     <string name="guide_period_once_title">Un tetto per una volta</string>
     <string name="guide_period_once_body">Un viaggio, un festival, un trasloco: un tetto può valere una volta sola, tra due date sue, invece che ogni giorno, settimana, mese o anno. Non tiene riserva e non riparte mai. Il segno di oggi, il ritmo e il margine sui giorni seguono la sua durata. Il giorno dopo l’ultimo, la frase in cima dice com’è andato; la sua scheda aspetta poi in fondo, più discreta, di ripartire con nuove date o di essere eliminata.</string>
     <string name="guide_period_change_title">Cambiare un tetto</string>
-    <string name="guide_period_change_body">Un nuovo importo conta subito, nel periodo in corso, e una riserva più grande scende al nuovo importo: una riserva non supera mai il tetto di un periodo. Un nuovo periodo che contiene i giorni di questo ne prende le spese. Uno che comincia dopo, una settimana fatta diventare giorni di giovedì, chiude i giorni già passati sulla loro parte del tetto, e conta solo quello che spendi dal suo primo giorno.</string>
+    <string name="guide_period_change_body">Un nuovo importo conta subito, nel periodo in corso, e una riserva più grande scende al nuovo importo: una riserva non supera mai il tetto di un periodo. Un nuovo periodo che contiene i giorni di questo ne prende le spese. Uno che comincia dopo, una settimana fatta diventare giorni di giovedì, chiude i giorni già passati sulla loro parte del tetto, e conta solo quello che spendi dal suo primo giorno. Anche un periodo che comincia quando la sua settimana o il suo mese sono già iniziati, un giorno fatto diventare settimana di giovedì, ha la sua parte del tetto: quattro giorni su sette, quattro settimi. Il successivo è intero.</string>
     <string name="guide_period_closing_title">Chiuso alla prossima occhiata</string>
     <string name="guide_period_closing_body">A mezzanotte, a schermo spento, non gira niente. La prima volta che Tetto viene letto dopo la fine di un periodo (l’app, un widget, il promemoria) chiude in ordine ogni periodo finito da allora. Dopo settimane di assenza, quelli vuoti contano insieme, e la riserva si ferma al suo limite.</string>
     <string name="guide_period_frozen_title">Chiuso vuol dire chiuso</string>
@@ -48,7 +48,7 @@
     <string name="guide_numpad_undo_title">Annulla, e anche dopo</string>
     <string name="guide_numpad_undo_body">Aggiunta una spesa, la cifra scorre al nuovo valore e un messaggio propone di annullarla, per tutto il tempo che chiedono le impostazioni di accessibilità del telefono. Un importo sbagliato che noti più tardi si corregge lo stesso: ogni spesa del periodo in corso è nel foglio del tetto, da correggere o da eliminare.</string>
     <string name="guide_numpad_sheet_title">Il foglio di un tetto</string>
-    <string name="guide_numpad_sheet_body">Dietro la freccia accanto al nome di un tetto, o una pressione prolungata sul suo riquadro: le cifre di questo periodo come uno scontrino, le sue spese con il giorno e l’ora di ciascuna, un rimborso per i soldi che tornano (un reso, la parte di un amico), gli ultimi periodi in una riga ciascuno, e il tetto stesso, da cambiare o eliminare. Un rimborso restituisce al massimo quanto il periodo ha speso. Azzerare la riserva, lì, fa ripartire un tetto da capo.</string>
+    <string name="guide_numpad_sheet_body">Dietro la freccia accanto al nome di un tetto, o una pressione prolungata sul suo riquadro: le cifre di questo periodo come uno scontrino, le sue spese con il giorno e l’ora di ciascuna, un rimborso per i soldi che tornano (un reso, la parte di un amico), gli ultimi periodi in una riga ciascuno, e il tetto stesso, da cambiare o eliminare. Un rimborso restituisce al massimo quanto il periodo ha speso: la spesa che ha rimborsato si elimina solo dopo di lui. Azzerare la riserva, lì, fa ripartire un tetto da capo.</string>
     <string name="guide_numpad_keys_title">Tasti come la tua tastiera</string>
     <string name="guide_numpad_keys_body">Il tasto dei decimali è quello della tua lingua, e una valuta senza centesimi non ce l’ha. Ogni tasto fa il tic della tastiera del telefono; lo spegne l’impostazione di vibrazione al tocco del telefono stesso.</string>
 
@@ -96,6 +96,9 @@
     <string name="guide_sample_tile_description">Esempio. %1$s, ancora %2$s su %3$s, fino a %4$s</string>
     <string name="guide_sample_ahead">spese in anticipo sui giorni</string>
     <string name="guide_sample_with_reserve">con %s di riserva</string>
+    <string name="guide_sample_detail_reserve">su %1$s + %2$s</string>
+    <string name="guide_sample_pace_less">meno di %s al giorno</string>
+    <string name="guide_sample_ahead_words">in anticipo sui giorni</string>
     <string name="guide_story_week">Settimana %d</string>
     <string name="guide_story_spent">%1$s su %2$s</string>
     <string name="guide_story_to_reserve">+%s alla riserva</string>

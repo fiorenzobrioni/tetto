@@ -137,6 +137,24 @@ class CatchUpTest {
     }
 
     @Test
+    fun `a period a change cut short closes on its share, the reserve held to a whole cap`() {
+        // A daily cap turned weekly on Thursday (owner, 7 Nov 2026): Thursday to Sunday is four
+        // sevenths of €70, €40; €30 spent leaves €10 for the reserve, a whole week's cap its limit.
+        val coffee = cap(WEEK, openStart = date(2026, 11, 5), amount = euros(70), reserve = euros(65))
+        val plan = checkNotNull(CatchUp.plan(coffee, euros(30), rule(WEEK), today = date(2026, 11, 9)))
+        val line = plan.closed.single()
+        assertThat(line.cap).isEqualTo(euros(40))
+        assertThat(line.reserveAfter).isEqualTo(euros(70))
+        assertThat(line.forgiven).isEqualTo(Money.ZERO)
+        // Over its share and the reserve: what neither covers is forgiven.
+        val over =
+            checkNotNull(CatchUp.plan(coffee.copy(reserve = Money.ZERO), euros(55), rule(WEEK), date(2026, 11, 9)))
+        assertThat(over.closed.single().forgiven).isEqualTo(euros(15))
+        // The week after is whole.
+        assertThat(PeriodAmount.of(coffee.after(plan), rule(WEEK))).isEqualTo(euros(70))
+    }
+
+    @Test
     fun `the cap in force is the limit at the close`() {
         val coffee = cap(WEEK, openStart = date(2026, 10, 26), amount = euros(20), reserve = euros(80))
         val plan = checkNotNull(CatchUp.plan(coffee, euros(10), rule(WEEK), today = date(2026, 11, 2)))

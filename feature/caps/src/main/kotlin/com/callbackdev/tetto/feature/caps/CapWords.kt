@@ -82,7 +82,7 @@ internal fun sentenceWords(sentence: CapsSentence, format: MoneyFormat, today: L
                 R.string.sentence_ended_over,
                 first.cap.name,
                 format.short(first.spent),
-                format.short(first.cap.amount),
+                format.short(first.amount),
                 format.short(first.overBy),
             )
 
@@ -90,7 +90,7 @@ internal fun sentenceWords(sentence: CapsSentence, format: MoneyFormat, today: L
                 R.string.sentence_ended_under,
                 first.cap.name,
                 format.short(first.spent),
-                format.short(first.cap.amount),
+                format.short(first.amount),
             )
         }
     }
@@ -180,19 +180,48 @@ internal fun leftWords(state: CapState, format: MoneyFormat): String = if (state
 /** A tile's second line: "of €20 · until Sunday", or, over, "of €100 · starts again on Monday". */
 @Composable
 @ReadOnlyComposable
-internal fun detailWords(state: CapState, format: MoneyFormat, today: LocalDate): String = if (state.over &&
-    state.renews
-) {
-    stringResource(R.string.tile_detail_over, format.short(state.cap.amount), againWords(state.startsAgain, today))
-} else {
-    stringResource(R.string.tile_detail, format.short(state.cap.amount), untilWords(state.lastDay, today))
+internal fun detailWords(state: CapState, format: MoneyFormat, today: LocalDate): String {
+    val over = state.over && state.renews
+    val day = keptTogether(if (over) againWords(state.startsAgain, today) else untilWords(state.lastDay, today))
+    // With a reserve, the cap and the reserve both, so the figure reads as the sum it is: "€16
+    // left, of €20 + €4", never "€16 left of €20" after €8 spent (owner, 7 Nov 2026). Without
+    // the word: with it, a row's line broke in Italian ("fino a / domenica"); TalkBack names it.
+    val reserve = state.cap.reserve.takeIf { it.isPositive }
+    return when {
+        reserve != null && over ->
+            stringResource(R.string.tile_detail_over_reserve, format.short(state.amount), format.short(reserve), day)
+
+        reserve != null ->
+            stringResource(R.string.tile_detail_reserve, format.short(state.amount), format.short(reserve), day)
+
+        over -> stringResource(R.string.tile_detail_over, format.short(state.amount), day)
+
+        else -> stringResource(R.string.tile_detail, format.short(state.amount), day)
+    }
 }
+
+/**
+ * A short day ("until Sunday", "fino a domenica") on one line: where a row's line must break (a
+ * large text size), it breaks at its separator, never inside the day. A long one ("starts again on
+ * 1 Dec") keeps its spaces, so it can still break rather than be cut inside a word.
+ */
+private fun keptTogether(day: String): String = if (day.length <= KEPT_TOGETHER) day.replace(' ', '\u00A0') else day
+
+/** The longest day kept on one line: one that fits a row's width at twice the text size. */
+private const val KEPT_TOGETHER = 16
 
 /** A tile's two lines under its figure: "of €20" and "until Sunday", or, over, "starts again on Monday". */
 @Composable
 @ReadOnlyComposable
 internal fun tileLines(state: CapState, format: MoneyFormat, today: LocalDate): Pair<String, String> =
-    stringResource(R.string.tile_of, format.short(state.cap.amount)) to if (state.over && state.renews) {
+    // The reserve added to the cap, as the row says it; the tile's chip names it.
+    state.cap.reserve.takeIf { it.isPositive }.let { reserve ->
+        if (reserve != null) {
+            stringResource(R.string.tile_of_reserve, format.short(state.amount), format.short(reserve))
+        } else {
+            stringResource(R.string.tile_of, format.short(state.amount))
+        }
+    } to if (state.over && state.renews) {
         stringResource(R.string.tile_again, againWords(state.startsAgain, today))
     } else {
         untilWords(state.lastDay, today)
@@ -200,8 +229,14 @@ internal fun tileLines(state: CapState, format: MoneyFormat, today: LocalDate): 
 
 @Composable
 @ReadOnlyComposable
-internal fun paceWords(state: CapState, format: MoneyFormat): String? =
-    state.pace?.let { stringResource(R.string.tile_pace, format.short(it)) }
+internal fun paceWords(state: CapState, format: MoneyFormat): String? = state.pace?.let { pace ->
+    stringResource(if (pace.lessThan) R.string.tile_pace_less else R.string.tile_pace, format.short(pace.perDay))
+}
+
+/** "ahead of the days", under the bar of a cap spending ahead of its period's days; none otherwise. */
+@Composable
+@ReadOnlyComposable
+internal fun aheadWords(state: CapState): String? = stringResource(R.string.tile_ahead).takeIf { state.aheadOfDays }
 
 @Composable
 @ReadOnlyComposable
@@ -217,7 +252,7 @@ internal fun tileDescription(state: CapState, format: MoneyFormat, today: LocalD
             if (state.renews) R.string.tile_description_over else R.string.tile_description_over_until,
             state.cap.name,
             format.short(state.overBy),
-            format.short(state.cap.amount),
+            format.short(state.amount),
             overDayWords(state, today),
         )
     } else {
@@ -225,7 +260,7 @@ internal fun tileDescription(state: CapState, format: MoneyFormat, today: LocalD
             R.string.tile_description_left,
             state.cap.name,
             format.short(state.left),
-            format.short(state.cap.amount),
+            format.short(state.amount),
             untilWords(state.lastDay, today),
         )
     }
@@ -250,11 +285,11 @@ internal fun endedLines(state: CapState, format: MoneyFormat, today: LocalDate):
         stringResource(
             R.string.tile_ended_over,
             format.short(state.spent),
-            format.short(state.cap.amount),
+            format.short(state.amount),
             format.short(state.overBy),
         )
     } else {
-        stringResource(R.string.tile_ended_of, format.short(state.spent), format.short(state.cap.amount))
+        stringResource(R.string.tile_ended_of, format.short(state.spent), format.short(state.amount))
     }
 
 /** What TalkBack reads for an ended one-off: "Lisbon trip, ended on 20 Nov, €720 spent of €800". */
@@ -266,7 +301,7 @@ internal fun endedDescription(state: CapState, format: MoneyFormat, today: Local
         state.cap.name,
         dayWords(state.lastDay, today),
         format.short(state.spent),
-        format.short(state.cap.amount),
+        format.short(state.amount),
         format.short(state.overBy),
     )
 } else {
@@ -275,7 +310,7 @@ internal fun endedDescription(state: CapState, format: MoneyFormat, today: Local
         state.cap.name,
         dayWords(state.lastDay, today),
         format.short(state.spent),
-        format.short(state.cap.amount),
+        format.short(state.amount),
     )
 }
 

@@ -29,11 +29,11 @@
     <string name="guide_period_forgiven_title">Forgiveness</string>
     <string name="guide_period_forgiven_body">An overspend takes from the reserve first. What the reserve cannot cover is forgiven when the period ends: the next period starts at its full cap, never in debt. A bad week stays one bad week. The day a period starts again, the sentence on top says how the last one ended: forgiven, covered by the reserve, or what it left to it.</string>
     <string name="guide_period_calendar_title">Your weeks and months</string>
-    <string name="guide_period_calendar_body">A week starts on your phone’s first day of the week, a month on the 1st, a year on that day of January. Both can change in Settings: a month from the 27th, say, for a salary paid on the 27th.</string>
+    <string name="guide_period_calendar_body">A week starts on your phone’s first day of the week, a month on the 1st, a year on 1 January. The week and the month can change in Settings: a month from the 27th, say, for a salary paid on the 27th.</string>
     <string name="guide_period_once_title">A cap for once</string>
     <string name="guide_period_once_body">A trip, a festival, a move: a cap can run once, between two dates of its own, instead of every day, week, month or year. It keeps no reserve and never starts again. Its mark, its pace and its room ahead of the days follow its own length. The day after its last, the sentence on top says how it went; its tile then waits at the end, quieter, to run again with new dates or to be deleted.</string>
     <string name="guide_period_change_title">Changing a cap</string>
-    <string name="guide_period_change_body">A new amount counts at once, in the period under way, and a reserve larger than it comes down to it: a reserve is never more than one period’s cap. A new period that holds this one’s days takes its spends. One that starts later, a week turned into days on a Thursday, closes the days already past on their share of the cap, and only what you spend from its first day counts in it.</string>
+    <string name="guide_period_change_body">A new amount counts at once, in the period under way, and a reserve larger than it comes down to it: a reserve is never more than one period’s cap. A new period that holds this one’s days takes its spends. One that starts later, a week turned into days on a Thursday, closes the days already past on their share of the cap, and only what you spend from its first day counts in it. A period that starts after its own week or month began, a day turned into a week on a Thursday, has its share of the cap too: four days of seven, four sevenths. The next one is whole.</string>
     <string name="guide_period_closing_title">Closed when you next look</string>
     <string name="guide_period_closing_body">Nothing runs at midnight with the screen off. The first time Tetto is read after a period ends (the app, a widget, the reminder) it closes every period that ended since, in order. After weeks away, the empty ones are counted together, and the reserve stops at its limit.</string>
     <string name="guide_period_frozen_title">Closed means closed</string>
@@ -48,7 +48,7 @@
     <string name="guide_numpad_undo_title">Undo, and later too</string>
     <string name="guide_numpad_undo_body">After a spend is added, the figure rolls to its new value and a message offers to undo it, for as long as your phone’s accessibility settings ask. A wrong amount noticed later can still be fixed: every spend of the period under way is in the cap’s sheet, to correct or to delete.</string>
     <string name="guide_numpad_sheet_title">A cap’s sheet</string>
-    <string name="guide_numpad_sheet_body">Behind the arrow by a cap’s name, or a long press on its tile: this period’s figures as a receipt, its spends with the day and time of each, a refund for money that comes back (a return, a friend’s share), the last periods in one line each, and the cap itself, to change or delete. A refund gives back at most what the period spent. Clearing the reserve there starts a cap afresh.</string>
+    <string name="guide_numpad_sheet_body">Behind the arrow by a cap’s name, or a long press on its tile: this period’s figures as a receipt, its spends with the day and time of each, a refund for money that comes back (a return, a friend’s share), the last periods in one line each, and the cap itself, to change or delete. A refund gives back at most what the period spent, so the spend it gave back for is deleted only after it. Clearing the reserve there starts a cap afresh.</string>
     <string name="guide_numpad_keys_title">Keys like your keyboard</string>
     <string name="guide_numpad_keys_body">The decimal key is your language’s, and a currency without cents has none. Each key ticks as your phone’s keyboard does; your phone’s own touch feedback setting turns it off.</string>
 
@@ -96,6 +96,9 @@
     <string name="guide_sample_tile_description">Example. %1$s, %2$s left of %3$s, until %4$s</string>
     <string name="guide_sample_ahead">spending ahead of the days</string>
     <string name="guide_sample_with_reserve">with %s in reserve</string>
+    <string name="guide_sample_detail_reserve">of %1$s + %2$s</string>
+    <string name="guide_sample_pace_less">less than %s a day</string>
+    <string name="guide_sample_ahead_words">ahead of the days</string>
     <string name="guide_story_week">Week %d</string>
     <string name="guide_story_spent">%1$s of %2$s</string>
     <string name="guide_story_to_reserve">+%s to the reserve</string>

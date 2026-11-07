@@ -59,9 +59,14 @@
     <string name="tile_over">sotto di %s</string>
     <string name="tile_detail">su %1$s · %2$s</string>
     <string name="tile_detail_over">su %1$s · riparte %2$s</string>
+    <string name="tile_detail_reserve">su %1$s + %2$s · %3$s</string>
+    <string name="tile_detail_over_reserve">su %1$s + %2$s · riparte %3$s</string>
     <string name="tile_of">su %s</string>
+    <string name="tile_of_reserve">su %1$s + %2$s</string>
     <string name="tile_again">riparte %s</string>
     <string name="tile_pace">circa %s al giorno</string>
+    <string name="tile_pace_less">meno di %s al giorno</string>
+    <string name="tile_ahead">in anticipo sui giorni</string>
     <string name="tile_reserve">+%s di riserva</string>
     <string name="tile_description_left">%1$s, ancora %2$s su %3$s, %4$s</string>
     <string name="tile_description_over">%1$s, sotto di %2$s su un tetto di %3$s, riparte %4$s</string>
@@ -79,6 +84,7 @@
     <string name="notice_reserve_cleared">Riserva di %s azzerata</string>
     <string name="notice_cap_deleted">Tetto eliminato: %s</string>
     <string name="notice_period_closed">Quel periodo si è chiuso: le sue spese non cambiano più.</string>
+    <string name="notice_refunds_held">I rimborsi di questo periodo supererebbero quanto speso: correggi o elimina prima un rimborso.</string>
     <string name="action_undo">Annulla</string>
 
     <!-- Il tastierino. -->
@@ -95,17 +101,27 @@
     <string name="preview_over">Sotto di %s</string>
     <string name="preview_still_over">Ancora sotto di %s</string>
     <string name="preview_refund_most">Al massimo %s, quanto speso in questo periodo</string>
+    <string name="preview_spend_least">Almeno %s, per coprire i rimborsi del periodo</string>
     <string name="numpad_open_cap">Apri %s</string>
 
     <!-- Il foglio di un tetto. -->
     <string name="sheet_this_period">Questo periodo</string>
     <string name="sheet_cap">Tetto</string>
+    <plurals name="sheet_cap_partial">
+        <item quantity="one">Tetto, %1$d giorno su %2$d</item>
+        <item quantity="other">Tetto, %1$d giorni su %2$d</item>
+    </plurals>
     <string name="sheet_reserve">Riserva</string>
     <string name="sheet_spent">Speso</string>
     <string name="sheet_left">Residuo</string>
     <string name="sheet_over">Sotto di</string>
     <string name="sheet_pace_line">Per restare sotto, circa %s al giorno</string>
+    <string name="sheet_pace_line_less">Per restare sotto, meno di %s al giorno</string>
     <string name="sheet_receipt_cap">tetto di %s</string>
+    <plurals name="sheet_receipt_cap_partial">
+        <item quantity="one">tetto di %1$s per %2$d giorno su %3$d</item>
+        <item quantity="other">tetto di %1$s per %2$d giorni su %3$d</item>
+    </plurals>
     <string name="sheet_receipt_reserve">più %s di riserva</string>
     <string name="sheet_receipt_spent">meno %s spesi</string>
     <string name="sheet_receipt_left">restano %s</string>

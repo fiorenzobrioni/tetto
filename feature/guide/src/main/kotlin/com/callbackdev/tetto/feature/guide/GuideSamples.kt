@@ -180,14 +180,19 @@ internal fun TilesSample(sample: GuideSample, format: MoneyFormat) {
 
 @Composable
 private fun SampleTile(state: CapState, name: String, lastDay: String, format: MoneyFormat, modifier: Modifier) {
-    val pace = state.pace?.let { stringResource(R.string.guide_sample_pace, format.short(it)) }
+    val pace = state.pace?.let {
+        stringResource(
+            if (it.lessThan) R.string.guide_sample_pace_less else R.string.guide_sample_pace,
+            format.short(it.perDay),
+        )
+    }
     val reserve = state.cap.reserve.takeIf { it.isPositive }
     val description = listOfNotNull(
         stringResource(
             R.string.guide_sample_tile_description,
             name,
             format.short(state.left),
-            format.short(state.cap.amount),
+            format.short(state.amount),
             lastDay,
         ),
         stringResource(R.string.guide_sample_ahead).takeIf { state.aheadOfDays },
@@ -199,7 +204,12 @@ private fun SampleTile(state: CapState, name: String, lastDay: String, format: M
         name = name,
         figure = format.short(state.left),
         figureValue = state.left.minor,
-        detail = stringResource(R.string.guide_sample_detail, format.short(state.cap.amount)),
+        // As the caps screen says it: the reserve added to the cap, the chip naming it.
+        detail = if (reserve != null) {
+            stringResource(R.string.guide_sample_detail_reserve, format.short(state.amount), format.short(reserve))
+        } else {
+            stringResource(R.string.guide_sample_detail, format.short(state.amount))
+        },
         dateLine = stringResource(R.string.guide_sample_until, lastDay),
         bar = state.bar,
         mark = state.todayMark,
@@ -214,6 +224,7 @@ private fun SampleTile(state: CapState, name: String, lastDay: String, format: M
         pace = pace,
         reserve = reserve?.let { stringResource(R.string.guide_sample_reserve, format.short(it)) },
         enabled = false,
+        aheadWords = stringResource(R.string.guide_sample_ahead_words).takeIf { state.aheadOfDays },
     )
 }
 

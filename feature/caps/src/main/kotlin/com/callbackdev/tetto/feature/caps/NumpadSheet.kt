@@ -123,6 +123,9 @@ fun Numpad(
     val format = rememberMoneyFormat(currency)
     // A refund gives back at most what this period spent (the refund corrected counted out).
     val most = if (refund) state.spent + (correcting ?: Money.ZERO) else null
+    // A spend corrected down keeps at least what the period's refunds took off it, so the period
+    // never spends less than nothing.
+    val least = if (!refund && correcting != null) (correcting - state.spent).takeIf { it.isPositive } else null
     var input by rememberSaveable(stateSaver = moneyInputSaver(currency)) {
         mutableStateOf((correcting ?: initial)?.let { MoneyInput.of(it, currency) } ?: MoneyInput.empty(currency))
     }
@@ -133,7 +136,7 @@ fun Numpad(
         input = next
     }
     val confirm: () -> Unit = {
-        if (input.canAdd && (most == null || input.amount <= most)) {
+        if (input.canAdd && (most == null || input.amount <= most) && (least == null || input.amount >= least)) {
             haptic.performHapticFeedback(HapticFeedbackType.Confirm)
             onConfirm(input.amount)
         }
@@ -156,6 +159,7 @@ fun Numpad(
         // Never while a spend is corrected, nor for a refund: there the amount is its own.
         amounts = if (correcting == null && !refund) amounts else emptyList(),
         refundMost = most,
+        spendLeast = least,
         onAmount = quick,
         modifier = modifier
             .focusRequester(focus)
@@ -198,10 +202,14 @@ internal fun NumpadContent(
     amounts: List<Money> = emptyList(),
     onAmount: (Money) -> Unit = {},
     refundMost: Money? = null,
+    spendLeast: Money? = null,
 ) {
     val refund = refundMost != null
     // A refund past what was spent is not taken: the preview says the most, the button waits.
     val tooMuch = refundMost != null && input.amount > refundMost
+    // Nor a spend corrected under the period's refunds: the preview says the least, in the
+    // preview's own ink, since every figure typed on the way to it is under it too.
+    val tooLittle = spendLeast != null && input.canAdd && input.amount < spendLeast
     Column(
         modifier
             .fillMaxWidth()
@@ -227,13 +235,21 @@ internal fun NumpadContent(
             val base = if (refund) state.left - (correcting ?: Money.ZERO) else state.left + (correcting ?: Money.ZERO)
             val preview = if (refund) SpendPreview.ofRefund(base, input.amount) else SpendPreview.of(base, input.amount)
             Text(
-                if (tooMuch && refundMost != null) {
-                    stringResource(R.string.preview_refund_most, format.full(refundMost))
-                } else {
-                    previewWords(preview, format)
+                when {
+                    tooMuch && refundMost != null -> stringResource(
+                        R.string.preview_refund_most,
+                        format.full(refundMost),
+                    )
+
+                    tooLittle && spendLeast != null -> stringResource(
+                        R.string.preview_spend_least,
+                        format.full(spendLeast),
+                    )
+
+                    else -> previewWords(preview, format)
                 },
                 style = MaterialTheme.typography.titleMedium,
-                color = if (tooMuch || preview.kind != SpendPreview.Kind.FITS) {
+                color = if (tooMuch || (!tooLittle && preview.kind != SpendPreview.Kind.FITS)) {
                     MaterialTheme.colorScheme.error
                 } else {
                     MaterialTheme.colorScheme.onSurfaceVariant
@@ -258,7 +274,7 @@ internal fun NumpadContent(
         )
         Spacer(Modifier.height(12.dp))
         val amount = input.amount
-        val ready = input.canAdd && !tooMuch
+        val ready = input.canAdd && !tooMuch && !tooLittle
         val label = when {
             correcting != null && ready -> stringResource(R.string.numpad_save_amount, format.full(amount))
             correcting != null -> stringResource(R.string.numpad_save)

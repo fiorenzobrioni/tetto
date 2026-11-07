@@ -23,7 +23,7 @@ enum class PeriodKind {
 
 /**
  * What decides a period's dates: its kind, the day a week starts (the setting, or the locale's)
- * and the day a month starts (1 to 31; a year starts on that day of January).
+ * and the day a month starts (1 to 31; a year always starts on 1 January).
  */
 data class PeriodRule(val kind: PeriodKind, val weekStart: DayOfWeek, val monthStartDay: Int) {
     init {

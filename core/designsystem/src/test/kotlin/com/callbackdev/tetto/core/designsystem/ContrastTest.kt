@@ -89,6 +89,8 @@ class ContrastTest {
             val s = dress.scheme
             expect(dress, "attention on surface", dress.colors.attention, s.surface)
             expect(dress, "attention on surfaceContainerLow", dress.colors.attention, s.surfaceContainerLow)
+            // A tile's and a row's ground, where "ahead of the days" is written (owner, 7 Nov 2026).
+            expect(dress, "attention on surfaceContainer", dress.colors.attention, s.surfaceContainer)
         }
     }
 

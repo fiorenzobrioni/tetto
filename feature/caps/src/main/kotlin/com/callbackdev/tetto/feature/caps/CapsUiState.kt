@@ -67,4 +67,10 @@ sealed interface CapsNotice {
 
     /** A correction or a deletion arrived after its period had closed (midnight passed meanwhile). */
     data object PeriodClosed : CapsNotice
+
+    /**
+     * A spend not deleted, or not lowered, because the period's refunds would then come to more
+     * than it spent (§4.3): the refund goes first.
+     */
+    data object RefundsHeld : CapsNotice
 }

@@ -235,6 +235,15 @@ private fun BackupFile.toBackup(): Backup {
         }
         // One line per period start: the database's key, and a story told once.
         require(closed.map { it.range.start }.toSet().size == closed.size) { "A closed period twice" }
+        // Never overlapping, as the engine writes them: the latest line to start is the latest to
+        // end, which is how the database reads a cap's last closed end.
+        require(
+            closed.sortedBy {
+                it.range.start
+            }.zipWithNext().all { (a, b) -> a.range.endExclusive <= b.range.start },
+        ) {
+            "Closed periods that overlap"
+        }
         BackupCap(
             name = dto.name.trim(),
             icon = CapIcon.fromKey(dto.icon),

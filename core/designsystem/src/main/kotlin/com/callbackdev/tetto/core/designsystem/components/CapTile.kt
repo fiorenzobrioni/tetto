@@ -88,6 +88,7 @@ fun CapTile(
     pace: String? = null,
     reserve: String? = null,
     enabled: Boolean = true,
+    aheadWords: String? = null,
 ) {
     Surface(
         modifier = modifier.capTouch(enabled, description, clickLabel, longClickLabel, onClick, onLongClick),
@@ -102,7 +103,7 @@ fun CapTile(
             Column {
                 CapHeader(icon, name, onOpen = onLongClick.takeIf { enabled })
                 Spacer(Modifier.height(8.dp))
-                CapBody(figure, figureValue, over, detail, dateLine, bar, mark, ahead, pace)
+                CapBody(figure, figureValue, over, detail, dateLine, bar, mark, ahead, pace, aheadWords)
             }
             if (reserve != null) ReserveChip(reserve, Modifier.padding(start = 16.dp, end = 16.dp, top = 10.dp))
         }
@@ -121,25 +122,20 @@ private fun CapBody(
     mark: Share?,
     ahead: Boolean,
     pace: String?,
+    aheadWords: String?,
 ) {
     Column(Modifier.padding(horizontal = 16.dp)) {
         CapFigure(figure, figureValue, over)
-        Text(
-            detail,
-            style = MaterialTheme.typography.bodyMedium.tabular(),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        if (dateLine != null) {
-            Text(
-                dateLine,
-                style = MaterialTheme.typography.bodyMedium.tabular(),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+        DetailLine(detail)
+        if (dateLine != null) DetailLine(dateLine)
         Spacer(Modifier.height(10.dp))
         CapBar(bar = bar, mark = mark, over = over, ahead = ahead)
-        if (pace != null) {
+        if (aheadWords != null) {
             Spacer(Modifier.height(8.dp))
+            AheadWords(aheadWords)
+        }
+        if (pace != null) {
+            Spacer(Modifier.height(if (aheadWords != null) 2.dp else 8.dp))
             Text(
                 pace,
                 style = MaterialTheme.typography.bodySmall.tabular(),
@@ -147,6 +143,39 @@ private fun CapBody(
             )
         }
     }
+}
+
+/**
+ * A line under a cap's figure ("of €20 + €4", "starts again on Monday"): on one line where a
+ * step or two down is enough (owner, 7 Nov 2026: "starts again on / Monday" broke on a tile at the
+ * phone's own text size), wrapping at its full size where it is not, at a large text size, rather
+ * than shrinking for nothing.
+ */
+@Composable
+private fun DetailLine(text: String) {
+    val style = MaterialTheme.typography.bodyMedium.tabular()
+    BasicText(
+        text,
+        style = style.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
+        autoSize = FewLinesAutoSize(max = style.fontSize, min = DETAIL_MIN, lines = 1),
+    )
+}
+
+/** The least a line under a cap's figure steps down to, from the body's 14 sp. */
+private val DETAIL_MIN = 12.sp
+
+/**
+ * "ahead of the days" in words, under the bar that runs past today's mark (owner, 7 Nov 2026): the
+ * bar's colour and its place say it to an eye that knows the mark; the words say it to one that
+ * does not. In the attention ink, as the bar, pinned at 4.5:1 on a tile's ground by `ContrastTest`.
+ */
+@Composable
+private fun AheadWords(words: String) {
+    Text(
+        words,
+        style = MaterialTheme.typography.bodySmall,
+        color = TettoTheme.colors.attention,
+    )
 }
 
 /**
@@ -182,8 +211,9 @@ private fun CapHeader(icon: ImageVector, name: String, onOpen: (() -> Unit)?) {
 /**
  * A cap's row (owner, 6 Nov 2026), the caps screen's list: the tile's words across the page,
  * shorter. The icon; the [name] and, at the row's end, the [figure] with its word on one line; the
- * cap and its last day ([detail]); the bar with today's mark. The pace and the reserve stay in the
- * cap's sheet and in TalkBack's [description]: what keeps a row short.
+ * cap and its last day ([detail]); the bar with today's mark, and under it, only while it is true,
+ * [aheadWords]. The pace stays in the cap's sheet and in TalkBack's [description]: what keeps a
+ * row short.
  *
  * Touch, long press and [enabled] as [CapTile]'s.
  */
@@ -205,6 +235,7 @@ fun CapRow(
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    aheadWords: String? = null,
 ) {
     Surface(
         modifier = modifier.capTouch(enabled, description, clickLabel, longClickLabel, onClick, onLongClick),
@@ -227,13 +258,14 @@ fun CapRow(
                     CapName(name, Modifier.weight(1f))
                     CapFigureInline(figure, figureValue, over)
                 }
-                Text(
-                    detail,
-                    style = MaterialTheme.typography.bodyMedium.tabular(),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                DetailLine(detail)
                 Spacer(Modifier.height(4.dp))
                 CapBar(bar = bar, mark = mark, over = over, ahead = ahead)
+                // The one line a row adds under its bar, and only while it is true.
+                if (aheadWords != null) {
+                    Spacer(Modifier.height(4.dp))
+                    AheadWords(aheadWords)
+                }
             }
             // The arrow to the cap's sheet, as on a tile (owner, 6 Nov 2026).
             if (enabled) {

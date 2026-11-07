@@ -10,7 +10,7 @@ import java.time.LocalTime
  *
  * @property currency the ISO 4217 code chosen at the first run; null until then, when the
  *   phone's region's stands in.
- * @property monthStartDay the day a month starts, 1 to 31; a year starts on that day of January.
+ * @property monthStartDay the day a month starts, 1 to 31; a year always starts on 1 January.
  * @property weekStart the day a week starts, once the reader picks one; null follows the locale.
  * @property theme light, dark, or the phone's.
  * @property palette the dress the app wears when it does not take the wallpaper's colours.

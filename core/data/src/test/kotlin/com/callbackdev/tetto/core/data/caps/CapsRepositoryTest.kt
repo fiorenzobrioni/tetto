@@ -9,6 +9,7 @@ import com.callbackdev.tetto.core.data.FakeToday
 import com.callbackdev.tetto.core.data.TestDataStore
 import com.callbackdev.tetto.core.data.date
 import com.callbackdev.tetto.core.data.db.ClosedPeriodEntity
+import com.callbackdev.tetto.core.data.db.SpendEntity
 import com.callbackdev.tetto.core.data.db.TettoDatabase
 import com.callbackdev.tetto.core.data.euros
 import com.callbackdev.tetto.core.data.prefs.UserPreferencesDataSource
@@ -389,7 +390,7 @@ class CapsRepositoryTest {
     }
 
     @Test
-    fun `the month start day changed replaces the monthly and yearly caps' open periods`() = runTest {
+    fun `the month start day changed replaces the monthly caps' open periods, never the yearly`() = runTest {
         val groceries = repository.addCap("Groceries", GROCERIES, euros(300), MONTH)
         repository.addCap("Travel", TRAVEL, euros(2_000), YEAR)
         repository.addCap("Coffee", COFFEE, euros(20), WEEK)
@@ -400,7 +401,8 @@ class CapsRepositoryTest {
         val (month, year, week) = repository.currentStates()
         assertThat(month.period).isEqualTo(DateRange(date(2026, 10, 27), date(2026, 11, 27)))
         assertThat(month.spent).isEqualTo(euros(30))
-        assertThat(year.period).isEqualTo(DateRange(date(2026, 1, 27), date(2027, 1, 27)))
+        // A year is the calendar's, whatever the month's start day (owner, 7 Nov 2026).
+        assertThat(year.period).isEqualTo(DateRange(date(2026, 1, 1), date(2027, 1, 1)))
         assertThat(week.period.start).isEqualTo(date(2026, 11, 2))
         assertThat(repository.closedPeriods(groceries)).isEmpty()
         assertThat(preferences.current().monthStartDay).isEqualTo(27)
@@ -474,13 +476,52 @@ class CapsRepositoryTest {
         assertThat(repository.currentStates().single().left).isEqualTo(euros(65))
 
         // A correction keeps it a refund.
-        assertThat(repository.editSpend(refund.id, euros(30))).isEqualTo(euros(25))
+        assertThat(repository.editSpend(refund.id, euros(30))).isEqualTo(SpendChange.Done(euros(25)))
         assertThat(repository.currentStates().single().spent).isEqualTo(euros(30))
 
-        // Its spend deleted after it, the period spent nothing, not less.
-        repository.deleteSpend(repository.openSpends(shoes).single { !it.refund }.id)
+        // Its spend cannot go before the refund: the period would spend less than nothing.
+        val bought = repository.openSpends(shoes).single { !it.refund }
+        assertThat(repository.deleteSpend(bought.id)).isEqualTo(SpendChange.RefundsHeld)
+        assertThat(repository.currentStates().single().spent).isEqualTo(euros(30))
+    }
+
+    @Test
+    fun `a spend never goes under its period's refunds, so no later spend is swallowed`() = runTest {
+        val shoes = repository.addCap("Clothes", COFFEE, euros(100), MONTH)
+        val bought = spend(shoes, euros(60))
+        val refund = checkNotNull(repository.addRefund(shoes, euros(30)))
+
+        // Deleted, or lowered under the refund: refused, and nothing written.
+        assertThat(repository.deleteSpend(bought.id)).isEqualTo(SpendChange.RefundsHeld)
+        assertThat(repository.editSpend(bought.id, euros(29))).isEqualTo(SpendChange.RefundsHeld)
+        assertThat(repository.undoAdd(bought)).isFalse()
+        assertThat(dao.spend(bought.id)?.amount).isEqualTo(6_000)
+        // Down to the refund itself, it may.
+        assertThat(repository.editSpend(bought.id, euros(30))).isEqualTo(SpendChange.Done(euros(60)))
         assertThat(repository.currentStates().single().spent).isEqualTo(Money.ZERO)
-        assertThat(repository.currentStates().single().left).isEqualTo(euros(100))
+
+        // The refund first, then the spend: each change keeps the period at nothing or more.
+        val deletedRefund = (repository.deleteSpend(refund.id) as SpendChange.Done).value
+        assertThat(repository.deleteSpend(bought.id)).isInstanceOf(SpendChange.Done::class.java)
+        // The refund cannot come back over a period that no longer spent what it gave back.
+        assertThat(repository.undoDelete(deletedRefund)).isFalse()
+
+        // And the next spend counts in full: nothing was left below nothing to swallow it.
+        spend(shoes, euros(20))
+        assertThat(repository.currentStates().single().spent).isEqualTo(euros(20))
+        assertThat(repository.currentStates().single().left).isEqualTo(euros(80))
+    }
+
+    @Test
+    fun `a period an older Tetto left below nothing can only come back up`() = runTest {
+        val shoes = repository.addCap("Clothes", COFFEE, euros(100), MONTH)
+        val bought = spend(shoes, euros(10))
+        val cap = checkNotNull(dao.cap(shoes))
+        // Written as the bug wrote it: a refund past what is left.
+        dao.insertSpend(SpendEntity(capId = shoes, amount = -3_000, addedAt = 0, periodStart = cap.openStart))
+        assertThat(repository.currentStates().single().spent).isEqualTo(Money.ZERO)
+        assertThat(repository.editSpend(bought.id, euros(5))).isEqualTo(SpendChange.RefundsHeld)
+        assertThat(repository.editSpend(bought.id, euros(25))).isEqualTo(SpendChange.Done(euros(10)))
     }
 
     @Test
@@ -510,6 +551,27 @@ class CapsRepositoryTest {
     }
 
     @Test
+    fun `a day turned into a week on a Thursday has four sevenths of the week's cap, the next week whole`() = runTest {
+        clock.at("2026-11-02T09:00")
+        val coffee = repository.addCap("Coffee", COFFEE, euros(10), DAY)
+        clock.at("2026-11-05T09:00")
+        spend(coffee, euros(3))
+
+        repository.changeCap(coffee, "Coffee", COFFEE, euros(70), WEEK)
+
+        val state = repository.currentStates().single()
+        assertThat(state.period).isEqualTo(DateRange(date(2026, 11, 5), date(2026, 11, 9)))
+        assertThat(state.amount).isEqualTo(euros(40))
+        // €40, the €10 the three days left in reserve, less Thursday's €3.
+        assertThat(state.left).isEqualTo(euros(47))
+        clock.at("2026-11-09T09:00")
+        val next = repository.currentStates().single()
+        assertThat(next.amount).isEqualTo(euros(70))
+        assertThat(next.partial).isNull()
+        assertThat(repository.closedPeriods(coffee).first().cap).isEqualTo(euros(40))
+    }
+
+    @Test
     fun `undo of an add deletes that spend, by its id`() = runTest {
         val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
         val kept = spend(coffee, euros(1))
@@ -523,7 +585,7 @@ class CapsRepositoryTest {
     fun `undo of a delete puts the spend back with its id and fields`() = runTest {
         val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
         val added = spend(coffee, euros(5))
-        val deleted = checkNotNull(repository.deleteSpend(added.id))
+        val deleted = (repository.deleteSpend(added.id) as SpendChange.Done).value
         assertThat(deleted).isEqualTo(added)
         assertThat(repository.openSpends(coffee)).isEmpty()
 
@@ -537,7 +599,7 @@ class CapsRepositoryTest {
     fun `undo of an edit writes the old amount back`() = runTest {
         val coffee = repository.addCap("Coffee", COFFEE, euros(20), WEEK)
         val added = spend(coffee, euros(5))
-        val previous = checkNotNull(repository.editSpend(added.id, euros(50)))
+        val previous = (repository.editSpend(added.id, euros(50)) as SpendChange.Done).value
         assertThat(previous).isEqualTo(euros(5))
         assertThat(repository.currentStates().single().spent).isEqualTo(euros(50))
 
@@ -551,11 +613,11 @@ class CapsRepositoryTest {
         val coffee = repository.addCap("Coffee", COFFEE, euros(3), DAY)
         val added = spend(coffee, euros(2))
         val other = spend(coffee, euros(1))
-        val deleted = checkNotNull(repository.deleteSpend(other.id))
+        val deleted = (repository.deleteSpend(other.id) as SpendChange.Done).value
         clock.at("2026-11-06T09:00")
 
-        assertThat(repository.editSpend(added.id, euros(1))).isNull()
-        assertThat(repository.deleteSpend(added.id)).isNull()
+        assertThat(repository.editSpend(added.id, euros(1))).isEqualTo(SpendChange.Closed)
+        assertThat(repository.deleteSpend(added.id)).isEqualTo(SpendChange.Closed)
         assertThat(repository.undoAdd(added)).isFalse()
         // Yesterday's deletion cannot be undone into a period that has closed.
         assertThat(repository.undoDelete(deleted)).isFalse()

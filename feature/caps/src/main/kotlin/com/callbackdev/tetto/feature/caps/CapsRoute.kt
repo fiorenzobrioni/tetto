@@ -183,4 +183,6 @@ internal fun noticeWords(notice: CapsNotice, format: MoneyFormat, resources: Res
     is CapsNotice.CapDeleted -> resources.getString(R.string.notice_cap_deleted, notice.capName)
 
     CapsNotice.PeriodClosed -> resources.getString(R.string.notice_period_closed)
+
+    CapsNotice.RefundsHeld -> resources.getString(R.string.notice_refunds_held)
 }

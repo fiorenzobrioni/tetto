@@ -8,6 +8,7 @@ import com.callbackdev.tetto.core.domain.euros
 import com.callbackdev.tetto.core.domain.rule
 import com.callbackdev.tetto.core.model.DateRange
 import com.callbackdev.tetto.core.model.Money
+import com.callbackdev.tetto.core.model.Pace
 import com.callbackdev.tetto.core.model.PeriodKind.DAY
 import com.callbackdev.tetto.core.model.PeriodKind.MONTH
 import com.callbackdev.tetto.core.model.PeriodKind.WEEK
@@ -108,16 +109,18 @@ class CapStatesTest {
     fun `the pace rounds down to a whole unit`() {
         // €13 left over four days: €3.25 a day, said "about €3".
         val state = CapStates.of(week.copy(reserve = euros(5)), euros(12), rule(WEEK), today, EUR)
-        assertThat(state.pace).isEqualTo(euros(3))
+        assertThat(state.pace).isEqualTo(Pace(euros(3)))
     }
 
     @Test
-    fun `the pace under one unit is not shown`() {
+    fun `the pace under one unit is said as less than one, and nothing left says none`() {
         val state = CapStates.of(week, euros(17), rule(WEEK), today, EUR)
         assertThat(state.left).isEqualTo(euros(3))
-        assertThat(state.pace).isNull()
+        // €3 over four days: 75 cents a day, "less than €1 a day" (owner, 7 Nov 2026).
+        assertThat(state.pace).isEqualTo(Pace(euros(1), lessThan = true))
+        assertThat(CapStates.of(week, euros(20), rule(WEEK), today, EUR).pace).isNull()
         val justOne = CapStates.of(week, euros(16), rule(WEEK), today, EUR)
-        assertThat(justOne.pace).isEqualTo(euros(1))
+        assertThat(justOne.pace).isEqualTo(Pace(euros(1)))
     }
 
     @Test
@@ -125,7 +128,7 @@ class CapStatesTest {
         val yen = week.copy(amount = Money(5_000))
         val state = CapStates.of(yen, Money(1_001), rule(WEEK), today, JPY)
         // ¥3,999 over four days: ¥999.75, said "about ¥999".
-        assertThat(state.pace).isEqualTo(Money(999))
+        assertThat(state.pace).isEqualTo(Pace(Money(999)))
     }
 
     @Test
@@ -155,7 +158,7 @@ class CapStatesTest {
         assertThat(state.left).isEqualTo(euros(27))
         assertThat(state.bar).isEqualTo(Share(0, 2700))
         assertThat(state.aheadOfDays).isFalse()
-        assertThat(state.pace).isEqualTo(euros(6))
+        assertThat(state.pace).isEqualTo(Pace(euros(6)))
     }
 
     @Test

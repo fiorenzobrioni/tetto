@@ -29,7 +29,7 @@ object CapChanges {
      * month's start day): the new rule's period that holds today. Never before [lastClosedEnd]: a
      * closed period is never changed, so a new period that would reach back into one starts where
      * it ended (a daily cap turned weekly on a Thursday, after closing Monday to Wednesday, counts
-     * Thursday to Sunday).
+     * Thursday to Sunday, on four sevenths of the week's cap: [PeriodAmount], owner, 7 Nov 2026).
      */
     fun replacedOpenStart(rule: PeriodRule, today: LocalDate, lastClosedEnd: LocalDate?): LocalDate {
         val start = PeriodCalendar.containing(today, rule).start
@@ -50,6 +50,9 @@ object CapChanges {
      *   held to [newAmount]. What was added from [start] on moves into the new period. So a spend
      *   of Monday never makes Thursday's day look over, and the CSV keeps the week it was added in.
      *
+     * The days kept have their share of what the old period had ([PeriodAmount], itself a share
+     * where a change had cut it short already).
+     *
      * A one-off cap (owner, 6 Nov 2026) takes the same rules, to it, from it and between two of its
      * dates; it keeps no reserve, so [reserveLimit] is then nothing. Its new dates can start after
      * today: the days kept are only those already past, until [keptUntil], and what was added
@@ -67,7 +70,9 @@ object CapChanges {
         if (keptUntil <= cap.openStart) return Replacement(start, minOf(cap.reserve, reserveLimit), null)
         val open = PeriodCalendar.openPeriod(cap, oldRule)
         val days = ChronoUnit.DAYS.between(cap.openStart, keptUntil).coerceAtMost(open.length.toLong())
-        val share = Money(Math.multiplyExact(cap.amount.minor, days) / open.length)
+        // The days kept's share of what the open period had: of its own share, where it was cut
+        // short already.
+        val share = Money(Math.multiplyExact(PeriodAmount.of(cap, oldRule).minor, days) / open.length)
         val outcome = Rollover.close(share, cap.reserve, spentBefore, limit = reserveLimit)
         val kept = ClosedPeriod(
             capId = cap.id,

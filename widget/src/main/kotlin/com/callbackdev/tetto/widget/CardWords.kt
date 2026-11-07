@@ -79,17 +79,17 @@ internal class CardWords(
         state.ended -> res.getString(
             R.string.widget_ended_detail,
             format.short(state.spent),
-            format.short(state.cap.amount),
+            format.short(state.amount),
             day(state),
         )
 
         startsAgain(state) -> res.getString(
             R.string.widget_detail_over,
-            format.short(state.cap.amount),
+            format.short(state.amount),
             again(state.startsAgain),
         )
 
-        else -> res.getString(R.string.widget_detail, format.short(state.cap.amount), until(state.lastDay))
+        else -> res.getString(R.string.widget_detail, format.short(state.amount), until(state.lastDay))
     }
 
     /** "Coffee · until Sunday"; over, "Coffee · starts again on Monday". */
@@ -122,9 +122,9 @@ internal class CardWords(
 
     /** The last words' first half, broken off the day: "of €20"; ended, "€720 of €800". */
     private fun detailHead(state: CapState): String = if (state.ended) {
-        res.getString(R.string.widget_ended_of, format.short(state.spent), format.short(state.cap.amount))
+        res.getString(R.string.widget_ended_of, format.short(state.spent), format.short(state.amount))
     } else {
-        res.getString(R.string.widget_of, format.short(state.cap.amount))
+        res.getString(R.string.widget_of, format.short(state.amount))
     }
 
     /** A row's second line, fullest first: "Coffee · until Sunday", "until Sunday", "Coffee". */
@@ -140,12 +140,22 @@ internal class CardWords(
         else -> until(state.lastDay)
     }
 
-    /** The pace, fullest first ("about €4 a day", "€4 a day"); none where the cap has none, or hidden. */
+    /**
+     * The pace, fullest first ("about €4 a day", "€4 a day"; under a unit, "less than €1 a day",
+     * "under €1 a day"); none where the cap has none, or hidden.
+     */
     fun paceForms(state: CapState): List<String> = state.pace?.takeUnless { hidden }?.let {
-        listOf(
-            res.getString(R.string.widget_pace, format.short(it)),
-            res.getString(R.string.widget_pace_short, format.short(it)),
-        )
+        if (it.lessThan) {
+            listOf(
+                res.getString(R.string.widget_pace_less, format.short(it.perDay)),
+                res.getString(R.string.widget_pace_less_short, format.short(it.perDay)),
+            )
+        } else {
+            listOf(
+                res.getString(R.string.widget_pace, format.short(it.perDay)),
+                res.getString(R.string.widget_pace_short, format.short(it.perDay)),
+            )
+        }
     }.orEmpty()
 
     /** The cap's sentence on a tall card, fullest first ([CapNote]); none where it has nothing to add. */
@@ -156,13 +166,18 @@ internal class CardWords(
             null -> emptyList()
 
             // The day is the last words' ("until Sunday"): the sentence says how much a day, not until when.
-            is CapNote.Pace -> if (note.ahead) {
-                listOf(
-                    res.getString(R.string.widget_note_ahead_pace, format.short(note.perDay)),
+            is CapNote.Pace -> when {
+                note.ahead -> listOf(
+                    res.getString(
+                        if (note.lessThan) R.string.widget_note_ahead_pace_less else R.string.widget_note_ahead_pace,
+                        format.short(note.perDay),
+                    ),
                     res.getString(R.string.widget_note_ahead_short),
                 )
-            } else {
-                listOf(res.getString(R.string.widget_note_pace, format.short(note.perDay)))
+
+                note.lessThan -> listOf(res.getString(R.string.widget_note_pace_less, format.short(note.perDay)))
+
+                else -> listOf(res.getString(R.string.widget_note_pace, format.short(note.perDay)))
             }
 
             CapNote.Ahead -> listOf(
@@ -222,14 +237,14 @@ internal class CardWords(
                 state.cap.name,
                 day(state),
                 format.short(state.spent),
-                format.short(state.cap.amount),
+                format.short(state.amount),
             )
         } else if (state.over) {
             res.getString(
                 R.string.widget_description_over,
                 state.cap.name,
                 format.short(state.overBy),
-                format.short(state.cap.amount),
+                format.short(state.amount),
                 day(state),
             )
         } else {
@@ -237,13 +252,18 @@ internal class CardWords(
                 R.string.widget_description_left,
                 state.cap.name,
                 format.short(state.left),
-                format.short(state.cap.amount),
+                format.short(state.amount),
                 until(state.lastDay),
             )
         }
         val extras = listOfNotNull(
             res.getString(R.string.widget_description_ahead).takeIf { state.aheadOfDays },
-            state.pace?.let { res.getString(R.string.widget_description_pace, format.short(it)) },
+            state.pace?.let {
+                res.getString(
+                    if (it.lessThan) R.string.widget_description_pace_less else R.string.widget_description_pace,
+                    format.short(it.perDay),
+                )
+            },
             state.cap.reserve.takeIf { it.isPositive }?.let {
                 res.getString(R.string.widget_description_reserve, format.short(it))
             },

@@ -241,6 +241,24 @@ object TettoIcons {
         }
     }
 
+    /**
+     * Money back (owner, 7 Nov 2026): an arrow that turns back on itself, its head pointing to the
+     * start, as a return is. Its own shape, so a refund never wears the renewal's circle.
+     */
+    val Refund: ImageVector by lazy {
+        icon("refund", autoMirror = true) {
+            // The head, pointing back to the left.
+            moveTo(9f, 5f)
+            lineTo(4.5f, 9.5f)
+            lineTo(9f, 14f)
+            // The shaft, out to the right and round, coming back under itself.
+            moveTo(4.5f, 9.5f)
+            lineTo(14.5f, 9.5f)
+            arcTo(5f, 5f, 0f, isMoreThanHalf = false, isPositiveArc = true, x1 = 14.5f, y1 = 19.5f)
+            lineTo(10.5f, 19.5f)
+        }
+    }
+
     /** The numpad: three rows of three keys and the zero, as dots. */
     val Keypad: ImageVector by lazy {
         icon("keypad") {

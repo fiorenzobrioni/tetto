@@ -176,8 +176,8 @@ The riskiest part of the app: a wrong period, a cent of drift or a reserve that 
   - **Day**: `[date, date + 1)`.
   - **Week**: from the week's first day on or before the date (the setting; the locale's `WeekFields.firstDayOfWeek` by default), seven days.
   - **Month**: from the month start day `d` (the setting, 1 to 31; 1 by default): each month starts on `min(d, its length)`, and a period runs to the next month's start. With `d = 31`: 31 Jan, 28 (or 29) Feb, 31 Mar, 30 Apr.
-  - **Year**: from January's month start (`d` January) to the next.
-- **A cap's open period** runs from its `openStart` to the end of the rule's period that holds it (`PeriodCalendar.openPeriod`): `openStart` is that period's own start, except where a change of rule could not reach back into a closed period (§4.5), and there the open period is the rest of the rule's one, the next whole. A cap stores no end, so no setting can contradict one.
+  - **Year**: the calendar year, from 1 January to the next, whatever the month start day (owner, 7 Nov 2026, replacing "from `d` January": a salary's month from the 27th made a year's cap, a holiday's or the gifts', run from 27 January to 26 January). A yearly cap made by the old rule, its open period from `d` January, simply closes on 1 January, on its share of the cap (§4.5): nothing to move.
+- **A cap's open period** runs from its `openStart` to the end of the rule's period that holds it (`PeriodCalendar.openPeriod`): `openStart` is that period's own start, except where a change of rule could not reach back into a closed period (§4.5), and there the open period is the rest of the rule's one, with its share of the cap (§4.5, `PeriodAmount`), the next whole. A cap stores no end, so no setting can contradict one.
 - **Today** is `LocalDate.now(zone)` from an injected clock and zone (`TodaySource`, as Passo's), and the zone is the phone's current one.
 - Periods never come from timestamps compared with a stored end: a daylight-saving night, a flight across time zones and a clock set back move instants, not dates.
 
@@ -185,7 +185,7 @@ The riskiest part of the app: a wrong period, a cent of drift or a reserve that 
 
 - A spend is an amount, its cap, the instant it was added (`addedAt`, for the list's time and the CSV) and **the start of the period it counts in** (`periodStart`), fixed when it is added: the cap's open period at that moment. A later change of zone never moves it.
 - A spend counts **now**: there is no date to pick (VISION, non-goals).
-- **A refund** (owner, 6 Nov 2026) is a spend below zero: money back, added from the cap's sheet to its open period (`CapsRepository.addRefund`), at most what that period spent. What a period spent is its spends less its refunds **never below zero** (`MAX(0, SUM)` in `capRows`; the reader's month likewise), so a refund whose spend was deleted after it gives no money that was never spent. A correction keeps a refund a refund; undo, the CSV (`-4.00`), the backup and a change of currency carry the sign (`Rescale` rounds a refund as its size).
+- **A refund** (owner, 6 Nov 2026) is a spend below zero: money back, added from the cap's sheet to its open period (`CapsRepository.addRefund`), at most what that period spent. What a period spent is its spends less its refunds, and **it never goes below zero**: a spend deleted or lowered under the period's refunds is refused (`SpendChange.RefundsHeld`; the numpad says the least a spend can be corrected to, «At least €4.00, to cover this period's refunds», and a deleted row slides back with a notice), and so is an undo that would do the same; the refund is corrected or deleted first (7 Nov 2026). Held at the write and not only at the read: a sum left below zero was a credit nobody could see, which swallowed the next spends. `MAX(0, SUM)` in `capRows` (and the reader's month) stays, for a period an older build left below zero, which a change can then only bring back up. A correction keeps a refund a refund; undo, the CSV (`-4.00`), the backup and a change of currency carry the sign (`Rescale` rounds a refund as its size).
 - **Edit** (the amount) and **delete** are allowed while the spend's period is the cap's open period. Spends of closed periods are frozen (§4.4).
 - **Undo** is the inverse operation by id: an add is undone by deleting that spend; a delete by inserting it again with its id and fields; an edit by writing the old amount back.
 - "A spend was added today" (the reminder): any spend whose `addedAt` falls on today's local date, in the zone at the moment of asking.
@@ -227,6 +227,7 @@ For each cap whose open period ended on or before today (`openEnd <= today`), in
   - **A new period that starts later** (a week turned into days on a Thursday, a month start moved forward): the days before it are **kept**, closed as one `ClosedPeriod` line from the open period's start to the new one's, with what was added in them (the spends added before the new period's first instant in the zone of asking, which keep their `periodStart`) and **their share of the old cap**: its days over the open period's own length, rounded down to a minor unit. It closes as any period does (§4.4), its reserve held to the cap that runs on. Only what was added from the new period's first day moves into it. So a Monday spend never makes Thursday's day look over, and the CSV keeps the week it was added in.
   - Spends of periods already closed stay in them.
   - **Never before the last closed period's end** (`CapChanges.replacedOpenStart`): a closed period is never changed, so a new period that would reach back into one starts where it ended. A daily cap turned weekly on a Thursday, after Monday to Wednesday closed as days, counts Thursday to Sunday; the next week is whole. With nothing closed yet, the new period is whole.
+  - **A period cut short has its share of the cap** (`PeriodAmount`; owner, 7 Nov 2026, replacing "the new period has the whole cap", which gave Thursday to Sunday a whole week's cap on top of three days' caps): an open period that starts after its rule's period began has the cap's amount times its days over the whole period's, rounded down to a minor unit (Thursday to Sunday of a €70 week: €40). Derived from the dates, never stored: what it says (`CapState.amount`, `partial`; the sheet's receipt «Cap, 4 days of 7»), what it closes on (`CatchUp`, the reserve still held to a whole cap) and the days a later change keeps (their share of the share) all read it; the next period is whole. The same for a period cut short by a week or a month start moved, or by the week in force.
   - A change of week or month start writes the setting, then closes what ended under the old rule and moves the open periods, in one transaction; `CapsRepository` lets nothing read in between (one lock for every read and write), since an open period judged by a rule it was not made for can look ended.
 - **A one-off cap** (owner, 6 Nov 2026) takes the same rules, to it, from it and between two of its dates: its chosen dates stand in for the rule's period (`CapChanges.oneOffDates`: never before the last closed line, never ending before today); it keeps no reserve, so a cap turned into one lets its reserve go (the editor says so) and the days kept close with a limit of nothing. New dates that start after today keep only the days already past (`keptUntil`, today), and what was added from today on goes with the new dates. An end moved alone moves nothing else. **An ended one-off** given new dates or a kind (its sheet's «Again, with new dates») starts again from them, after its closed line, with no reserve; nothing moves.
 - **Clear the reserve**: the reserve becomes zero, with undo.
@@ -237,13 +238,13 @@ For each cap whose open period ended on or before today (`openEnd <= today`), in
 
 From a cap, its open period's spends and today (`CapStates.of`):
 
-- `left = cap + reserve − spent`; **over** when `left < 0` (said "€30 over", never "−€30" alone).
+- `left = cap + reserve − spent`; **over** when `left < 0` (said "€30 over", never "−€30" alone). The cap is the open period's (`CapState.amount`): its share for a period a change cut short (§4.5).
 - `daysLeft = openEnd − today`, today counted, at least 1.
 - **The bar**: `spentShare = spent / (cap + reserve)`, held to `[0, 1]`, with an over state beyond.
 - **The mark for today**, for a week, a month or a year: `daysShare = (today − openStart + 1) / length`, today counted.
-- **Ahead of the days**: not over, and `spentShare > daysShare + slack / length × daysLeft / length`: spending runs ahead of the period (the bar takes the *attention* ink). The slack is one step of the period, a day of a week, seven days of a month, thirty of a year, fading to nothing by its last day (owner, 6 Nov 2026, replacing `spentShare > daysShare`, which lit three caps of five on the 5th of a month, and a week's shop on a month's first day for a week): on a week's first day the line is two sevenths, the mark and the day the reader approved; a month nearly spent with a week to go is still ahead. No fixed threshold. The shares are kept as whole numbers (`Share`, `CapStates.aheadLine`) and compared exactly; the screen turns them into lengths.
+- **Ahead of the days**: not over, and `spentShare > daysShare + slack / length × daysLeft / length`: spending runs ahead of the period (the bar takes the *attention* ink). The slack is one step of the period, a day of a week, seven days of a month, thirty of a year, fading to nothing by its last day (owner, 6 Nov 2026, replacing `spentShare > daysShare`, which lit three caps of five on the 5th of a month, and a week's shop on a month's first day for a week): on a week's first day the line is two sevenths, the mark and the day the reader approved; a month nearly spent with a week to go is still ahead. No fixed threshold. The shares are kept as whole numbers (`Share`, `CapStates.aheadLine`) and compared exactly; the screen turns them into lengths. Said in words too (owner, 7 Nov 2026): «ahead of the days» under the bar, in the attention ink, on a tile and on a row of the list, for an eye that does not know what the mark means; «At a glance» keeps the ink and the mark, its rows too small for a line more, and «In words» says it in its note as before.
 - **The cap's habits** (`RecentAmounts`, owner, 6 Nov 2026): the numpad offers the most frequent amounts of the cap's last twenty spends, of any period, at most three, ties to the one used last, shown smallest first; each is added in one touch. Amounts only.
-- **The pace**, for a week, a month or a year, while not over and `daysLeft ≥ 2`: `left / daysLeft`, rounded down to a whole unit of the currency; not shown under one unit.
+- **The pace**, for a week, a month or a year, while something is left and `daysLeft ≥ 2`: `left / daysLeft`, rounded down to a whole unit of the currency; under one unit, «less than €1 a day» (`Pace.lessThan`; owner, 7 Nov 2026, replacing "not shown under one unit": a cap nearly spent with days to go said nothing at the moment it mattered).
 - **The renewal** (owner, 5 Nov 2026): "until" names the open period's **last day**, included ("€12 until Sunday", "until 30 Nov"); a cap over says when it **starts again**, the next period's first day ("it starts again on Monday"). Each date is said by how near it is (`Days.near`): today, tomorrow, a weekday from two to six days ahead, else a date (a week ahead would be today's own weekday). The words are Phase 2's.
 - **Renewed today**: a period closed today and the open one began with it; never a one-off's.
 - **A one-off cap** (owner, 6 Nov 2026): its own dates; no reserve, no renewal; a mark and a pace over its days (none for a one-off of one day, as for a day); «ahead of the days» with a slack of a seventh of its length, at least a day, fading as the others' (kept exact: `Share(max(length, 7), 7)` days). Over, it says until when it runs, never when it starts again. **Ended**, it says what its dates spent of its cap, from the closed line that ends where it does (`CapState.ended`: its period the line's, its left what the line left), and `endedToday` the day after its last.
@@ -291,7 +292,7 @@ From a cap, its open period's spends and today (`CapStates.of`):
 
 - The schema is exported (`core/data/schemas/`) and committed; every migration from version 1 on has a `MigrationTestHelper` test and an upgrade test from the first release's schema, as Passo's. Never `fallbackToDestructiveMigration`. Version 1 itself is pinned by `SchemaTest`, which builds a database from the exported JSON and opens it with the code (the helper cannot open its database on Windows: CLAUDE.md).
 - Ids are `AUTOINCREMENT`: an id is never reused, so a spend put back by Undo keeps its own.
-- Size: a few thousand spends a year, a few hundred closed periods. Spends of closed periods are kept for the CSV and the backup and never listed (owner, 5 Nov 2026).
+- Size: a few thousand spends a year, a few hundred closed periods. Spends of closed periods are kept for the CSV and the backup and never listed (owner, 5 Nov 2026). Kept, so nothing the screens, the cards or the reminder read grows with them (7 Nov 2026): each of their queries goes to its rows by a key or an index (a cap's open period by `(cap_id, period_start)`, a day's or a month's spends by `added_at`, a cap's latest closed lines and its last closed end by the key's order, `LIMIT`ed), pinned by `HistoryVolumeTest` on ten years of a daily cap. The one read that sorts a cap's whole history is the numpad's habits (`lastAmounts`), a few thousand rows at most: left without an index of its own (owner, 7 Nov 2026), since one would cost a schema version.
 
 ### DataStore (Preferences), file `settings`
 
@@ -328,7 +329,7 @@ One `WidgetLook` per `appWidgetId`: the card's ground (light, dark, system, one 
 
 - **`PeriodCalendar`**: a date and a rule → the period that contains it; a period → the next (§4.2).
 - **`Rollover`** and **`CatchUp`**: one period closed, a run folded, the plan of what a catch-up writes (pure; the repository applies it in one transaction) (§4.4). The most tested code of the app.
-- **`CapState`**, **`Pace`**: §4.6.
+- **`CapState`**, **`Pace`** (about so much a day, or less than one unit): §4.6. **`PeriodAmount`** (owner, 7 Nov 2026): what a cap gives its open period, the whole cap or, for a period a change cut short, its share of the days (§4.5).
 - **`SpendPreview`** (`ofRefund` for money back) and **`MoneyInput`**: the numpad's arithmetic (§4.1, §4.6); **`Renewals`**, how a period that renewed today ended (§4.6); **`RecentAmounts`**, the cap's habits above its keys (§4.6).
 - **`CapsSentence`**: the caps screen's sentence, and «In words»'s (§4.6).
 - **`MonthSums`**, **`YourMonth`** (owner, 6 Nov 2026): the reader's month (from the month start day, the salary's for a reader who sets it so) and the one before; what the caps are worth in it, about (a month's cap its amount, a day's for each of its days, a week's for its days over seven, a year's a twelfth; the reserves left out; exact in 84ths, rounded once to the whole unit). What was added to the caps in each month is the repository's sum of the spends added between the months' first instants in the zone of asking (`Days.instantsOf`), closed periods' spends included. Shown last on the caps screen; never a sum of what is left, no month before the last, no choice of period.
@@ -644,6 +645,52 @@ Approved after the review (§15, «Two features from the review»). **Built in o
 
 - [ ] As the family's: the same key, the store listing, the data safety form ("no data collected, no data shared").
 
+### Later — Erasing older spends (owner, 7 Nov 2026; not scheduled)
+
+Written down to be built later, in a session of its own, after the 1.0 release; nothing of it exists yet. Why it is not automatic, and why it is offered at all, is in the log («The second review»). Read this section whole before starting, then §4.4, §5 and §11 Phase 4 (your data).
+
+**What it is.** A row in Settings, «Your data»: «Erase older spends» («Cancella le spese più vecchie»). The reader chooses an age, **older than 1 year, 2 years or 5 years**, and Tetto deletes the spends of the periods that **ended before that date**, after a confirmation that says how many and from when. Never by itself, never on a schedule, never in the background: a reader's spends are the reader's records, and only the reader removes them. A reader who never uses it keeps everything, as today.
+
+**What it never touches.** The open period of any cap, and its spends. Any period that ended on or after the cutoff. The caps, their reserves, their settings. Each cap's **latest closed line** (the engine reads it: `lastClosedEnd` for `replacedOpenStart`, `closedEnding` for the renewal's sentence and an ended one-off's tile, sheet and share of «Your month»), even when it is older than the cutoff (a cap untouched for years). The last month and the one before («Your month» sums them, from spends): the shortest choice is a year for that reason. A period is never split: either all its spends go or none.
+
+**The cutoff.** A local date: today minus the chosen years, in the zone of the moment of asking (`Moment`, read once). A spend goes when its period's closed line **ends on or before the cutoff** (`end_exclusive <= cutoff`), found through the line that starts on its `period_start`. A spend whose `period_start` matches no closed line is never deleted (it can only be the open period's).
+
+**What is deleted, in one transaction** (`BackupRepository.eraseOlder(cutoff)`, under the caps' lock, `CapsRepository.exclusively`, with `catchUpLocked` first, as `backup()` and `restore()` do):
+
+```sql
+-- the spends of the periods that ended by the cutoff
+DELETE FROM spends WHERE id IN (
+    SELECT s.id FROM spends s
+    JOIN closed_periods p ON p.cap_id = s.cap_id AND p.start = s.period_start
+    WHERE p.end_exclusive <= :cutoff
+);
+-- the lines of those periods, but never a cap's latest
+DELETE FROM closed_periods
+WHERE end_exclusive <= :cutoff
+  AND start < (SELECT MAX(q.start) FROM closed_periods q WHERE q.cap_id = closed_periods.cap_id);
+```
+
+Both use the indexes that exist (`(cap_id, period_start)` on `spends`, the key `(cap_id, start)` on `closed_periods`): **no schema change**, no migration. Return how many spends and lines went, for the notice. Optionally, after the transaction commits, `VACUUM` through `openHelper.writableDatabase` (never inside a transaction), so the file shrinks too; measure first whether it is worth its seconds on a phone (it rewrites the whole file).
+
+**The screen** (`:feature:settings`, `DataSection`, `DataViewModel`):
+
+- The row is drawn only when there is something older than a year to erase (a count query, `SELECT COUNT(*)` with the same join and the one-year cutoff): no dead row on a young install (the family's rule).
+- Its subtitle says what is there: «412 spends from before 7 Nov 2025» (plurals; the date with the locale's own pattern).
+- A touch opens a dialog: the three ages as radio buttons, each with its count («older than 2 years: 120 spends»), the ages with nothing to erase disabled; a line that says it cannot be undone and that a backup keeps them («Make a backup first» as a text button that runs the export, `CreateDocument`, then comes back to the dialog); the confirm button in the over ink, labelled with the count («Erase 412 spends»).
+- After it, a notice with what went («412 spends erased»), **no Undo**: say so in the dialog, never offer one that cannot work.
+- TalkBack: the dialog's choices read with their counts; `assertAccessible()` and `walkPage()` on it.
+
+**What else changes.** The CSV and the backup have fewer rows after it: say so in the dialog («the CSV and the backup will no longer have them»). The cap's sheet's «The last periods» is unaffected (it reads three lines, kept unless older than the cutoff, and then the latest stays). The guide's chapter on your data gains one sentence on it, in both languages. VISION's «Your data» and §5 say it.
+
+**Tests** (the engine's rule: no change to the data without them):
+
+- The repository (`BackupRepositoryTest` or a class of its own, Robolectric, in-memory Room): spends of periods ended before the cutoff go, those ending after stay; a period that straddles the cutoff keeps all its spends; the open period's spends stay at any age; each cap's latest line stays (a cap with no spend for three years); an ended one-off's closing line stays and its tile still says what its dates spent; refunds go with their period (a period's sum is never left below zero, §4.3); idempotent (a second run erases nothing); the catch-up runs first (a period that ended at midnight counts); «Your month» unchanged for this month and the last.
+- The counts for the three ages, and the row absent with nothing older than a year.
+- The dialog: its counts, the disabled ages, the confirm label, the notice; light and dark, English and Italian, twice the text size; the screenshots looked at (no line broken where it should not be).
+- A volume case: `HistoryVolumeTest`'s ten years, erased to two, leaves two years and the latest lines, in well under a second.
+
+**Not part of it**: an automatic or periodic erase, a size limit that erases by itself, erasing a single period or a single cap's history (deleting the cap does that already), anything that turns the history into a list to browse (Tetto keeps no ledger).
+
 ---
 
 ## 12. Testing strategy
@@ -702,6 +749,8 @@ Nothing is open (5 Nov 2026): the three questions of Phase 0 were answered the s
 - [x] **The first run's reminder page on the phone** (the log, 7 Nov 2026, «The evening reminder offered at the first run»): after the card's page, Android's question from it, the reminder on in Settings after a yes, off after a no.
 - [x] **Phase 6b on the phone** (the log, 7 Nov 2026; done on the owner's phone, the log, «Phase 6b's device checks done»): a one-off made, spent on, ended and run again (the sentence the day after, the muted tile, its sheet); the date-range picker in both languages; a card with its amounts hidden beside one without; the lock at start, after a minute away (and not under it), from the numpad over the home screen, turned off with the phone's lock, the recent apps' blank picture, and the switch on a phone with no screen lock.
 - [ ] **To evaluate, not planned**: a period of two weeks, for a fortnightly pay.
+- [ ] **The second review on the phone** (the log, 7 Nov 2026, «The second review»): a spend with a refund deleted (slides back, the notice) and corrected down (the least); a daily cap turned weekly on a Thursday (the share on the tile, «Cap, 4 days of 7» on the receipt); a yearly cap from 1 January; «less than €1 a day»; «ahead of the days» and the reserve's line on the tiles and the list.
+- [ ] **Later, not scheduled: «Erase older spends»** (owner, 7 Nov 2026), §11 «Later — Erasing older spends», to build after 1.0 in a session of its own.
 - [x] **The renewal's sentence and refunds on the phone** (the log, «Two features from the review»).
 - [x] **The review's changes on the phone** (the log, «The review»): the tiles' arrow and lines, the receipt, the numpad's habits (one touch adds, Undo), the notices replacing each other, and whether the fading slack of «ahead of the days» feels right over a month.
 - [x] **The new mark on the phone** (the log, «The mark redrawn»): the launcher icon in the phone's own mask, the themed icon, and the reminder's status-bar icon at its real size.
@@ -1057,3 +1106,32 @@ The owner tried the APK of this branch on their phone and reports the checks don
 ### 7 Nov 2026 — The other device checks done (owner: "Sì, sono già fatte anche quelle: chiudile")
 
 The owner reports the three remaining checks on the phone done as well: the renewal's sentence and refunds; the review's changes (the tiles' arrow and lines, the receipt, the numpad's habits, the notices replacing each other, the fading slack of «ahead of the days» over a month); the new mark (the launcher icon in the phone's mask, the themed icon, the reminder's status-bar icon). Their boxes in §15's Open are ticked. What stays open: «In words» drawn blank once (to watch for), the automatic backup into a folder (a session of its own), a fortnight's period (to evaluate), and Phase 7.
+
+### 7 Nov 2026 — The second review: refunds, the history, the periods and the screens (owner: "Fai una review dell'app Tetto [...]"; then "Periodo parziale sono d'accordo con la tua proposta. Tetto Annuale, sono d'accordo con la tua proposta del 1° gennaio. [...] Parti con le implementazioni.")
+
+A second review, of the Room storage, the cap engine, what grows and the screens, found one real defect and a few figures and words to make more exact. The owner approved a plan; built in steps, each with its tests.
+
+**The defect: a spend could vanish after a refund** (§4.3). A refund is held to what its period spent when it is added, but a spend deleted or lowered after it was not: the period's sum went below zero, the read held it at zero (`MAX(0, SUM)`), and the hidden credit swallowed the next spends (a €60 spend, a €30 refund, the €60 deleted: a €20 spend after it counted nothing, reproduced in a test before the fix). The repository now refuses such a change, and an undo that would do the same (`SpendChange.RefundsHeld`); the numpad says the least a spend can be corrected to («At least €4.00, to cover this period's refunds», its button waiting); a deleted row slides back and a notice says why («correct or delete a refund first»). The read's clamp stays, for a period an older build left below zero, which a change can then only bring up.
+
+**What grows** (§5). Nothing grows by itself; the spends and the closed lines grow with what the reader adds, a few thousand rows a year, kept for the CSV and the backup (owner, 5 Nov 2026), and kept still: asked whether old ones could be erased, the review advised against an automatic erase (the spends are the reader's records, the CSV is the only place the reader sees their history, and the size is under a megabyte in ten years) and for two things instead, both accepted: no read the screens repeat grows with the history, and an erase the reader asks for, written down for later.
+
+- The cap's sheet reads its three latest lines with a `LIMIT` (`latestClosedPeriods`), not all of them; a cap's last closed end comes from the key's order (`ORDER BY start DESC LIMIT 1`), not a `MAX` over its lines, in `capRows` and `lastClosedEnd`. A restored file whose closed lines overlap is damaged, so that order always holds (`BackupCodec`).
+- `HistoryVolumeTest`: ten years of a daily cap, three spends a day; every repeated query goes to its rows by a key or an index (their `EXPLAIN QUERY PLAN` pinned), the sheet reads three lines, the month its own spends.
+- **No index for the numpad's habits** (owner: "L'indice direi a questo punto di non toccarlo"): `lastAmounts` sorts a cap's spends, a few thousand at most; an index of its own would cost a schema version for a fraction of a millisecond. Said in §5.
+- **«Erase older spends»**, for later: §11, «Later — Erasing older spends», written to be built from (what goes, what never does, the SQL, the screen, the tests).
+
+**The engine** (§4.2, §4.5, §4.6; the owner's approval, replacing Phase 1's rules where named; `docs/planning` untouched, nothing archived yet):
+
+- **A period cut short has its share of the cap** (`PeriodAmount`). A daily €10 cap turned into a €70 weekly one on a Thursday gave Thursday to Sunday the whole €70, on top of three days' caps; now four sevenths, €40, and the next week whole. The same for a period a week or month start moved cut short, and for the week in force. Derived from the dates, never stored: no schema change. It is what the cap says (`CapState.amount`, `partial`), what it closes on (`CatchUp`, the reserve still held to a whole cap) and what a later change keeps of it. The sheet's receipt says it: «Cap, 4 days of 7».
+- **A year is the calendar's** (§4.2): from 1 January, whatever the month start day; a salary's month from the 27th made a year run from 27 January. The month start no longer moves yearly caps (`replaceOpenPeriodsLocked`). A yearly cap opened by the old rule from `d` January closes on 1 January on its share of the cap, with nothing to move. Settings' line under the month start and the guide's chapter on periods say it, in both languages.
+- **The pace under one unit is said** (`Pace.lessThan`): «less than €1 a day», on the tile, the sheet, TalkBack's sentence and «In words» (its note and its short forms, «under €1 a day»), where it said nothing at the moment it mattered. None with nothing left.
+
+**The screens** (owner: points 1 to 3 and 6 of the review's fifth; not 4, a caption on the sheet's gestures, "dopo un po' stanca", nor 5, a word on the cards after a restore):
+
+1. **The reserve in the cap's line**: «€16 left of €20 + €4» on a tile (its chip still naming the reserve), «of €20 + €4 · until Sunday» on a row of the list (with the word «reserve» too, the Italian row broke inside «fino a domenica»; TalkBack's sentence names it), so the figure reads as the sum it is; the guide's example tiles too. The cards keep «of €20»: their forms are measured, and «In words» names the reserve in its note.
+2. **«ahead of the days» in words** under the bar, on a tile and a row, in the attention ink (pinned at 4.5:1 on the tile's ground in `ContrastTest`), for an eye that does not know what the mark means; «At a glance» keeps the ink and the mark.
+3. **A refund's own icon** (`TettoIcons.Refund`, an arrow that turns back), no longer the renewal's circle.
+4. **No line broken where it should not be** (owner: "guarda anche che non ci siano degli a capo involontari"): a line under a cap's figure, on a tile or a row, steps down to 12 sp where that keeps it on one line (`DetailLine`, the design system's `FewLinesAutoSize`), so «starts again on Monday» no longer broke on a tile at the phone's own text size (Settings' example showed it); at a large text size it wraps at its full size, and a short day («until Sunday», «fino a domenica») is kept together, so a row breaks at its separator, never inside the day.
+5. The README's screenshots redrawn where they change (caps, caps-dark, caps-list, cap-sheet), their descriptions in the README too.
+
+- **Checked**: every unit test green (`./gradlew test`), spotless, lint and the forbidden permissions clean; the screenshots looked at in English and Italian, light and dark, the tiles and the list, at twice the text size, for a line broken where it should not be. On the phone: §15's Open.
