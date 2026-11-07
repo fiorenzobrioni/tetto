@@ -25,9 +25,9 @@ the caps screen's first-day tip, the accessibility pass and the README's screens
 in the build are `:app`, `:core:model`, `:core:domain`, `:core:data`, `:core:reminder`,
 `:core:designsystem`, `:core:testing`, `:feature:caps`, `:feature:onboarding`,
 `:feature:settings`, `:feature:guide` and `:widget`. The device checks of Phases 4 to 6 are done
-on the owner's phone (6 Nov 2026). **Phase 6b is built (7 Nov 2026)**: the one-off cap, the hidden
-amounts on the cards and the lock, to be checked on the phone (PLANNING §15, Open); Phase 7 is the
-1.0 release.
+on the owner's phone (6 Nov 2026). **Phase 6b is built and checked on the phone (7 Nov 2026)**: the
+one-off cap, the hidden amounts on the cards and the lock, with the first run's reminder page;
+Phase 7 is the 1.0 release.
 
 **Tetto and Saldo are two separate apps, alternatives to each other** (owner, 5 Nov 2026).
 Tetto takes the family's look and structure from its sisters, so the apps are recognisable;
