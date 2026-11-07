@@ -20,7 +20,8 @@ data class CatchUpPlan(val closed: List<ClosedPeriod>, val openStart: LocalDate,
  * the cap, what its open period spent, the rule in force and today in; the plan out, or null when
  * nothing ended, so that a catch-up run twice does nothing the second time.
  *
- * - The open period closes with its spends, as one line.
+ * - The open period closes with its spends, as one line; one a change cut short, on its share of
+ *   the cap ([PeriodAmount]).
  * - The empty periods after it (a long absence: no spend can count in a period that was never
  *   open) fold into one line, from the first's start to the last's end, `periods = n`, its
  *   reserve computed period by period: a daily cap left for 400 days writes two lines, not 400.
@@ -36,12 +37,15 @@ object CatchUp {
         var period = PeriodCalendar.openPeriod(cap.openStart, rule)
         if (period.endExclusive > today) return null
 
-        val first = Rollover.close(cap.amount, cap.reserve, spent)
+        // A period a change cut short closes on its share of the cap; the reserve is held to a
+        // whole one, the limit of every period after it.
+        val amount = PeriodAmount.of(cap, rule)
+        val first = Rollover.close(amount, cap.reserve, spent, limit = cap.amount)
         val closed = mutableListOf(
             ClosedPeriod(
                 capId = cap.id,
                 range = period,
-                cap = cap.amount,
+                cap = amount,
                 spent = spent,
                 reserveBefore = cap.reserve,
                 reserveAfter = first.reserveAfter,

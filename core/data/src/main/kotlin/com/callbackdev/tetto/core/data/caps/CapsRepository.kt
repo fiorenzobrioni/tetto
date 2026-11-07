@@ -420,7 +420,7 @@ constructor(
      */
     suspend fun changeWeekStart(weekStart: DayOfWeek?): UserSettings = changeCalendar { it.copy(weekStart = weekStart) }
 
-    /** The day a month starts, 1 to 31: the monthly and yearly caps' open periods are replaced (§4.5). */
+    /** The day a month starts, 1 to 31: the monthly caps' open periods are replaced (§4.5). */
     suspend fun changeMonthStartDay(day: Int): UserSettings {
         require(day in 1..31) { "A month starts on day 1 to 31" }
         return changeCalendar { it.copy(monthStartDay = day) }
@@ -495,12 +495,12 @@ constructor(
             val oldRule = before.rule(cap.kind, phone)
             val newRule = after.rule(cap.kind, phone)
             val changed = when (cap.kind) {
-                // A day's period, and a one-off's dates, follow no setting.
-                PeriodKind.DAY, PeriodKind.ONE_OFF -> false
+                // A day's period, a year's (the calendar's) and a one-off's dates follow no setting.
+                PeriodKind.DAY, PeriodKind.YEAR, PeriodKind.ONE_OFF -> false
 
                 PeriodKind.WEEK -> newRule.weekStart != oldRule.weekStart
 
-                PeriodKind.MONTH, PeriodKind.YEAR -> newRule.monthStartDay != oldRule.monthStartDay
+                PeriodKind.MONTH -> newRule.monthStartDay != oldRule.monthStartDay
             }
             if (!changed) continue
             val lastClosedEnd = row.lastClosedEnd?.let(LocalDate::ofEpochDay)

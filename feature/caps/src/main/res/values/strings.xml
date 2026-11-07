@@ -57,9 +57,14 @@
     <string name="tile_over">%s over</string>
     <string name="tile_detail">of %1$s · %2$s</string>
     <string name="tile_detail_over">of %1$s · starts again %2$s</string>
+    <string name="tile_detail_reserve">of %1$s + %2$s · %3$s</string>
+    <string name="tile_detail_over_reserve">of %1$s + %2$s · starts again %3$s</string>
     <string name="tile_of">of %s</string>
+    <string name="tile_of_reserve">of %1$s + %2$s</string>
     <string name="tile_again">starts again %s</string>
     <string name="tile_pace">about %s a day</string>
+    <string name="tile_pace_less">less than %s a day</string>
+    <string name="tile_ahead">ahead of the days</string>
     <string name="tile_reserve">+%s reserve</string>
     <string name="tile_description_left">%1$s, %2$s left of %3$s, %4$s</string>
     <string name="tile_description_over">%1$s, %2$s over its cap of %3$s, starts again %4$s</string>
@@ -100,12 +105,21 @@
     <!-- A cap's sheet. -->
     <string name="sheet_this_period">This period</string>
     <string name="sheet_cap">Cap</string>
+    <plurals name="sheet_cap_partial">
+        <item quantity="one">Cap, %1$d day of %2$d</item>
+        <item quantity="other">Cap, %1$d days of %2$d</item>
+    </plurals>
     <string name="sheet_reserve">Reserve</string>
     <string name="sheet_spent">Spent</string>
     <string name="sheet_left">Left</string>
     <string name="sheet_over">Over</string>
     <string name="sheet_pace_line">To stay under, about %s a day</string>
+    <string name="sheet_pace_line_less">To stay under, less than %s a day</string>
     <string name="sheet_receipt_cap">%s cap</string>
+    <plurals name="sheet_receipt_cap_partial">
+        <item quantity="one">%1$s cap for %2$d day of %3$d</item>
+        <item quantity="other">%1$s cap for %2$d days of %3$d</item>
+    </plurals>
     <string name="sheet_receipt_reserve">plus %s in reserve</string>
     <string name="sheet_receipt_spent">less %s spent</string>
     <string name="sheet_receipt_left">%s left</string>

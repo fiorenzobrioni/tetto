@@ -72,7 +72,7 @@ sealed interface CapsSentence {
 
             // None is over, so every share left is between zero and the whole.
             if (caps > 1 && states.none { it.spent.isPositive }) return NothingSpent(caps)
-            val closest = states.minWith(compareBy { Share(it.left.minor, (it.cap.amount + it.cap.reserve).minor) })
+            val closest = states.minWith(compareBy { Share(it.left.minor, (it.amount + it.cap.reserve).minor) })
             return AllUnder(closest, caps)
         }
     }

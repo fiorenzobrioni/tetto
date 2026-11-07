@@ -8,14 +8,19 @@ import java.time.LocalDate
  * today; never stored.
  *
  * @property period the open period.
- * @property left the cap and its reserve less what was spent: below zero, the cap is [over].
+ * @property amount what the cap gives this period: its amount, or, for a period cut short by a
+ *   change, its share of the days ([partial]; owner, 7 Nov 2026). An ended one-off's, its line's.
+ * @property partial the open period's days over the whole period's, where a change cut it short;
+ *   null for a whole period.
+ * @property left this period's [amount] and the reserve less what was spent: below zero, the cap
+ *   is [over].
  * @property daysLeft the days from today to the period's end, today counted: at least 1.
- * @property bar what was spent of the cap and its reserve, held to 0..1; [over] says the rest.
+ * @property bar what was spent of [amount] and the reserve, held to 0..1; [over] says the rest.
  * @property todayMark where today falls in the period, today counted; none for a day.
  * @property aheadOfDays spending runs ahead of the days: not over, and the bar past the mark by
  *   more than a step of the period that fades by its end (PLANNING.md §4.6).
- * @property pace about how much a day is left until the end, in whole units of the currency;
- *   none for a day, when over, on the last day, or under one unit.
+ * @property pace about how much a day is left until the end, in whole units of the currency, or
+ *   less than one ([Pace.lessThan]); none for a day, when over or with nothing left, on the last day.
  * @property renewedToday a period closed today and this one began with it.
  * @property renewal how the period that closed today ended, said on the day it renews (owner,
  *   6 Nov 2026); null on any other day.
@@ -27,17 +32,19 @@ import java.time.LocalDate
 data class CapState(
     val cap: Cap,
     val period: DateRange,
+    val amount: Money,
     val spent: Money,
     val left: Money,
     val daysLeft: Int,
     val bar: Share,
     val todayMark: Share?,
     val aheadOfDays: Boolean,
-    val pace: Money?,
+    val pace: Pace?,
     val renewedToday: Boolean,
     val renewal: Renewal? = null,
     val ended: Boolean = false,
     val endedToday: Boolean = false,
+    val partial: Share? = null,
 ) {
     val over: Boolean get() = left.isNegative
 
@@ -56,6 +63,13 @@ data class CapState(
     /** Whether a new period follows this one: false for a one-off cap. */
     val renews: Boolean get() = cap.kind.renews
 }
+
+/**
+ * How much a day is left until a period's last day (PLANNING.md §4.6): about [perDay], in whole
+ * units of the currency, rounded down; or, where that is under one unit and something is left,
+ * [lessThan] one unit, [perDay] then that unit ("less than €1 a day", owner, 7 Nov 2026).
+ */
+data class Pace(val perDay: Money, val lessThan: Boolean = false)
 
 /**
  * A share of a whole, kept as the two whole numbers it is made of so that comparing two shares is

@@ -12,6 +12,7 @@ import com.callbackdev.tetto.core.model.Cap
 import com.callbackdev.tetto.core.model.ClosedPeriod
 import com.callbackdev.tetto.core.model.DateRange
 import com.callbackdev.tetto.core.model.Money
+import com.callbackdev.tetto.core.model.Pace
 import com.callbackdev.tetto.core.model.PeriodKind.DAY
 import com.callbackdev.tetto.core.model.PeriodKind.MONTH
 import com.callbackdev.tetto.core.model.PeriodKind.ONE_OFF
@@ -131,7 +132,7 @@ class OneOffTest {
         assertThat(now.left).isEqualTo(euros(400))
         assertThat(now.daysLeft).isEqualTo(6)
         assertThat(now.todayMark).isEqualTo(Share(6, 11))
-        assertThat(now.pace).isEqualTo(euros(66))
+        assertThat(now.pace).isEqualTo(Pace(euros(66)))
         assertThat(now.renewedToday).isFalse()
         assertThat(now.renews).isFalse()
         assertThat(now.ended).isFalse()
@@ -169,7 +170,7 @@ class OneOffTest {
         val summer = oneOff(start = date(2027, 8, 1), endExclusive = date(2027, 8, 15), amount = euros(1400))
         val now = state(summer, euros(400), date(2026, 11, 6))
         assertThat(now.daysLeft).isEqualTo(14)
-        assertThat(now.pace).isEqualTo(euros(71))
+        assertThat(now.pace).isEqualTo(Pace(euros(71)))
         assertThat(now.lastDay).isEqualTo(date(2027, 8, 14))
     }
 

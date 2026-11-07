@@ -16,7 +16,7 @@
     <string name="settings_month_start">Inizio del mese</string>
     <!-- "Giorno 27 · questo mese: 27 ott – 26 nov". -->
     <string name="settings_month_start_value">Giorno %1$s · questo mese: %2$s</string>
-    <string name="settings_month_start_explanation">I tetti mensili ripartono in questo giorno, quelli annuali in questo giorno di gennaio. Un mese troppo corto parte dal suo ultimo giorno. I periodi in corso dei tetti mensili e annuali si spostano sulle nuove date, con le loro spese.</string>
+    <string name="settings_month_start_explanation">I tetti mensili ripartono in questo giorno; quelli annuali sempre il 1° gennaio. Un mese troppo corto parte dal suo ultimo giorno. I periodi in corso dei tetti mensili si spostano sulle nuove date, con le loro spese.</string>
     <string name="settings_week_start">Inizio della settimana</string>
     <string name="settings_week_start_phone">%s, come il telefono</string>
     <string name="settings_week_start_explanation">I tetti settimanali ripartono in questo giorno. Il loro periodo in corso si sposta sulle nuove date, con le sue spese.</string>

@@ -30,7 +30,7 @@ object WidgetCaps {
         // Never an ended one-off as the closest (owner, 6 Nov 2026): its figures are over.
         val states = all.filterNot { it.ended }
         states.firstOrNull { it.over }?.let { return it }
-        return states.minWithOrNull(compareBy { Share(it.left.minor, (it.cap.amount + it.cap.reserve).minor) })
+        return states.minWithOrNull(compareBy { Share(it.left.minor, (it.amount + it.cap.reserve).minor) })
     }
 }
 
@@ -38,8 +38,9 @@ object WidgetCaps {
  * What «In words» says of its cap under the figure on a tall card (PLANNING.md §7, «the cap's
  * sentence»): a kind and its values, never a string; the words are the widget's resources.
  *
- * - [Pace]: about how much a day is left until the period's last day, and whether spending runs
- *   ahead of the days ("Ahead of the days: about €4 a day until Sunday").
+ * - [Pace]: about how much a day is left until the period's last day, or less than one unit
+ *   ([Pace.lessThan]), and whether spending runs ahead of the days ("Ahead of the days: about €4 a
+ *   day until Sunday").
  * - [Ahead]: spending runs ahead of the days, with no pace to say (under one unit a day).
  * - [Reserve]: a day's cap, or a period's last day, with something in reserve.
  * - [Forgiven]: over: what the reserve cannot cover is forgiven when the period ends, the day it
@@ -50,7 +51,8 @@ object WidgetCaps {
  * say is not drawn.
  */
 sealed interface CapNote {
-    data class Pace(val perDay: Money, val lastDay: LocalDate, val ahead: Boolean) : CapNote
+    data class Pace(val perDay: Money, val lastDay: LocalDate, val ahead: Boolean, val lessThan: Boolean = false) :
+        CapNote
 
     data object Ahead : CapNote
 
@@ -62,9 +64,9 @@ sealed interface CapNote {
 
     companion object {
         fun of(state: CapState): CapNote? {
-            if (state.ended) return Ended(state.spent, state.cap.amount)
+            if (state.ended) return Ended(state.spent, state.amount)
             if (state.over) return Forgiven(state.startsAgain, state.renews)
-            state.pace?.let { return Pace(it, state.lastDay, state.aheadOfDays) }
+            state.pace?.let { return Pace(it.perDay, state.lastDay, state.aheadOfDays, it.lessThan) }
             if (state.aheadOfDays) return Ahead
             if (state.cap.reserve.isPositive) return Reserve(state.cap.reserve)
             return null

@@ -390,7 +390,7 @@ class CapsRepositoryTest {
     }
 
     @Test
-    fun `the month start day changed replaces the monthly and yearly caps' open periods`() = runTest {
+    fun `the month start day changed replaces the monthly caps' open periods, never the yearly`() = runTest {
         val groceries = repository.addCap("Groceries", GROCERIES, euros(300), MONTH)
         repository.addCap("Travel", TRAVEL, euros(2_000), YEAR)
         repository.addCap("Coffee", COFFEE, euros(20), WEEK)
@@ -401,7 +401,8 @@ class CapsRepositoryTest {
         val (month, year, week) = repository.currentStates()
         assertThat(month.period).isEqualTo(DateRange(date(2026, 10, 27), date(2026, 11, 27)))
         assertThat(month.spent).isEqualTo(euros(30))
-        assertThat(year.period).isEqualTo(DateRange(date(2026, 1, 27), date(2027, 1, 27)))
+        // A year is the calendar's, whatever the month's start day (owner, 7 Nov 2026).
+        assertThat(year.period).isEqualTo(DateRange(date(2026, 1, 1), date(2027, 1, 1)))
         assertThat(week.period.start).isEqualTo(date(2026, 11, 2))
         assertThat(repository.closedPeriods(groceries)).isEmpty()
         assertThat(preferences.current().monthStartDay).isEqualTo(27)
@@ -547,6 +548,27 @@ class CapsRepositoryTest {
         assertThat(shoppingState.renewal).isEqualTo(Renewal(Renewal.Kind.FORGIVEN, euros(8)))
         clock.at("2026-11-03T08:00")
         assertThat(repository.currentStates().map { it.renewal }).containsExactly(null, null)
+    }
+
+    @Test
+    fun `a day turned into a week on a Thursday has four sevenths of the week's cap, the next week whole`() = runTest {
+        clock.at("2026-11-02T09:00")
+        val coffee = repository.addCap("Coffee", COFFEE, euros(10), DAY)
+        clock.at("2026-11-05T09:00")
+        spend(coffee, euros(3))
+
+        repository.changeCap(coffee, "Coffee", COFFEE, euros(70), WEEK)
+
+        val state = repository.currentStates().single()
+        assertThat(state.period).isEqualTo(DateRange(date(2026, 11, 5), date(2026, 11, 9)))
+        assertThat(state.amount).isEqualTo(euros(40))
+        // €40, the €10 the three days left in reserve, less Thursday's €3.
+        assertThat(state.left).isEqualTo(euros(47))
+        clock.at("2026-11-09T09:00")
+        val next = repository.currentStates().single()
+        assertThat(next.amount).isEqualTo(euros(70))
+        assertThat(next.partial).isNull()
+        assertThat(repository.closedPeriods(coffee).first().cap).isEqualTo(euros(40))
     }
 
     @Test

@@ -112,14 +112,19 @@ class PeriodCalendarTest {
     }
 
     @Test
-    fun `a year starting on 31 January`() {
-        val year = rule(YEAR, monthStartDay = 31)
-        assertThat(PeriodCalendar.containing(date(2026, 11, 5), year))
-            .isEqualTo(range(date(2026, 1, 31), date(2027, 1, 31)))
-        assertThat(PeriodCalendar.containing(date(2027, 1, 30), year))
-            .isEqualTo(range(date(2026, 1, 31), date(2027, 1, 31)))
-        assertThat(PeriodCalendar.containing(date(2027, 1, 31), year))
-            .isEqualTo(range(date(2027, 1, 31), date(2028, 1, 31)))
+    fun `a year is the calendar's, whatever day the months start on`() {
+        // Owner, 7 Nov 2026: a salary's month from the 27th no longer runs the year from 27 January.
+        for (day in listOf(27, 31)) {
+            val year = rule(YEAR, monthStartDay = day)
+            assertThat(PeriodCalendar.containing(date(2026, 11, 5), year))
+                .isEqualTo(range(date(2026, 1, 1), date(2027, 1, 1)))
+            assertThat(PeriodCalendar.containing(date(2027, 1, 30), year))
+                .isEqualTo(range(date(2027, 1, 1), date(2028, 1, 1)))
+            assertThat(PeriodCalendar.containing(date(2026, 12, 31), year))
+                .isEqualTo(range(date(2026, 1, 1), date(2027, 1, 1)))
+        }
+        // A leap year is a day longer.
+        assertThat(PeriodCalendar.containing(date(2028, 6, 1), rule(YEAR)).length).isEqualTo(366)
     }
 
     @Test

@@ -111,10 +111,12 @@ class CapChangesTest {
 
     @Test
     fun `a period already cut short shares out its own days`() {
-        // An open period from Thursday to Sunday (four days, after closed days), cut on Saturday.
+        // An open period from Thursday to Sunday (four days, after closed days), cut on Saturday:
+        // its own share is four sevenths of €20, €11.42, and Thursday and Friday half of it,
+        // €5.71, two sevenths of the week's cap (owner, 7 Nov 2026).
         val rest = cap(WEEK, openStart = today, amount = euros(20))
         val kept = checkNotNull(CapChanges.replace(rest, rule(WEEK), date(2026, 11, 7), euros(20), euros(1)).closed)
-        assertThat(kept.cap).isEqualTo(euros(10))
+        assertThat(kept.cap).isEqualTo(euros(5, 71))
     }
 
     @Test

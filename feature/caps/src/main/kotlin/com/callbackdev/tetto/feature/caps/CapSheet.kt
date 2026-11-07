@@ -36,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -155,7 +156,7 @@ internal fun CapSheetContent(
         // none has ("€20", "€8") (owner, 6 Nov 2026).
         val unit = format.currency.unit.minor
         val cents = (
-            listOf(state.cap.amount, state.cap.reserve, state.spent, state.left) +
+            listOf(state.amount, state.cap.reserve, state.spent, state.left) +
                 data.spends.map { it.amount }
             )
             .any { it.minor % unit != 0L }
@@ -166,7 +167,10 @@ internal fun CapSheetContent(
         // The tile's pace, here too: the list's rows leave it out.
         state.pace?.let { pace ->
             Text(
-                stringResource(R.string.sheet_pace_line, format.short(pace)),
+                stringResource(
+                    if (pace.lessThan) R.string.sheet_pace_line_less else R.string.sheet_pace_line,
+                    format.short(pace.perDay),
+                ),
                 style = MaterialTheme.typography.bodyMedium.tabular(),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = ScreenMargin + 16.dp).padding(top = 8.dp),
@@ -198,7 +202,7 @@ internal fun CapSheetContent(
                 onClick = actions.onRefund,
                 modifier = Modifier.padding(horizontal = ScreenMargin - 12.dp).padding(top = 4.dp),
             ) {
-                Icon(TettoIcons.Renew, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(TettoIcons.Refund, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.sheet_refund))
             }
@@ -282,7 +286,7 @@ private fun EndedSheetContent(
             modifier = Modifier.padding(horizontal = ScreenMargin),
         )
         val unit = format.currency.unit.minor
-        val cents = listOf(state.cap.amount, state.spent).any { it.minor % unit != 0L }
+        val cents = listOf(state.amount, state.spent).any { it.minor % unit != 0L }
         val figure: (Money) -> String = if (cents) format::full else format::short
         Spacer(Modifier.height(16.dp))
         EndedReceipt(state, figure)
@@ -331,7 +335,7 @@ private fun EndedReceipt(state: CapState, figure: (Money) -> String) {
         stringResource(R.string.sheet_receipt_ended_spare, figure(state.left))
     }
     val parts = listOf(
-        stringResource(R.string.sheet_receipt_cap, figure(state.cap.amount)),
+        stringResource(R.string.sheet_receipt_cap, figure(state.amount)),
         stringResource(R.string.sheet_receipt_spent, figure(state.spent)),
     )
     val sentence = stringResource(R.string.sheet_receipt_sentence, parts.joinToString(", "), result)
@@ -345,7 +349,7 @@ private fun EndedReceipt(state: CapState, figure: (Money) -> String) {
             .testTag(CapsTags.RECEIPT)
             .clearAndSetSemantics { contentDescription = sentence },
     ) {
-        ReceiptLine(null, stringResource(R.string.sheet_cap), figure(state.cap.amount))
+        ReceiptLine(null, stringResource(R.string.sheet_cap), figure(state.amount))
         ReceiptLine(MINUS, stringResource(R.string.sheet_spent), figure(state.spent))
         HorizontalDivider(Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant)
         val ink = if (state.over) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
@@ -450,8 +454,20 @@ private fun SpendRow(spend: Spend, figure: (Money) -> String, actions: CapSheetA
  */
 @Composable
 private fun Receipt(state: CapState, figure: (Money) -> String) {
+    // A period a change cut short has its share of the cap, and says of how many days.
+    val partial = state.partial
     val parts = listOfNotNull(
-        stringResource(R.string.sheet_receipt_cap, figure(state.cap.amount)),
+        if (partial != null) {
+            pluralStringResource(
+                R.plurals.sheet_receipt_cap_partial,
+                partial.part.toInt(),
+                figure(state.amount),
+                partial.part.toInt(),
+                partial.whole.toInt(),
+            )
+        } else {
+            stringResource(R.string.sheet_receipt_cap, figure(state.amount))
+        },
         state.cap.reserve.takeIf { it.isPositive }?.let { stringResource(R.string.sheet_receipt_reserve, figure(it)) },
         stringResource(R.string.sheet_receipt_spent, figure(state.spent)),
     )
@@ -471,7 +487,17 @@ private fun Receipt(state: CapState, figure: (Money) -> String) {
             .testTag(CapsTags.RECEIPT)
             .clearAndSetSemantics { contentDescription = sentence },
     ) {
-        ReceiptLine(null, stringResource(R.string.sheet_cap), figure(state.cap.amount))
+        val capLabel = if (partial != null) {
+            pluralStringResource(
+                R.plurals.sheet_cap_partial,
+                partial.part.toInt(),
+                partial.part.toInt(),
+                partial.whole.toInt(),
+            )
+        } else {
+            stringResource(R.string.sheet_cap)
+        }
+        ReceiptLine(null, capLabel, figure(state.amount))
         if (state.cap.reserve.isPositive) {
             ReceiptLine(PLUS, stringResource(R.string.sheet_reserve), figure(state.cap.reserve))
         }

@@ -12,6 +12,7 @@ import com.callbackdev.tetto.core.designsystem.format.rememberMoneyFormat
 import com.callbackdev.tetto.core.domain.cap.SpendPreview
 import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.CapIcon
+import com.callbackdev.tetto.core.model.Pace
 import com.callbackdev.tetto.core.model.PeriodKind
 import com.callbackdev.tetto.feature.caps.CapsSample.euros
 import com.google.common.truth.Truth.assertThat
@@ -60,9 +61,24 @@ class CapWordsTest {
                     detailWords(coffee, it, today),
                     paceWords(coffee, it),
                     reserveWords(coffee, it),
+                    // The tile's own line, beside its chip: the sum the figure is taken from (owner, 7 Nov 2026).
+                    tileLines(coffee, it, today).first,
                 )
             },
-        ).containsExactly("€16 left", "of €20 · until Sunday", "about €4 a day", "+€4 reserve").inOrder()
+        ).containsExactly("€16 left", "of €20 + €4 · until\u00A0Sunday", "about €4 a day", "+€4 reserve", "of €20 + €4")
+            .inOrder()
+    }
+
+    @Test
+    fun `under one unit a day, and ahead of the days, in words`() {
+        // €3 left with four days to go: 75 cents a day.
+        val late = CapsSample.coffee.copy(
+            left = euros(3),
+            pace = Pace(euros(1), lessThan = true),
+            aheadOfDays = true,
+        )
+        assertThat(words { listOf(paceWords(late, it).orEmpty(), aheadWords(late).orEmpty()) })
+            .containsExactly("less than €1 a day", "ahead of the days").inOrder()
     }
 
     @Test
@@ -75,7 +91,7 @@ class CapWordsTest {
     fun `over, the figure and when it starts again`() {
         val shopping = CapsSample.shopping
         assertThat(words { listOf(leftWords(shopping, it), detailWords(shopping, it, today)) })
-            .containsExactly("€30 over", "of €100 · starts again on 1 Dec").inOrder()
+            .containsExactly("€30 over", "of €100 · starts again on\u00A01\u00A0Dec").inOrder()
     }
 
     @Test

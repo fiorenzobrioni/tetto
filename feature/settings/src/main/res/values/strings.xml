@@ -16,7 +16,7 @@
     <string name="settings_month_start">Start of the month</string>
     <!-- "Day 27 · this month: 27 Oct – 26 Nov". -->
     <string name="settings_month_start_value">Day %1$s · this month: %2$s</string>
-    <string name="settings_month_start_explanation">Monthly caps start again on this day, yearly ones on this day of January. A month too short for it starts on its last day. The current periods of your monthly and yearly caps move to the new dates, with their spends.</string>
+    <string name="settings_month_start_explanation">Monthly caps start again on this day; yearly ones always on 1 January. A month too short for it starts on its last day. The current periods of your monthly caps move to the new dates, with their spends.</string>
     <string name="settings_week_start">Start of the week</string>
     <string name="settings_week_start_phone">%s, as the phone</string>
     <string name="settings_week_start_explanation">Weekly caps start again on this day. Their current period moves to the new dates, with its spends.</string>

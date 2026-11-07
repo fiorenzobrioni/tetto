@@ -104,7 +104,15 @@ class WidgetCapsTest {
 
     @Test
     fun `ahead with no pace to say`() {
-        val ahead = state(9, euros(10), euros(8))
+        val ahead = state(9, euros(10), euros(10))
         assertThat(CapNote.of(ahead)).isEqualTo(CapNote.Ahead)
+    }
+
+    @Test
+    fun `a pace under one unit is said as less than one`() {
+        val ahead = state(9, euros(10), euros(8))
+        assertThat(CapNote.of(ahead)).isEqualTo(
+            CapNote.Pace(euros(1), date(2026, 11, 15), ahead = true, lessThan = true),
+        )
     }
 }
