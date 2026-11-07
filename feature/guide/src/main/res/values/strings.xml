@@ -63,7 +63,7 @@
     <string name="guide_home_hidden_title">No figures, if you prefer</string>
     <string name="guide_home_hidden_body">A widget can show no amount at all, for a home screen others can see. The bars, the ring, the names and the days stay, and a cap over still says so in words.</string>
     <string name="guide_home_reminder_title">The evening reminder</string>
-    <string name="guide_home_reminder_body">Turned on in Settings, one notification in the evening asks whether there is anything to add, and only on a day with no spend added. It comes near the time you chose, not to the minute: Tetto asks Android for no exact alarm, so the phone can save its battery, and some phones hold it back a little longer.</string>
+    <string name="guide_home_reminder_body">Turned on at the first run or in Settings, one notification in the evening asks whether there is anything to add, and only on a day with no spend added. It comes near the time you chose, not to the minute: Tetto asks Android for no exact alarm, so the phone can save its battery, and some phones hold it back a little longer.</string>
 
     <!-- Your data -->
     <string name="guide_data_title">Your data</string>

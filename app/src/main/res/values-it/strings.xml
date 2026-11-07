@@ -15,4 +15,11 @@
     <string name="lock_unlock">Sblocca</string>
     <string name="lock_prompt_title">Sblocca Tetto</string>
     <string name="home_offer_note">Tieni premuta la scheda sulla schermata Home per sceglierne il colore e i tetti, o per ingrandirla.</string>
+    <!-- Il promemoria della sera al primo avvio (owner, 7 Nov 2026): offerto, mai chiesto se non scelto. -->
+    <string name="reminder_offer_title">Un promemoria la sera</string>
+    <string name="reminder_offer_body">Se vuoi, una notifica la sera ti chiede se c’è qualcosa da aggiungere, e solo nei giorni in cui non hai aggiunto niente. È l’unica notifica di Tetto.</string>
+    <string name="reminder_offer_note">Un esempio. L’orario si cambia nelle Impostazioni, dove si può anche spegnere.</string>
+    <string name="reminder_offer_on">Ricordamelo alle %s</string>
+    <string name="reminder_offer_example">Un esempio della notifica della sera, alle %1$s: %2$s</string>
+    <string name="reminder_offer_example_head">%1$s · %2$s</string>
 </resources>

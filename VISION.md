@@ -224,7 +224,10 @@ a ledger** (history screens, statistics, accounts, income). Its speed comes from
 - **The amounts**: one row per picked area, amount and period (a month by default), in the
   currency of the phone's region, changeable from the same page.
 - The caps screen opens already shaped to the reader. "Start from nothing" skips the grid.
-- No permission is asked at the first run.
+- No permission is asked at the first run unless the reader chooses what needs one: a run that
+  made caps ends by offering the evening reminder (owner, 7 Nov 2026), its notification drawn as
+  an example, «Remind me at 8:30 PM» or «Not now»; only the first lets Android ask for the
+  notifications, and a refusal leaves the reminder off.
 
 ### Widgets (Jetpack Glance)
 

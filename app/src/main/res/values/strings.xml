@@ -19,4 +19,11 @@
     <string name="lock_unlock">Unlock</string>
     <string name="lock_prompt_title">Unlock Tetto</string>
     <string name="home_offer_note">Hold the card on the home screen to choose its colour and its caps, or to make it larger.</string>
+    <!-- The first run's evening reminder (owner, 7 Nov 2026): offered, never asked unless chosen. -->
+    <string name="reminder_offer_title">A word in the evening</string>
+    <string name="reminder_offer_body">If you like, one notification in the evening asks whether there is anything to add, and only on a day you added nothing. It is the only notification Tetto has.</string>
+    <string name="reminder_offer_note">An example. Its time can be changed in Settings, where it can also be turned off.</string>
+    <string name="reminder_offer_on">Remind me at %s</string>
+    <string name="reminder_offer_example">An example of the evening’s notification, at %1$s: %2$s</string>
+    <string name="reminder_offer_example_head">%1$s · %2$s</string>
 </resources>

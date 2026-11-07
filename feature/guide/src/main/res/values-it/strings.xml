@@ -63,7 +63,7 @@
     <string name="guide_home_hidden_title">Senza cifre, se preferisci</string>
     <string name="guide_home_hidden_body">Un widget può non mostrare nessun importo, per una schermata Home che vedono anche altri. Restano le barre, l’anello, i nomi e i giorni, e un tetto superato lo dice ancora a parole.</string>
     <string name="guide_home_reminder_title">Il promemoria serale</string>
-    <string name="guide_home_reminder_body">Se lo attivi nelle Impostazioni, una notifica alla sera chiede se c’è qualcosa da aggiungere, e solo in un giorno senza spese aggiunte. Arriva verso l’ora che hai scelto, non al minuto: Tetto non chiede ad Android una sveglia esatta, così il telefono può risparmiare batteria, e alcuni telefoni la trattengono ancora un po’.</string>
+    <string name="guide_home_reminder_body">Se lo attivi al primo avvio o nelle Impostazioni, una notifica alla sera chiede se c’è qualcosa da aggiungere, e solo in un giorno senza spese aggiunte. Arriva verso l’ora che hai scelto, non al minuto: Tetto non chiede ad Android una sveglia esatta, così il telefono può risparmiare batteria, e alcuni telefoni la trattengono ancora un po’.</string>
 
     <!-- I tuoi dati -->
     <string name="guide_data_title">I tuoi dati</string>
