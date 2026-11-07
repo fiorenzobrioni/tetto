@@ -283,35 +283,46 @@ constructor(
 
     /**
      * Corrects the spend [spendId] to [amount], as the reader typed it, above zero: a refund stays
-     * a refund. The amount it had, for Undo, or null when it is gone or its period has closed.
+     * a refund. [SpendChange.Done] with the amount it had, for Undo; [SpendChange.Closed] when it is
+     * gone or its period has closed; [SpendChange.RefundsHeld] when a spend lowered under the
+     * period's refunds would leave it spending less than nothing.
      */
-    suspend fun editSpend(spendId: Long, amount: Money): Money? {
+    suspend fun editSpend(spendId: Long, amount: Money): SpendChange<Money> {
         require(amount.isPositive) { "A spend is an amount above zero" }
         return afterCatchUp { _, _ ->
-            val spend = openSpend(spendId) ?: return@afterCatchUp null
-            dao.setSpendAmount(spendId, if (spend.amount < 0) -amount.minor else amount.minor)
-            Money(if (spend.amount < 0) -spend.amount else spend.amount)
+            val spend = openSpend(spendId) ?: return@afterCatchUp SpendChange.Closed
+            val signed = if (spend.amount < 0) -amount.minor else amount.minor
+            if (!keepsRefundsCovered(spend, signed - spend.amount)) return@afterCatchUp SpendChange.RefundsHeld
+            dao.setSpendAmount(spendId, signed)
+            SpendChange.Done(Money(if (spend.amount < 0) -spend.amount else spend.amount))
         }
     }
 
-    /** Deletes the spend [spendId]; the spend deleted, for Undo, or null when it is gone or its period has closed. */
-    suspend fun deleteSpend(spendId: Long): Spend? = afterCatchUp { _, _ ->
-        val spend = openSpend(spendId) ?: return@afterCatchUp null
+    /**
+     * Deletes the spend [spendId]: [SpendChange.Done] with the spend deleted, for Undo;
+     * [SpendChange.Closed] when it is gone or its period has closed; [SpendChange.RefundsHeld] when
+     * the period's refunds would outweigh what is left (the refund goes first).
+     */
+    suspend fun deleteSpend(spendId: Long): SpendChange<Spend> = afterCatchUp { _, _ ->
+        val spend = openSpend(spendId) ?: return@afterCatchUp SpendChange.Closed
+        if (!keepsRefundsCovered(spend, -spend.amount)) return@afterCatchUp SpendChange.RefundsHeld
         dao.deleteSpend(spendId)
-        spend.toModel()
+        SpendChange.Done(spend.toModel())
     }
 
     /** Undoes [addSpend]: deletes that spend, by its id, while its period is open. */
-    suspend fun undoAdd(spend: Spend): Boolean = deleteSpend(spend.id) != null
+    suspend fun undoAdd(spend: Spend): Boolean = deleteSpend(spend.id) is SpendChange.Done
 
     /** Undoes [editSpend]: writes [previous] back, while the spend's period is open. */
-    suspend fun undoEdit(spendId: Long, previous: Money): Boolean = editSpend(spendId, previous) != null
+    suspend fun undoEdit(spendId: Long, previous: Money): Boolean = editSpend(spendId, previous) is SpendChange.Done
 
     /** Undoes [deleteSpend]: the spend again, with its id and fields, while its period is open. */
     suspend fun undoDelete(spend: Spend): Boolean = afterCatchUp { _, _ ->
         val cap = dao.cap(spend.capId) ?: return@afterCatchUp false
         if (cap.openStart != spend.periodStart.toEpochDay() || dao.spend(spend.id) != null) return@afterCatchUp false
-        dao.insertSpend(spend.toEntity())
+        val entity = spend.toEntity()
+        if (!keepsRefundsCovered(entity, entity.amount)) return@afterCatchUp false
+        dao.insertSpend(entity)
         true
     }
 
@@ -569,6 +580,19 @@ constructor(
         result
     }
 
+    /**
+     * Whether [spend]'s period, its sum changed by [delta] (minor units), still spends nothing or
+     * more (§4.3): a refund gives back at most what was spent, and a spend deleted or lowered under
+     * the refunds would leave money that was never spent, to be taken silently from the next
+     * spends. A change that raises the sum always may, so a period left below nothing by an older
+     * Tetto can only come back up.
+     */
+    private suspend fun keepsRefundsCovered(spend: SpendEntity, delta: Long): Boolean {
+        if (delta >= 0) return true
+        val sum = dao.spentBefore(spend.capId, spend.periodStart, Long.MAX_VALUE)
+        return sum + delta >= 0
+    }
+
     /** The spend [spendId], if it counts in its cap's open period: the only one that can change. */
     private suspend fun openSpend(spendId: Long): SpendEntity? {
         val spend = dao.spend(spendId) ?: return null
@@ -620,6 +644,21 @@ constructor(
 /** One moment of asking: [now], the zone in effect then, and the local date the two make (§4.2). */
 data class Moment(val now: Instant, val zone: ZoneId) {
     val today: LocalDate get() = Days.dateOf(now, zone)
+}
+
+/** What a correction or a deletion of a spend did (§4.3). */
+sealed interface SpendChange<out T> {
+    /** Done; [value] is what Undo needs. */
+    data class Done<T>(val value: T) : SpendChange<T>
+
+    /** The spend is gone, or its period has closed: only the open period's spends change. */
+    data object Closed : SpendChange<Nothing>
+
+    /**
+     * Refused: the period's refunds would come to more than what it spent. The refund is deleted,
+     * or corrected, first.
+     */
+    data object RefundsHeld : SpendChange<Nothing>
 }
 
 /** A reserve cleared, for Undo: the cap, what its reserve was, and the open period it was cleared in. */

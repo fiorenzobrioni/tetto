@@ -124,6 +124,23 @@ class NumpadTest {
     }
 
     @Test
+    fun `a spend corrected down keeps at least what the refunds gave back`() {
+        // Coffee spent €8 net: a €12 spend corrected means €4 of refunds it must still cover.
+        draw(correcting = euros(12))
+        compose.onNodeWithTag(CapsTags.CONFIRM).assertIsEnabled().assertTextEquals("Save €12.00")
+        repeat(5) { compose.onNodeWithContentDescription("Delete").performClick() }
+        type("3")
+        preview().assertTextEquals("At least €4.00, to cover this period’s refunds")
+        compose.onNodeWithTag(CapsTags.CONFIRM).assertIsNotEnabled().assertTextEquals("Save")
+        compose.assertAccessible()
+        compose.writeScreenshot("numpad-least")
+        compose.onNodeWithContentDescription("Delete").performClick()
+        type("4")
+        compose.onNodeWithTag(CapsTags.CONFIRM).assertIsEnabled().performClick()
+        assertThat(confirmed).containsExactly(euros(4))
+    }
+
+    @Test
     fun `no habits while a spend is corrected`() {
         draw(correcting = euros(3, 20), amounts = listOf(euros(1, 20)))
         compose.onNodeWithContentDescription("Add €1.20").assertDoesNotExist()

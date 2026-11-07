@@ -161,6 +161,21 @@ class CapsViewModelTest {
         awaitLeft(coffee, 1_700)
     }
 
+    @Test
+    fun `a spend its refunds hold says so, and stays`() = runBlocking<Unit> {
+        val shoes = caps.addCap("Clothes", CapIcon.CLOTHES, euros(100), PeriodKind.MONTH)
+        val bought = checkNotNull(caps.addSpend(shoes, euros(60)))
+        checkNotNull(caps.addRefund(shoes, euros(30)))
+        awaitLeft(shoes, 7_000)
+
+        viewModel.deleteSpend(bought)
+        assertThat(withTimeout(TIMEOUT) { viewModel.notices.first() }).isEqualTo(CapsNotice.RefundsHeld)
+        viewModel.openNumpad(shoes, correcting = bought)
+        viewModel.confirmNumpad(checkNotNull(viewModel.numpad.value), euros(10))
+        assertThat(withTimeout(TIMEOUT) { viewModel.notices.first() }).isEqualTo(CapsNotice.RefundsHeld)
+        awaitLeft(shoes, 7_000)
+    }
+
     private companion object {
         const val TIMEOUT = 5_000L
     }

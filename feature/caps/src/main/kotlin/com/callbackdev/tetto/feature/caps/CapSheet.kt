@@ -31,6 +31,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,6 +62,7 @@ import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.CapState
 import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.Spend
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 /**
@@ -180,10 +182,13 @@ internal fun CapSheetContent(
                 modifier = Modifier.padding(horizontal = ScreenMargin, vertical = 8.dp),
             )
         } else {
+            // What the period's spends come to, refunds taken off: a spend whose deletion would take
+            // it below nothing slides back, and the repository says why (§4.3).
+            val sum = data.spends.sumOf { it.amount.minor }
             SettingsGroup {
                 data.spends.forEachIndexed { index, spend ->
                     if (index > 0) GroupDivider()
-                    key(spend.id) { SpendRow(spend, figure, actions) }
+                    key(spend.id) { SpendRow(spend, figure, actions, deletable = sum - spend.amount.minor >= 0) }
                 }
             }
         }
@@ -366,13 +371,18 @@ private fun EndedReceipt(state: CapState, figure: (Money) -> String) {
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SpendRow(spend: Spend, figure: (Money) -> String, actions: CapSheetActions) {
+private fun SpendRow(spend: Spend, figure: (Money) -> String, actions: CapSheetActions, deletable: Boolean) {
     val correctLabel = stringResource(R.string.spend_correct)
     val deleteLabel = stringResource(R.string.spend_delete)
     val dismiss = rememberSwipeToDismissBoxState()
+    val scope = rememberCoroutineScope()
     SwipeToDismissBox(
         state = dismiss,
-        onDismiss = { actions.onDelete(spend) },
+        onDismiss = {
+            // Refused for the refunds: back in its place, and the notice says why.
+            if (!deletable) scope.launch { dismiss.reset() }
+            actions.onDelete(spend)
+        },
         backgroundContent = {
             Box(
                 Modifier.fillMaxSize().background(MaterialTheme.colorScheme.errorContainer).padding(horizontal = 16.dp),

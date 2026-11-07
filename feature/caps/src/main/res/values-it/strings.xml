@@ -79,6 +79,7 @@
     <string name="notice_reserve_cleared">Riserva di %s azzerata</string>
     <string name="notice_cap_deleted">Tetto eliminato: %s</string>
     <string name="notice_period_closed">Quel periodo si è chiuso: le sue spese non cambiano più.</string>
+    <string name="notice_refunds_held">I rimborsi di questo periodo supererebbero quanto speso: correggi o elimina prima un rimborso.</string>
     <string name="action_undo">Annulla</string>
 
     <!-- Il tastierino. -->
@@ -95,6 +96,7 @@
     <string name="preview_over">Sotto di %s</string>
     <string name="preview_still_over">Ancora sotto di %s</string>
     <string name="preview_refund_most">Al massimo %s, quanto speso in questo periodo</string>
+    <string name="preview_spend_least">Almeno %s, per coprire i rimborsi del periodo</string>
     <string name="numpad_open_cap">Apri %s</string>
 
     <!-- Il foglio di un tetto. -->

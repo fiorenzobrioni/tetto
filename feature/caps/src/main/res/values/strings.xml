@@ -77,6 +77,7 @@
     <string name="notice_reserve_cleared">%s’s reserve cleared</string>
     <string name="notice_cap_deleted">%s deleted</string>
     <string name="notice_period_closed">That period has closed: its spends no longer change.</string>
+    <string name="notice_refunds_held">This period’s refunds would come to more than it spent: correct or delete a refund first.</string>
     <string name="action_undo">Undo</string>
 
     <!-- The numpad. -->
@@ -93,6 +94,7 @@
     <string name="preview_over">%s over</string>
     <string name="preview_still_over">Still %s over</string>
     <string name="preview_refund_most">At most %s, what this period spent</string>
+    <string name="preview_spend_least">At least %s, to cover this period’s refunds</string>
     <string name="numpad_open_cap">Open %s</string>
 
     <!-- A cap's sheet. -->

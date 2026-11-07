@@ -3,6 +3,7 @@ package com.callbackdev.tetto.feature.caps
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.callbackdev.tetto.core.data.caps.CapsRepository
+import com.callbackdev.tetto.core.data.caps.SpendChange
 import com.callbackdev.tetto.core.data.settings.SettingsRepository
 import com.callbackdev.tetto.core.data.time.DayTicks
 import com.callbackdev.tetto.core.data.time.TodaySource
@@ -135,16 +136,22 @@ constructor(
     }
 
     private fun correctSpend(spend: Spend, amount: Money) = launch {
-        val previous = caps.editSpend(spend.id, amount)
         noticeChannel.send(
-            if (previous == null) CapsNotice.PeriodClosed else CapsNotice.Corrected(spend.id, amount, previous),
+            when (val change = caps.editSpend(spend.id, amount)) {
+                is SpendChange.Done -> CapsNotice.Corrected(spend.id, amount, change.value)
+                SpendChange.Closed -> CapsNotice.PeriodClosed
+                SpendChange.RefundsHeld -> CapsNotice.RefundsHeld
+            },
         )
     }
 
     fun deleteSpend(spend: Spend) = launch {
-        val deleted = caps.deleteSpend(spend.id)
         noticeChannel.send(
-            if (deleted == null) CapsNotice.PeriodClosed else CapsNotice.Deleted(deleted, nameOf(spend.capId)),
+            when (val change = caps.deleteSpend(spend.id)) {
+                is SpendChange.Done -> CapsNotice.Deleted(change.value, nameOf(spend.capId))
+                SpendChange.Closed -> CapsNotice.PeriodClosed
+                SpendChange.RefundsHeld -> CapsNotice.RefundsHeld
+            },
         )
     }
 
@@ -166,7 +173,7 @@ constructor(
             is CapsNotice.Corrected -> caps.undoEdit(notice.spendId, notice.previous)
             is CapsNotice.Deleted -> caps.undoDelete(notice.spend)
             is CapsNotice.ReserveCleared -> caps.undoClearReserve(notice.cleared)
-            is CapsNotice.CapDeleted, CapsNotice.PeriodClosed -> Unit
+            is CapsNotice.CapDeleted, CapsNotice.PeriodClosed, CapsNotice.RefundsHeld -> Unit
         }
     }
 
