@@ -702,9 +702,10 @@ Nothing is open (5 Nov 2026): the three questions of Phase 0 were answered the s
 - [x] **The first run's reminder page on the phone** (the log, 7 Nov 2026, «The evening reminder offered at the first run»): after the card's page, Android's question from it, the reminder on in Settings after a yes, off after a no.
 - [x] **Phase 6b on the phone** (the log, 7 Nov 2026; done on the owner's phone, the log, «Phase 6b's device checks done»): a one-off made, spent on, ended and run again (the sentence the day after, the muted tile, its sheet); the date-range picker in both languages; a card with its amounts hidden beside one without; the lock at start, after a minute away (and not under it), from the numpad over the home screen, turned off with the phone's lock, the recent apps' blank picture, and the switch on a phone with no screen lock.
 - [ ] **To evaluate, not planned**: a period of two weeks, for a fortnightly pay.
-- [ ] **The renewal's sentence and refunds on the phone** (the log, «Two features from the review»).
-- [ ] **The review's changes on the phone** (the log, «The review»): the tiles' arrow and lines, the receipt, the numpad's habits (one touch adds, Undo), the notices replacing each other, and whether the fading slack of «ahead of the days» feels right over a month.
-- [ ] **The new mark on the phone** (the log, «The mark redrawn»): the launcher icon in the phone's own mask, the themed icon, and the reminder's status-bar icon at its real size.
+- [x] **The renewal's sentence and refunds on the phone** (the log, «Two features from the review»).
+- [x] **The review's changes on the phone** (the log, «The review»): the tiles' arrow and lines, the receipt, the numpad's habits (one touch adds, Undo), the notices replacing each other, and whether the fading slack of «ahead of the days» feels right over a month.
+- [x] **The new mark on the phone** (the log, «The mark redrawn»): the launcher icon in the phone's own mask, the themed icon, and the reminder's status-bar icon at its real size.
+  - These three done on the owner's phone (the log, 7 Nov 2026, «The other device checks done»).
 
 ---
 
@@ -1052,3 +1053,7 @@ Asked whether the notification permission should move to the first run, as Passo
 ### 7 Nov 2026 — Phase 6b's device checks done (owner: "Segna già fatti i test.")
 
 The owner tried the APK of this branch on their phone and reports the checks done: Phase 6b (the one-off cap, the hidden amounts, the lock) and the first run's reminder page. Their two boxes in §15's Open are ticked, and the State says Phase 6b is done. The other boxes of the Open list stay as they were.
+
+### 7 Nov 2026 — The other device checks done (owner: "Sì, sono già fatte anche quelle: chiudile")
+
+The owner reports the three remaining checks on the phone done as well: the renewal's sentence and refunds; the review's changes (the tiles' arrow and lines, the receipt, the numpad's habits, the notices replacing each other, the fading slack of «ahead of the days» over a month); the new mark (the launcher icon in the phone's mask, the themed icon, the reminder's status-bar icon). Their boxes in §15's Open are ticked. What stays open: «In words» drawn blank once (to watch for), the automatic backup into a folder (a session of its own), a fortnight's period (to evaluate), and Phase 7.
