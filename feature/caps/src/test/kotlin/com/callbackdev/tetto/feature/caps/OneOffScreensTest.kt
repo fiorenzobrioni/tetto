@@ -240,6 +240,14 @@ class OneOffScreensTest {
     }
 
     @Test
+    @Config(qualifiers = "en-rGB-w360dp-h740dp-xxhdpi", fontScale = 2f)
+    fun `as a list at twice the text size on a small phone`() {
+        val over = CapsSample.paris(CapsSample.parisLine.copy(spent = euros(350), forgiven = euros(50)))
+        drawCaps(listOf(over, CapsSample.coffee, CapsSample.lisbon), CapsLayout.LIST)
+        compose.walkPage(hasTestTag(CapsTags.PAGE), "caps-one-off-list-large-text", maxScreens = 20)
+    }
+
+    @Test
     @Config(qualifiers = "en-rGB-w841dp-h701dp-xxhdpi")
     fun `on an open foldable`() {
         drawCaps(listOf(CapsSample.paris(), CapsSample.coffee, CapsSample.lisbon))

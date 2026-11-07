@@ -202,7 +202,10 @@ cap, not the app, so it stays a roof.
 `GuideScreen`: its card first in Settings, a first-day tip on the caps screen, short chapters.
 It never teaches a control, only what a part of the screen is for; it shows the app's own
 components as examples, each captioned as one, so no sample reads as the reader's money. The Compose UI tests write
-screenshots to each module's `build/screenshots`: look at them after changing a screen.
+screenshots to each module's `build/screenshots`: look at them after changing a screen, **every
+one the change draws, before committing**. The caps screen has two layouts, the tiles and the
+list (Settings, Appearance): a change to what a cap shows is drawn, tested and looked at in
+both (owner, 7 Nov 2026, after an ended one-off's row went unchecked in Phase 6b).
 
 **The numpad** is the app's most used surface: keys at least the family's touch target, the
 locale's decimal separator, the phone's own keyboard haptics through `LocalHapticFeedback`

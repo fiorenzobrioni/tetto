@@ -188,7 +188,7 @@
     <string name="tile_description_over_until">%1$s, sotto di %2$s su un tetto di %3$s, %4$s</string>
     <string name="tile_ended">Finito %s</string>
     <string name="tile_ended_of">%1$s su %2$s</string>
-    <string name="tile_ended_over">%1$s su %2$s · sotto di %3$s</string>
+    <string name="tile_ended_over">%1$s su %2$s\u00A0· sotto di %3$s</string>
     <string name="tile_ended_description">%1$s, finito %2$s, %3$s spesi su %4$s</string>
     <string name="tile_ended_description_over">%1$s, finito %2$s, %3$s spesi su %4$s, sotto di %5$s, condonati</string>
     <string name="sheet_ended_spare">Avanzati</string>

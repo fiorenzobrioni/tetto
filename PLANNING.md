@@ -1025,3 +1025,12 @@ Built as §11 Phase 6b writes it, with the defaults it gives; the choices the co
 - **Settings**: «Lock Tetto» under a new «Privacy» group, before «Your data». Turning it on asks nothing (the reader is here and chose it) and counts as unlocked; turning it off asks the phone's lock («Turn off the lock»). On a phone with no screen lock the switch cannot be turned on, says why, and a row opens the phone's security settings; a lock left on after the phone's screen lock was removed never asks (there is nothing to ask) and can be turned off without asking. While on, `setRecentsScreenshotEnabled(false)`: the recent apps show no picture of Tetto.
 - **This phone's**: `app_lock` is in the settings file, so Android's own copy carries it (a phone with no screen lock then simply never asks); the backup file does not carry it, and a restore and erasing everything keep it, as they keep the other facts about this phone.
 - **Checked**: `LockScheduleTest` (6), `LockedPageTest` (four, twice the text size and Italian among them), the switch in `SettingsScreenTest`; the screenshots looked at. The prompt, the minute and the recent apps only on a phone: §15's Open.
+
+### 7 Nov 2026 — An ended one-off in the list, as short as the others (owner: "Sì, fai entrambi i ritocchi e pusha. Ricordati un futuro di verificare anche la schermata in modalità elenco")
+
+Asked whether the list's screenshot had been looked at: it had been drawn by `OneOffScreensTest`, not looked at. Looked at, it showed two faults, both fixed:
+
+- **The ended row was taller than the running ones**: three lines of words where a row has two. Its day and its figures are now one line, "Ended on 4 Nov · €280 of €300" (the figures in the over ink when they say over), wrapping only at large text sizes, so every row is as tall.
+- **An ended tile or row read like «New cap»**: both had the low ground and an outline. The outline is «New cap»'s alone now; an ended cap is set back by its quieter ground, its grey badge and its bar.
+- **At twice the text size**, drawn now for the list too (`OneOffScreensTest`), the line wrapped with its "·" at a line's start: the dot is held to the word before it by a no-break space, in the separator and in "€350 of €300 · €50 over".
+- **A rule for every session** (CLAUDE.md, Design): every screenshot a change draws is looked at before committing, and a change to what a cap shows is drawn and looked at in both layouts, the tiles and the list.

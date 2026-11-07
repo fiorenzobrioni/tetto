@@ -21,6 +21,9 @@
     <string name="period_month">Month</string>
     <string name="period_year">Year</string>
     <string name="period_once">Once</string>
+    <!-- Between an ended cap's day and its figures, on one line ("Ended on 4 Nov · €280 of €300"); the
+         dot held to the word before it by a no-break space, so a line never starts with it. -->
+    <string name="ended_separator">"\u00A0· "</string>
 
     <!-- The cap palette's icons, by what they stand for: TalkBack's names for them, and the first
          run's areas (Phase 3). -->

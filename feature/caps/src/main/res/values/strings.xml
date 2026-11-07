@@ -181,7 +181,7 @@
     <string name="tile_description_over_until">%1$s, %2$s over its cap of %3$s, %4$s</string>
     <string name="tile_ended">Ended on %s</string>
     <string name="tile_ended_of">%1$s of %2$s</string>
-    <string name="tile_ended_over">%1$s of %2$s · %3$s over</string>
+    <string name="tile_ended_over">%1$s of %2$s\u00A0· %3$s over</string>
     <string name="tile_ended_description">%1$s, ended on %2$s, %3$s spent of %4$s</string>
     <string name="tile_ended_description_over">%1$s, ended on %2$s, %3$s spent of %4$s, %5$s over, forgiven</string>
     <string name="sheet_ended_spare">To spare</string>
