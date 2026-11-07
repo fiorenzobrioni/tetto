@@ -13,7 +13,9 @@ import androidx.room.Update
 @Dao
 interface CapsDao {
     /**
-     * Every cap in the reader's order, with what its open period spent and its last closed end.
+     * Every cap in the reader's order, with what its open period spent and its last closed end: the
+     * end of its latest line, read from the key's own order (a cap's lines never overlap, so the
+     * latest to start is the latest to end), one row whatever the cap's age.
      * What a period spent is its spends less its refunds, never below nothing (§4.3): a refund
      * whose spend was deleted after it gives no money that was never spent.
      */
@@ -24,7 +26,8 @@ interface CapsDao {
                 (SELECT SUM(s.amount) FROM spends s WHERE s.cap_id = c.id AND s.period_start = c.open_start),
                 0
             )) AS spent,
-            (SELECT MAX(p.end_exclusive) FROM closed_periods p WHERE p.cap_id = c.id) AS last_closed_end
+            (SELECT p.end_exclusive FROM closed_periods p WHERE p.cap_id = c.id ORDER BY p.start DESC LIMIT 1)
+                AS last_closed_end
         FROM caps c
         ORDER BY c.position, c.id
         """,
@@ -111,11 +114,16 @@ interface CapsDao {
     @Query("SELECT * FROM closed_periods WHERE cap_id = :capId ORDER BY start DESC")
     suspend fun closedPeriods(capId: Long): List<ClosedPeriodEntity>
 
+    /** A cap's [limit] latest closed periods, the latest first: the cap's sheet reads three, whatever its age. */
+    @Query("SELECT * FROM closed_periods WHERE cap_id = :capId ORDER BY start DESC LIMIT :limit")
+    suspend fun latestClosedPeriods(capId: Long, limit: Int): List<ClosedPeriodEntity>
+
     /** The cap's closed line that ends on [endExclusive], if one does: the period that renewed. */
     @Query("SELECT * FROM closed_periods WHERE cap_id = :capId AND end_exclusive = :endExclusive")
     suspend fun closedEnding(capId: Long, endExclusive: Long): ClosedPeriodEntity?
 
-    @Query("SELECT MAX(end_exclusive) FROM closed_periods WHERE cap_id = :capId")
+    /** Where the cap's latest line ends, from the key's order, as [capRows] reads it. */
+    @Query("SELECT end_exclusive FROM closed_periods WHERE cap_id = :capId ORDER BY start DESC LIMIT 1")
     suspend fun lastClosedEnd(capId: Long): Long?
 
     // A change of currency (§4.1): every stored amount, read and written back rescaled.

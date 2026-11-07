@@ -291,7 +291,7 @@ From a cap, its open period's spends and today (`CapStates.of`):
 
 - The schema is exported (`core/data/schemas/`) and committed; every migration from version 1 on has a `MigrationTestHelper` test and an upgrade test from the first release's schema, as Passo's. Never `fallbackToDestructiveMigration`. Version 1 itself is pinned by `SchemaTest`, which builds a database from the exported JSON and opens it with the code (the helper cannot open its database on Windows: CLAUDE.md).
 - Ids are `AUTOINCREMENT`: an id is never reused, so a spend put back by Undo keeps its own.
-- Size: a few thousand spends a year, a few hundred closed periods. Spends of closed periods are kept for the CSV and the backup and never listed (owner, 5 Nov 2026).
+- Size: a few thousand spends a year, a few hundred closed periods. Spends of closed periods are kept for the CSV and the backup and never listed (owner, 5 Nov 2026). Kept, so nothing the screens, the cards or the reminder read grows with them (7 Nov 2026): each of their queries goes to its rows by a key or an index (a cap's open period by `(cap_id, period_start)`, a day's or a month's spends by `added_at`, a cap's latest closed lines and its last closed end by the key's order, `LIMIT`ed), pinned by `HistoryVolumeTest` on ten years of a daily cap. The one read that sorts a cap's whole history is the numpad's habits (`lastAmounts`), a few thousand rows at most: left without an index of its own (owner, 7 Nov 2026), since one would cost a schema version.
 
 ### DataStore (Preferences), file `settings`
 

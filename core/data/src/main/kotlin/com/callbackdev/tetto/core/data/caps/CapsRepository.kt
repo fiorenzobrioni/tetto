@@ -103,7 +103,12 @@ constructor(
 
     /** The cap [capId]'s latest closed lines, at most [limit], the latest first, as they change. */
     fun observeClosedPeriods(capId: Long, limit: Int): Flow<List<ClosedPeriod>> =
-        changes().map { closedPeriods(capId).take(limit) }.distinctUntilChanged()
+        changes().map { latestClosedPeriods(capId, limit) }.distinctUntilChanged()
+
+    /** The cap [capId]'s [limit] latest closed lines, the latest first, read as many and no more. */
+    suspend fun latestClosedPeriods(capId: Long, limit: Int): List<ClosedPeriod> = afterCatchUp { _, _ ->
+        dao.latestClosedPeriods(capId, limit).map { it.toModel() }
+    }
 
     /**
      * The amounts the numpad offers on the cap [capId], one touch each ([RecentAmounts]), as its

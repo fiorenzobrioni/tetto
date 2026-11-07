@@ -6,6 +6,7 @@ import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.AppPalette
 import com.callbackdev.tetto.core.model.CapIcon
 import com.callbackdev.tetto.core.model.CapsLayout
+import com.callbackdev.tetto.core.model.DateRange
 import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.UserSettings
 import com.google.common.truth.Truth.assertThat
@@ -163,6 +164,17 @@ class BackupCodecTest {
         val coffee = backup.caps[0]
         val twice = backup.copy(caps = listOf(coffee.copy(closed = coffee.closed + coffee.closed)))
         assertThat(BackupCodec.decode(BackupCodec.encode(twice))).isEqualTo(BackupRead.Damaged)
+    }
+
+    @Test
+    fun `closed periods that overlap are damaged`() {
+        val backup = sampleBackup()
+        val coffee = backup.caps[0]
+        val line = coffee.closed.first()
+        // Starting two days before a line already there, and running a day into it.
+        val over = line.copy(range = DateRange(line.range.start.minusDays(2), line.range.start.plusDays(1)))
+        val overlapping = backup.copy(caps = listOf(coffee.copy(closed = coffee.closed + over)))
+        assertThat(BackupCodec.decode(BackupCodec.encode(overlapping))).isEqualTo(BackupRead.Damaged)
     }
 
     @Test
