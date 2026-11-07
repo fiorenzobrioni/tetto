@@ -1034,3 +1034,7 @@ Asked whether the list's screenshot had been looked at: it had been drawn by `On
 - **An ended tile or row read like «New cap»**: both had the low ground and an outline. The outline is «New cap»'s alone now; an ended cap is set back by its quieter ground, its grey badge and its bar.
 - **At twice the text size**, drawn now for the list too (`OneOffScreensTest`), the line wrapped with its "·" at a line's start: the dot is held to the word before it by a no-break space, in the separator and in "€350 of €300 · €50 over".
 - **A rule for every session** (CLAUDE.md, Design): every screenshot a change draws is looked at before committing, and a change to what a cap shows is drawn and looked at in both layouts, the tiles and the list.
+
+### 7 Nov 2026 — The list in the README (owner: "si potrebbe aggiungere uno screenshot al README.md della schermata dell'app in modalità elenco [...] procedi con la versione che preferisci e pusha")
+
+A ninth README screenshot, `caps-list.png` (`ReadmeScreenshots.capsList`, `:feature:caps`): the caps screen as a list, the layout a reader picks in Settings, which no picture showed. It completes the README's table, three by three, and shows Phase 6b's one-off cap, which none did: a Lisbon trip under way among the usual caps, and a Paris weekend that ended on Sunday, last and muted. Ended days before the Thursday drawn, so the sentence is an ordinary day's ("All under your caps"), not the day-after's news. Light, since the dark theme has its picture already. Looked at before committing.

@@ -52,6 +52,7 @@ speed comes from having none.
   <tr>
     <td align="center"><img src="docs/screenshots/settings.png" width="250" alt="Settings: the guide's card first, How Tetto works; then the money, the currency in euros, a month from the 27th and the week from Monday; then the evening reminder, on, around 8:30 PM"><br><sub><b>Settings</b>, the guide first</sub></td>
     <td align="center"><img src="docs/screenshots/guide.png" width="250" alt="The guide's chapter on a period, the reserve and forgiveness: four weeks of a €20 coffee cap, each with its bar. Week 1 spent €14, +€6 to the reserve; week 2 spent €23, €3 from the reserve; week 3 spent €30, the reserve's €3 used and €7 forgiven; week 4 starts whole with €20 left"><br><sub><b>The guide</b>: the reserve and forgiveness, shown</sub></td>
+    <td align="center"><img src="docs/screenshots/caps-list.png" width="250" alt="The caps screen as a list: the sentence All under your caps, Restaurants is the closest: €12 left until Nov 30; then a row per cap, each with its name, what is left, the cap and its last day, and a bar: Coffee, a one-off Lisbon trip with €560 left of €800 until Nov 13, Groceries, Restaurants ahead of the days, Lunch; last and muted, a Paris weekend that ended on Nov 1 at €280 of €300; then New cap"><br><sub><b>As a list</b>: more caps on a screen, a trip among them</sub></td>
   </tr>
 </table>
 
