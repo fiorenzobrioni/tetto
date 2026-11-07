@@ -192,8 +192,17 @@ a ledger** (history screens, statistics, accounts, income). Its speed comes from
 
 ### New and edited caps
 
-- Four fields: **name**, **amount**, **period** (day, week, month, year) and **icon**, from a
-  curated palette of about two dozen Material Symbols, so the screen keeps one look.
+- Four fields: **name**, **amount**, **period** (day, week, month, year, or **once**) and
+  **icon**, from a curated palette of about two dozen Material Symbols, so the screen keeps one
+  look.
+- **Once** (owner, 6 Nov 2026; Phase 6b): a cap with its own dates, "Lisbon trip: €800 until
+  20 Nov", from Material's date-range picker, its first day today unless the reader picks
+  another, its last never before today. No reserve, no renewal; a mark, a pace and «ahead of the
+  days» over its own days. The day after its last, the sentence says how it ended ("Lisbon trip
+  ended: €720 of €800"); its tile then stays last in the grid, muted ("Ended on 20 Nov · €720 of
+  €800"), and its sheet offers **Again, with new dates** (its name, icon and amount kept) and
+  **Delete**. An ended one-off is not counted in the sentence, the cards' closest cap or the
+  launcher's shortcuts; a cap turned into one lets its reserve go, and says so.
 - A week starts on the locale's first day of the week, a month on the day set in Settings (the
   1st by default; "from the 27th" for a reader paid on the 27th), a year on that day of January.
 - A change of amount applies to the open period at once, and a reserve larger than the new amount
@@ -215,7 +224,10 @@ a ledger** (history screens, statistics, accounts, income). Its speed comes from
 - **The amounts**: one row per picked area, amount and period (a month by default), in the
   currency of the phone's region, changeable from the same page.
 - The caps screen opens already shaped to the reader. "Start from nothing" skips the grid.
-- No permission is asked at the first run.
+- No permission is asked at the first run unless the reader chooses what needs one: a run that
+  made caps ends by offering the evening reminder (owner, 7 Nov 2026), its notification drawn as
+  an example, «Remind me at 8:30 PM» or «Not now»; only the first lets Android ask for the
+  notifications, and a refusal leaves the reminder off.
 
 ### Widgets (Jetpack Glance)
 
@@ -239,6 +251,10 @@ sisters' «At a glance» and «In words»:
   and the reader is back on it after Add. Two touches and the amount, without opening the app.
 - **Per widget**: the family's card (light, dark, following the phone, or one of the six colours,
   at any opacity, with a live preview), and which caps.
+- **Hide the amounts** (owner, 6 Nov 2026; Phase 6b), per widget, for a home screen others see:
+  no figure anywhere on the card, TalkBack's description included; the bars, the ring, the
+  names, the dates and the words stay ("Under its cap", "Ahead of the days", "Over its cap").
+  Absent, never blurred.
 - **Updates without polling**: when a spend or a cap changes, at midnight (a period may end, the
   days left change), and when the clock, the time zone or the language changes.
 
@@ -262,6 +278,10 @@ sisters' «At a glance» and «In words»:
 - **Appearance**, the family's: theme (system, light, dark), palette (Vivid, Paper), typeface
   (Google Sans, Inter, the phone's), wallpaper colours on or off.
 - **Language**: Italian or English, through Android's per-app language setting.
+- **Privacy**: **Lock Tetto** (owner, 6 Nov 2026; Phase 6b), the phone's own fingerprint, face or
+  screen lock through the platform's prompt, asked at start and after a minute away, for the
+  numpad over the home screen too; the recent apps then show no picture of Tetto. Turning it off
+  asks too. On a phone with no screen lock the switch says why it cannot be turned on.
 - **Your data**: what Tetto keeps and where (the privacy statement, in the family's words);
   **export a backup** and **restore from a backup**; **export the spends as CSV**; **erase
   everything**, confirmed.
@@ -300,15 +320,13 @@ sisters' «At a glance» and «In words»:
   screen simple.
 - **Sync, accounts, sharing a budget with someone**, a cloud of Tetto's own.
 - **Alerts at a threshold**: the preview is the alert.
-- An app lock or PIN in v1 (a later idea); Wear OS; a tablet layout beyond the family's centred
-  column; ads, analytics, crash reporting over the network.
+- A PIN of Tetto's own (the lock is the phone's: Phase 6b); Wear OS; a tablet layout beyond the
+  family's centred column; ads, analytics, crash reporting over the network.
 
 ### After 1.0: approved, to build (owner, 6 Nov 2026)
 
-- A one-off cap that does not renew ("Lisbon trip: €800"), with its dates: no reserve, no
-  renewal, a closed line at its end.
-- Hiding the amounts on a home-screen card (bars and words stay), and an app lock with the
-  system's biometric prompt, no new dependency.
+- ~~A one-off cap, hidden amounts on a card, the app lock~~: built in Phase 6b (above, in their
+  sections).
 - An automatic backup into a folder the reader picks once (the Storage Access Framework, no
   permission): written when Tetto is opened and the last one is a week old, never in the
   background.
@@ -426,6 +444,8 @@ accepted with them.
   with its cap, as the reader sees it ("the Coffee cap").
 - **Period**: a cap's cycle: a day, a week, a month or a year, in local dates, start included
   and end excluded.
+- **One-off cap** (*tetto una tantum*): a cap with its own dates that runs once; **ended**
+  (*finito*) once they are over.
 - **Spend** (*spesa*): an amount added to a cap; it counts in the period open when it was added.
 - **Left** (*residuo*): cap + reserve − spent this period. Negative is **over** (*sotto*).
 - **Reserve** (*riserva*): what past periods left over, carried, up to its limit.

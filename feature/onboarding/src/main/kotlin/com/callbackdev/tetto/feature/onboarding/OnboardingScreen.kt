@@ -495,7 +495,8 @@ private fun AmountsPage(
                     )
                     Spacer(Modifier.height(8.dp))
                     FlowRow(Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        PeriodKind.entries.forEach { kind ->
+                        // The periods that renew: a one-off's dates are the editor's, not a first run's.
+                        PeriodKind.entries.filter { it.renews }.forEach { kind ->
                             FilterChip(
                                 selected = pick.kind == kind,
                                 onClick = { actions.kind(pick.area, kind) },

@@ -1,5 +1,6 @@
 package com.callbackdev.tetto.core.domain.period
 
+import com.callbackdev.tetto.core.model.Cap
 import com.callbackdev.tetto.core.model.DateRange
 import com.callbackdev.tetto.core.model.PeriodKind
 import com.callbackdev.tetto.core.model.PeriodRule
@@ -15,6 +16,7 @@ import java.time.temporal.TemporalAdjusters
  * - A month runs from its start day `d` to the next month's: each month starts on `min(d, its
  *   length)`, so with `d = 31` the months start on 31 Jan, 28 (or 29) Feb, 31 Mar, 30 Apr.
  * - A year runs from `d` January to the next.
+ * - A one-off cap has no rule's period: its dates are its own ([openPeriod] of a [Cap]).
  */
 object PeriodCalendar {
     fun containing(date: LocalDate, rule: PeriodRule): DateRange = when (rule.kind) {
@@ -43,6 +45,8 @@ object PeriodCalendar {
                 DateRange(thisStart.minusYears(1), thisStart)
             }
         }
+
+        PeriodKind.ONE_OFF -> throw IllegalArgumentException("A one-off cap's dates are its own, never a rule's")
     }
 
     /** The period after [period]: the one its end falls in. */
@@ -55,6 +59,16 @@ object PeriodCalendar {
      */
     fun openPeriod(openStart: LocalDate, rule: PeriodRule): DateRange =
         DateRange(openStart, containing(openStart, rule).endExclusive)
+
+    /**
+     * [cap]'s open period: a one-off's own dates (owner, 6 Nov 2026), else the rule's, as
+     * [openPeriod] of its start. Not for a cap that has [Cap.ended]: it has no open period.
+     */
+    fun openPeriod(cap: Cap, rule: PeriodRule): DateRange {
+        val end = cap.endExclusive ?: return openPeriod(cap.openStart, rule)
+        require(!cap.ended) { "An ended cap has no open period" }
+        return DateRange(cap.openStart, end)
+    }
 
     private fun monthStart(month: YearMonth, day: Int): LocalDate = month.atDay(minOf(day, month.lengthOfMonth()))
 }

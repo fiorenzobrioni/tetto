@@ -46,7 +46,7 @@ val CapIcon.labelRes: Int
         CapIcon.OTHER -> R.string.cap_icon_other
     }
 
-/** A period's name: Day, Week, Month, Year. */
+/** A period's name: Day, Week, Month, Year; and Once, a one-off cap's (owner, 6 Nov 2026). */
 @Composable
 fun PeriodKind.label(): String = stringResource(
     when (this) {
@@ -54,5 +54,6 @@ fun PeriodKind.label(): String = stringResource(
         PeriodKind.WEEK -> R.string.period_week
         PeriodKind.MONTH -> R.string.period_month
         PeriodKind.YEAR -> R.string.period_year
+        PeriodKind.ONE_OFF -> R.string.period_once
     },
 )

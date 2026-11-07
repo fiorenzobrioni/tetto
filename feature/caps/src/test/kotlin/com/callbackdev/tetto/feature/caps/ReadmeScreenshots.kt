@@ -25,6 +25,8 @@ import com.callbackdev.tetto.core.designsystem.format.rememberMoneyFormat
 import com.callbackdev.tetto.core.designsystem.theme.TettoTheme
 import com.callbackdev.tetto.core.domain.money.MoneyInput
 import com.callbackdev.tetto.core.model.CapIcon
+import com.callbackdev.tetto.core.model.CapsLayout
+import com.callbackdev.tetto.core.model.DateRange
 import com.callbackdev.tetto.core.model.PeriodKind
 import com.callbackdev.tetto.feature.caps.CapsSample.euros
 import org.junit.Assume.assumeTrue
@@ -35,6 +37,7 @@ import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import java.io.File
+import java.time.LocalDate
 
 /**
  * The README's pictures of the caps screen, the numpad and a cap's sheet (docs/screenshots), drawn
@@ -73,6 +76,27 @@ class ReadmeScreenshots {
             Page(CapsSample.ui(listOf(CapsSample.coffee, CapsSample.shopping) + CapsSample.underCaps.drop(1)))
         }
         save("caps-dark")
+    }
+
+    /**
+     * As a list (the reader's choice in Settings), with a one-off cap under way and one that ended
+     * on Sunday, last and muted (owner, 7 Nov 2026): days ago, so the sentence is a day's like any.
+     */
+    @Test
+    fun capsList() {
+        val paris = CapsSample.paris(
+            CapsSample.parisLine.copy(range = DateRange(LocalDate.of(2026, 10, 30), LocalDate.of(2026, 11, 2))),
+        )
+        val shown = listOf(
+            CapsSample.coffee,
+            CapsSample.lisbon,
+            CapsSample.groceries,
+            CapsSample.restaurants,
+            CapsSample.lunch,
+            paris,
+        )
+        show { Page(CapsSample.ui(shown, layout = CapsLayout.LIST)) }
+        save("caps-list")
     }
 
     /** The numpad over the page, "3.20" typed key by key, its preview saying what it leaves. */

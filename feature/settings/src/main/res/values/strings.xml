@@ -187,4 +187,12 @@
     <string name="settings_card_glance_note">Your caps, each with what is left. Touch to place the card.</string>
     <string name="settings_card_words">In words</string>
     <string name="settings_card_words_note">One cap in a ring, and what is left in words. Touch to place the card.</string>
+    <!-- The lock (owner, 6 Nov 2026): the phone's own, at start and after a minute away. -->
+    <string name="settings_group_privacy">Privacy</string>
+    <string name="settings_lock">Lock Tetto</string>
+    <string name="settings_lock_note">Your fingerprint, your face or the screen lock, when Tetto opens and after a minute away. Recent apps show no picture of it.</string>
+    <string name="settings_lock_none">This phone has no screen lock: Tetto uses the phone’s own, so set one first.</string>
+    <string name="settings_lock_set">Set a screen lock</string>
+    <string name="settings_lock_set_note">In the phone’s security settings</string>
+    <string name="settings_lock_off_prompt">Turn off the lock</string>
 </resources>

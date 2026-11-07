@@ -12,18 +12,23 @@ object WidgetCaps {
      * when they chose none (null), and again when every one they chose has been deleted since,
      * rather than a card with nothing to show. A cap made after the choice is not added to it.
      */
-    fun glance(states: List<CapState>, chosen: Set<Long>?): List<CapState> {
+    fun glance(all: List<CapState>, chosen: Set<Long>?): List<CapState> {
+        // An ended one-off cap leaves the cards (owner, 6 Nov 2026): a card says what is left now.
+        val states = all.filterNot { it.ended }
         if (chosen == null) return states
         return states.filter { it.cap.id in chosen }.ifEmpty { states }
     }
 
     /**
      * «In words»: the cap the reader [chosen] for this card, or none when it has been deleted
-     * (the card says so); with none chosen (null), the one closest to its cap: the first over in
-     * the reader's order, else the lowest share left, a tie to the first. None without caps.
+     * (the card says so), ended or not (a chosen one-off says it has ended); with none chosen
+     * (null), the one closest to its cap: the first over in the reader's order, else the lowest
+     * share left, a tie to the first, never an ended one-off. None without caps.
      */
-    fun words(states: List<CapState>, chosen: Long?): CapState? {
-        if (chosen != null) return states.firstOrNull { it.cap.id == chosen }
+    fun words(all: List<CapState>, chosen: Long?): CapState? {
+        if (chosen != null) return all.firstOrNull { it.cap.id == chosen }
+        // Never an ended one-off as the closest (owner, 6 Nov 2026): its figures are over.
+        val states = all.filterNot { it.ended }
         states.firstOrNull { it.over }?.let { return it }
         return states.minWithOrNull(compareBy { Share(it.left.minor, (it.cap.amount + it.cap.reserve).minor) })
     }
@@ -38,7 +43,8 @@ object WidgetCaps {
  * - [Ahead]: spending runs ahead of the days, with no pace to say (under one unit a day).
  * - [Reserve]: a day's cap, or a period's last day, with something in reserve.
  * - [Forgiven]: over: what the reserve cannot cover is forgiven when the period ends, the day it
- *   starts again.
+ *   starts again; a one-off's, the day after its last, when it ends ([Forgiven.renews] false).
+ * - [Ended]: a one-off cap whose dates are over (owner, 6 Nov 2026): what they spent of its cap.
  *
  * None where the cap has nothing to add to its figure and its last day: a section with nothing to
  * say is not drawn.
@@ -50,11 +56,14 @@ sealed interface CapNote {
 
     data class Reserve(val reserve: Money) : CapNote
 
-    data class Forgiven(val startsAgain: LocalDate) : CapNote
+    data class Forgiven(val startsAgain: LocalDate, val renews: Boolean = true) : CapNote
+
+    data class Ended(val spent: Money, val cap: Money) : CapNote
 
     companion object {
         fun of(state: CapState): CapNote? {
-            if (state.over) return Forgiven(state.startsAgain)
+            if (state.ended) return Ended(state.spent, state.cap.amount)
+            if (state.over) return Forgiven(state.startsAgain, state.renews)
             state.pace?.let { return Pace(it, state.lastDay, state.aheadOfDays) }
             if (state.aheadOfDays) return Ahead
             if (state.cap.reserve.isPositive) return Reserve(state.cap.reserve)

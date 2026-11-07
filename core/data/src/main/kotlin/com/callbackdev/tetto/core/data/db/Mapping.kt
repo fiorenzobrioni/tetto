@@ -19,7 +19,11 @@ internal fun CapEntity.toModel(): Cap = Cap(
     reserve = Money(reserve),
     openStart = LocalDate.ofEpochDay(openStart),
     position = position,
+    endExclusive = endExclusive?.let(LocalDate::ofEpochDay),
 )
+
+/** A one-off cap whose dates are over and closed (owner, 6 Nov 2026): it takes no spend. */
+internal val CapEntity.ended: Boolean get() = endExclusive != null && openStart >= endExclusive
 
 internal fun SpendEntity.toModel(): Spend = Spend(
     id = id,

@@ -48,7 +48,7 @@
     <string name="widget_note_forgiven">condonato quando riparte</string>
 
     <string name="widget_description_left">%1$s, ancora %2$s su %3$s, %4$s</string>
-    <string name="widget_description_over">%1$s, sotto di %2$s su un tetto di %3$s, riparte %4$s</string>
+    <string name="widget_description_over">%1$s, sotto di %2$s su un tetto di %3$s, %4$s</string>
     <string name="widget_description_ahead">spese in anticipo sui giorni</string>
     <string name="widget_description_pace">circa %s al giorno</string>
     <string name="widget_description_reserve">con %s di riserva</string>
@@ -104,4 +104,28 @@
     <string name="widget_config_no_caps">Ancora nessun tetto: la scheda li mostrerà appena ne crei uno.</string>
     <string name="widget_config_reset">Ripristina questa scheda</string>
     <string name="widget_config_done">Fatto</string>
+    <!-- Un tetto una tantum finito, scelto per «In parole» (owner, 6 Nov 2026). -->
+    <string name="widget_ended">Finito</string>
+    <string name="widget_ended_detail">%1$s su %2$s · %3$s</string>
+    <string name="widget_ended_of">%1$s su %2$s</string>
+    <string name="widget_ended_on">%s</string>
+    <string name="widget_note_ended_under">%s avanzati</string>
+    <string name="widget_note_ended_over">sotto di %s, condonati</string>
+    <string name="widget_note_forgiven_end">condonato quando finisce</string>
+    <string name="widget_description_ended">%1$s, finito %2$s, %3$s su %4$s</string>
+
+    <!-- Gli importi nascosti (owner, 6 Nov 2026): dove stava una cifra, dove si trova il tetto. -->
+    <string name="widget_hidden_under">Entro il tetto</string>
+    <string name="widget_hidden_ahead">In anticipo sui giorni</string>
+    <string name="widget_hidden_over">Oltre il tetto</string>
+    <string name="widget_hidden_under_short">Nei limiti</string>
+    <string name="widget_hidden_ahead_short">In anticipo</string>
+    <string name="widget_hidden_over_short">Oltre</string>
+    <string name="widget_note_hidden_under">entro il tetto</string>
+    <string name="widget_note_hidden_over">oltre il tetto</string>
+    <string name="widget_description_hidden">%1$s, %2$s, %3$s</string>
+    <string name="widget_description_hidden_ended">%1$s, finito %2$s, %3$s</string>
+    <string name="widget_config_privacy">Riservatezza</string>
+    <string name="widget_config_hide_amounts">Nascondi gli importi</string>
+    <string name="widget_config_hide_amounts_note">Per una schermata Home che vedono anche altri: nessuna cifra sulla scheda. Restano le barre, l’anello, i nomi e i giorni, e un tetto superato lo dice ancora a parole.</string>
 </resources>

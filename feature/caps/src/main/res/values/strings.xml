@@ -164,4 +164,44 @@
     <string name="quick_gone_title">This cap is no longer here</string>
     <string name="quick_gone_body">It was deleted in Tetto after the card or the shortcut was made.</string>
     <string name="quick_open_app">Open Tetto</string>
+    <!-- A one-off cap (owner, 6 Nov 2026): its own dates, it ends once; over, it says until when it runs. -->
+    <string name="sentence_ended_under">%1$s ended: %2$s of %3$s.</string>
+    <string name="sentence_ended_over">%1$s ended: %2$s of %3$s. It was %4$s over: forgiven.</string>
+    <plurals name="sentence_ended_some">
+        <item quantity="one">%1$s and %2$d other cap ended yesterday.</item>
+        <item quantity="other">%1$s and %2$d other caps ended yesterday.</item>
+    </plurals>
+    <string name="sentence_all_ended">Nothing runs now: every cap has ended.</string>
+    <string name="sentence_over_one_until">%1$s is %2$s over, %3$s.</string>
+    <plurals name="sentence_over_some_until">
+        <item quantity="one">%1$s and %2$d other cap are over. %1$s runs %3$s.</item>
+        <item quantity="other">%1$s and %2$d other caps are over. %1$s runs %3$s.</item>
+    </plurals>
+    <string name="sentence_over_every_until">Every cap is over. %1$s runs %2$s.</string>
+    <string name="tile_description_over_until">%1$s, %2$s over its cap of %3$s, %4$s</string>
+    <string name="tile_ended">Ended on %s</string>
+    <string name="tile_ended_of">%1$s of %2$s</string>
+    <string name="tile_ended_over">%1$s of %2$s\u00A0· %3$s over</string>
+    <string name="tile_ended_description">%1$s, ended on %2$s, %3$s spent of %4$s</string>
+    <string name="tile_ended_description_over">%1$s, ended on %2$s, %3$s spent of %4$s, %5$s over, forgiven</string>
+    <string name="sheet_ended_spare">To spare</string>
+    <string name="sheet_ended_forgiven">Over, forgiven</string>
+    <string name="sheet_receipt_ended_spare">%s to spare</string>
+    <string name="sheet_receipt_ended_over">%s over, forgiven</string>
+    <string name="sheet_ended_note">Its dates are over, so it takes no more spends. Run it again with new dates: the same name, icon and amount.</string>
+    <string name="sheet_again">Again, with new dates</string>
+    <string name="editor_again">Again, with new dates</string>
+    <string name="editor_dates">Dates</string>
+    <string name="editor_dates_choose">Choose the first and the last day</string>
+    <plurals name="editor_dates_days">
+        <item quantity="one">%1$s · %2$d day</item>
+        <item quantity="other">%1$s · %2$d days</item>
+    </plurals>
+    <string name="editor_dates_title">The cap’s dates</string>
+    <string name="editor_dates_done">Done</string>
+    <string name="editor_dates_past">The last day can’t be before today.</string>
+    <string name="editor_once_note">A one-off cap runs once, between its dates: no reserve, and nothing starts again after its last day.</string>
+    <string name="editor_once_reserve_note">Its %s in reserve is let go: a one-off cap keeps none.</string>
+    <string name="quick_ended_title">%s has ended</string>
+    <string name="quick_ended_body">Its dates are over. In Tetto, its sheet can run it again with new dates.</string>
 </resources>

@@ -158,7 +158,7 @@ fun GlanceCardContent(model: WidgetModel) {
 
 /** What every form draws from. */
 private class GlanceParts(val context: Context, val model: WidgetModel, val palette: WidgetPalette) {
-    val words = CardWords(context, model.currency, model.today)
+    val words = CardWords(context, model.currency, model.today, hidden = model.look.hideAmounts)
     val scale = fontScale(context)
     val density = context.resources.displayMetrics.density
 
@@ -244,9 +244,11 @@ private fun Bar(parts: GlanceParts, state: CapState, width: Dp) {
 @Composable
 private fun CellContent(parts: GlanceParts, plan: GlancePlan, state: CapState, size: DpSize) {
     val width = (size.width.value - GlanceFit.CELL_PADDING * 2).dp
+    // Hidden, the hero already says where the cap is: the line under it names the cap instead.
+    val hidden = parts.words.hidden
     val word = @Composable {
         Text(
-            text = parts.words.word(state),
+            text = if (hidden) state.cap.name else parts.words.word(state),
             style = TextStyle(
                 color = if (state.over) parts.palette.overInk else parts.palette.secondaryInk,
                 fontSize = GlanceFit.CELL_WORD_SP.sp,
@@ -307,8 +309,10 @@ private fun RowContent(parts: GlanceParts, plan: GlancePlan, states: List<CapSta
 
 @Composable
 private fun Slot(parts: GlanceParts, plan: GlancePlan, state: CapState, width: Dp) {
-    // Without a line for the name, an over cap says it in its figure: "€30 over".
-    val figure = if (state.over && !plan.names) parts.words.figure(state) else parts.words.amount(state)
+    // Without a line for the name, an over cap says it in its figure: "€30 over". Hidden, the
+    // figure's place says where the cap is ("Over"), and the name keeps its line.
+    val hidden = parts.words.hidden
+    val figure = if (state.over && !plan.names && !hidden) parts.words.figure(state) else parts.words.amount(state)
     val (sp, icon) = GlanceFit.figureBesideIcon(
         width.value,
         textEm(parts.context, figure, TextWeight.MEDIUM),
@@ -333,11 +337,11 @@ private fun Slot(parts: GlanceParts, plan: GlancePlan, state: CapState, width: D
         }
         if (plan.names) {
             Text(
-                text = if (state.over) parts.words.word(state) else state.cap.name,
+                text = if (state.over && !hidden) parts.words.word(state) else state.cap.name,
                 style = TextStyle(
-                    color = if (state.over) parts.palette.overInk else parts.palette.secondaryInk,
+                    color = if (state.over && !hidden) parts.palette.overInk else parts.palette.secondaryInk,
                     fontSize = GlanceFit.SLOT_NAME_SP.sp,
-                    fontWeight = if (state.over) FontWeight.Medium else FontWeight.Normal,
+                    fontWeight = if (state.over && !hidden) FontWeight.Medium else FontWeight.Normal,
                 ),
                 maxLines = 1,
             )
@@ -402,8 +406,9 @@ private fun Item(parts: GlanceParts, plan: GlancePlan, state: CapState, width: D
             modifier = modifier,
         )
     }
-    // Over is said in words: "€30 over", in the over ink; under, the figure alone reads as what is left.
-    val figure = if (state.over) parts.words.figure(state) else parts.words.amount(state)
+    // Over is said in words: "€30 over", in the over ink; under, the figure alone reads as what is
+    // left. Hidden, the short word for where the cap is, "Over" among them.
+    val figure = if (state.over && !parts.words.hidden) parts.words.figure(state) else parts.words.amount(state)
     val figureText = @Composable {
         Text(
             text = figure,

@@ -179,4 +179,12 @@
     <string name="settings_card_glance_note">I tuoi tetti, ciascuno con quanto resta. Tocca per mettere la scheda.</string>
     <string name="settings_card_words">In parole</string>
     <string name="settings_card_words_note">Un tetto in un anello, e quanto resta a parole. Tocca per mettere la scheda.</string>
+    <!-- Il blocco (owner, 6 Nov 2026): quello del telefono, all'apertura e dopo un minuto fuori. -->
+    <string name="settings_group_privacy">Riservatezza</string>
+    <string name="settings_lock">Blocca Tetto</string>
+    <string name="settings_lock_note">L’impronta, il volto o il blocco schermo, quando Tetto si apre e dopo un minuto fuori. Le app recenti non ne mostrano l’anteprima.</string>
+    <string name="settings_lock_none">Questo telefono non ha un blocco schermo: Tetto usa quello del telefono, quindi impostane prima uno.</string>
+    <string name="settings_lock_set">Imposta un blocco schermo</string>
+    <string name="settings_lock_set_note">Nelle impostazioni di sicurezza del telefono</string>
+    <string name="settings_lock_off_prompt">Disattiva il blocco</string>
 </resources>

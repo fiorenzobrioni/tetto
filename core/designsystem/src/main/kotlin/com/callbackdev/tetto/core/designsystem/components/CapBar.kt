@@ -27,16 +27,25 @@ import com.callbackdev.tetto.core.model.Share
  * What a cap spent, as a bar (VISION, «Caps»): its fill in the accent, in the *attention* ink when
  * spending runs ahead of the days, with a thin mark where today falls in the period. Past the cap
  * it is full and hatched: a shape as well as a colour, and the words beside it say "over". No
- * traffic lights. Decorative: the tile's sentence says all of it.
+ * traffic lights. Decorative: the tile's sentence says all of it. [muted], an ended one-off's
+ * (owner, 6 Nov 2026): what its dates spent, in a quiet ink, over still hatched.
  */
 @Composable
-fun CapBar(bar: Share, mark: Share?, over: Boolean, ahead: Boolean, modifier: Modifier = Modifier) {
+fun CapBar(
+    bar: Share,
+    mark: Share?,
+    over: Boolean,
+    ahead: Boolean,
+    modifier: Modifier = Modifier,
+    muted: Boolean = false,
+) {
     val reduced = reducedMotion()
     val target = if (over) 1f else bar.fraction()
     val fill by animateFloatAsState(target, TettoMotion.spatial(reduced), label = "cap bar")
     val track = MaterialTheme.colorScheme.surfaceContainerHighest
     val ink = when {
         over -> MaterialTheme.colorScheme.error
+        muted -> MaterialTheme.colorScheme.outline
         ahead -> TettoTheme.colors.attention
         else -> MaterialTheme.colorScheme.primary
     }

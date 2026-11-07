@@ -4,6 +4,7 @@ import androidx.room.withTransaction
 import com.callbackdev.tetto.core.data.db.CapEntity
 import com.callbackdev.tetto.core.data.db.SpendEntity
 import com.callbackdev.tetto.core.data.db.TettoDatabase
+import com.callbackdev.tetto.core.data.db.ended
 import com.callbackdev.tetto.core.data.db.toEntity
 import com.callbackdev.tetto.core.data.db.toModel
 import com.callbackdev.tetto.core.data.prefs.UserPreferencesDataSource
@@ -140,12 +141,16 @@ constructor(
         val month = MonthSums.month(moment.today, settings.monthStartDay)
         val last = MonthSums.previous(month, settings.monthStartDay)
         val caps = dao.allCaps().map { it.toModel() }
+        // An ended one-off's dates are its closed line's: its share of the month is still counted.
+        val endedDates = caps.filter { it.ended }.mapNotNull { cap ->
+            cap.endExclusive?.let { dao.closedEnding(cap.id, it.toEpochDay()) }?.let { cap.id to it.toModel().range }
+        }.toMap()
         YourMonth(
             month = month,
             added = added(month, zone),
             lastMonth = last,
             addedLastMonth = added(last, zone),
-            worth = MonthSums.worth(caps, month, settings.resolvedCurrency(phone)),
+            worth = MonthSums.worth(caps, month, settings.resolvedCurrency(phone), endedDates),
         )
     }
 
@@ -168,10 +173,13 @@ constructor(
                 today = today,
                 currency = currency,
                 lastClosedEnd = row.lastClosedEnd?.let(LocalDate::ofEpochDay),
-                // Read only on the day a period renews: the line the sentence speaks of.
-                lastClosed = row.lastClosedEnd
-                    ?.takeIf { it == today.toEpochDay() }
-                    ?.let { dao.closedEnding(cap.id, it)?.toModel() },
+                // Read only on the day a period renews, the line the sentence speaks of, and for an
+                // ended one-off, the line that closed its dates: what it says from then on.
+                lastClosed = when {
+                    cap.ended -> cap.endExclusive?.toEpochDay()
+                    row.lastClosedEnd == today.toEpochDay() -> row.lastClosedEnd
+                    else -> null
+                }?.let { dao.closedEnding(cap.id, it)?.toModel() },
             )
         }
     }
@@ -181,9 +189,12 @@ constructor(
         afterCatchUp { _, _ -> }
     }
 
-    /** A new cap, its open period the one that holds today, last in the reader's order; its id. */
-    suspend fun addCap(name: String, icon: CapIcon, amount: Money, kind: PeriodKind): Long =
-        addCaps(listOf(CapDraft(name, amount, kind, icon))).single()
+    /**
+     * A new cap, its open period the one that holds today, or a one-off's [dates] (owner, 6 Nov
+     * 2026), last in the reader's order; its id.
+     */
+    suspend fun addCap(name: String, icon: CapIcon, amount: Money, kind: PeriodKind, dates: DateRange? = null): Long =
+        addCaps(listOf(CapDraft(name, amount, kind, icon, dates))).single()
 
     /**
      * New caps, in the order of [drafts], after the reader's last, in one transaction: the first
@@ -193,12 +204,17 @@ constructor(
         drafts.forEach { draft ->
             require(draft.name.isNotBlank()) { "A cap needs a name" }
             require(draft.amount.isPositive) { "A cap needs an amount above zero" }
+            require((draft.kind == PeriodKind.ONE_OFF) == (draft.dates != null)) {
+                "A one-off cap, and only one, has dates"
+            }
         }
         return afterCatchUp { settings, moment ->
             val today = moment.today
             val createdAt = moment.now.toEpochMilli()
             val first = dao.lastPosition() + 1
             drafts.mapIndexed { index, draft ->
+                // A one-off's own dates, never ending before today (an end past would close at once).
+                val dates = draft.dates?.let { CapChanges.oneOffDates(it, today, lastClosedEnd = null) }
                 dao.insertCap(
                     CapEntity(
                         name = draft.name.trim(),
@@ -206,9 +222,16 @@ constructor(
                         amount = draft.amount.minor,
                         kind = draft.kind.name,
                         reserve = 0,
-                        openStart = CapChanges.openStartForNew(settings.rule(draft.kind, phone), today).toEpochDay(),
+                        openStart = (
+                            dates?.start ?: CapChanges.openStartForNew(
+                                settings.rule(draft.kind, phone),
+                                today,
+                            )
+                            )
+                            .toEpochDay(),
                         position = first + index,
                         createdAt = createdAt,
+                        endExclusive = dates?.endExclusive?.toEpochDay(),
                     ),
                 )
             }
@@ -222,7 +245,8 @@ constructor(
     suspend fun addSpend(capId: Long, amount: Money): Spend? {
         require(amount.isPositive) { "A spend is an amount above zero" }
         return afterCatchUp { _, moment ->
-            val cap = dao.cap(capId) ?: return@afterCatchUp null
+            // An ended one-off takes no spend: its dates are over (owner, 6 Nov 2026).
+            val cap = dao.cap(capId)?.takeUnless { it.ended } ?: return@afterCatchUp null
             val spend = SpendEntity(
                 capId = capId,
                 amount = amount.minor,
@@ -244,7 +268,7 @@ constructor(
     suspend fun addRefund(capId: Long, amount: Money): Spend? {
         require(amount.isPositive) { "A refund is an amount above zero" }
         return afterCatchUp { _, moment ->
-            val cap = dao.cap(capId) ?: return@afterCatchUp null
+            val cap = dao.cap(capId)?.takeUnless { it.ended } ?: return@afterCatchUp null
             val spent = dao.spentBefore(cap.id, cap.openStart, Long.MAX_VALUE)
             if (amount.minor > spent) return@afterCatchUp null
             val refund = SpendEntity(
@@ -309,17 +333,36 @@ constructor(
      * ([CapChanges.replace]): the days already past are kept as a closed line where the new period
      * starts later, and the rest of the open spends move into it; closed periods and their spends
      * stay as they are. False when the cap is gone.
+     *
+     * A one-off cap (owner, 6 Nov 2026) takes its [dates], held where a closed period or today
+     * needs them ([CapChanges.oneOffDates]): new dates, or a kind to or from it, replace its open
+     * period by the same rules. An ended one-off given new dates or a kind starts again from them
+     * ("Again, with new dates"): its closed line stays, nothing is moved.
      */
-    suspend fun changeCap(capId: Long, name: String, icon: CapIcon, amount: Money, kind: PeriodKind): Boolean {
+    suspend fun changeCap(
+        capId: Long,
+        name: String,
+        icon: CapIcon,
+        amount: Money,
+        kind: PeriodKind,
+        dates: DateRange? = null,
+    ): Boolean {
         require(name.isNotBlank()) { "A cap needs a name" }
         require(amount.isPositive) { "A cap needs an amount above zero" }
+        require((kind == PeriodKind.ONE_OFF) == (dates != null)) { "A one-off cap, and only one, has dates" }
         return afterCatchUp { settings, moment ->
             val cap = dao.cap(capId)?.toModel() ?: return@afterCatchUp false
             dao.setCapLooks(capId, name.trim(), icon.key, amount.minor)
-            if (kind != cap.kind) {
-                val lastClosedEnd = dao.lastClosedEnd(capId)?.let(LocalDate::ofEpochDay)
+            val lastClosedEnd = dao.lastClosedEnd(capId)?.let(LocalDate::ofEpochDay)
+            val target = dates?.let { CapChanges.oneOffDates(it, moment.today, lastClosedEnd) }
+            val newRule = settings.rule(kind, phone)
+            if (cap.ended) {
+                val start = target?.start ?: CapChanges.replacedOpenStart(newRule, moment.today, lastClosedEnd)
+                dao.setCapPeriod(capId, kind.name, start.toEpochDay(), target?.endExclusive?.toEpochDay())
+                dao.setReserve(capId, 0)
+            } else if (kind != cap.kind || (target != null && target != cap.oneOffDates)) {
                 val oldRule = settings.rule(cap.kind, phone)
-                replaceOpenLocked(cap, oldRule, settings.rule(kind, phone), amount, lastClosedEnd, moment)
+                replaceOpenLocked(cap, oldRule, newRule, amount, lastClosedEnd, moment, target)
             } else {
                 val held = CapChanges.heldReserve(cap.reserve, amount)
                 if (held != cap.reserve) dao.setReserve(capId, held.minor)
@@ -436,8 +479,11 @@ constructor(
             val oldRule = before.rule(cap.kind, phone)
             val newRule = after.rule(cap.kind, phone)
             val changed = when (cap.kind) {
-                PeriodKind.DAY -> false
+                // A day's period, and a one-off's dates, follow no setting.
+                PeriodKind.DAY, PeriodKind.ONE_OFF -> false
+
                 PeriodKind.WEEK -> newRule.weekStart != oldRule.weekStart
+
                 PeriodKind.MONTH, PeriodKind.YEAR -> newRule.monthStartDay != oldRule.monthStartDay
             }
             if (!changed) continue
@@ -451,6 +497,10 @@ constructor(
      * that holds today, with [newAmount] the cap from then on (§4.5, [CapChanges.replace]). The
      * days kept, where the new period starts later, are those before its first instant in the zone
      * of asking: a spend added before it stays in them, one added from it on moves.
+     *
+     * A one-off's new [dates] stand in for the rule's period; where they start after today, only
+     * the days already past are kept, and what was added today goes with the new dates. A one-off
+     * keeps no reserve.
      */
     private suspend fun replaceOpenLocked(
         cap: Cap,
@@ -459,16 +509,28 @@ constructor(
         newAmount: Money,
         lastClosedEnd: LocalDate?,
         moment: Moment,
+        dates: DateRange? = null,
     ) {
-        val start = CapChanges.replacedOpenStart(newRule, moment.today, lastClosedEnd)
-        if (start == cap.openStart && newRule.kind == cap.kind && newAmount == cap.amount) return
+        val start = dates?.start ?: CapChanges.replacedOpenStart(newRule, moment.today, lastClosedEnd)
+        val end = dates?.endExclusive
+        if (start == cap.openStart && newRule.kind == cap.kind && newAmount == cap.amount &&
+            end == cap.endExclusive
+        ) {
+            return
+        }
+        val keptUntil = minOf(start, moment.today)
         val from = cap.openStart.toEpochDay()
-        val cut = Days.instantsOf(start, moment.zone).first.toEpochMilli()
-        val spentBefore = if (start > cap.openStart) Money(maxOf(0, dao.spentBefore(cap.id, from, cut))) else Money.ZERO
-        val plan = CapChanges.replace(cap, oldRule, start, newAmount, spentBefore)
+        val cut = Days.instantsOf(keptUntil, moment.zone).first.toEpochMilli()
+        val spentBefore = if (keptUntil > cap.openStart) {
+            Money(maxOf(0, dao.spentBefore(cap.id, from, cut)))
+        } else {
+            Money.ZERO
+        }
+        val limit = if (newRule.kind == PeriodKind.ONE_OFF) Money.ZERO else newAmount
+        val plan = CapChanges.replace(cap, oldRule, start, newAmount, spentBefore, keptUntil, limit)
         plan.closed?.let { dao.insertClosedPeriods(listOf(it.toEntity())) }
         dao.moveSpends(cap.id, from, start.toEpochDay(), since = if (plan.closed != null) cut else Long.MIN_VALUE)
-        dao.setCapPeriod(cap.id, newRule.kind.name, start.toEpochDay())
+        dao.setCapPeriod(cap.id, newRule.kind.name, start.toEpochDay(), end?.toEpochDay())
         dao.setReserve(cap.id, plan.reserve.minor)
     }
 

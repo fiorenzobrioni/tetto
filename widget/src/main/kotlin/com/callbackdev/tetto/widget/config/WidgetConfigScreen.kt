@@ -75,6 +75,7 @@ object WidgetConfigTags {
     const val SIZES = "widget_config_sizes"
     const val ALL_CAPS = "widget_config_all_caps"
     const val SENTENCE = "widget_config_sentence"
+    const val HIDE_AMOUNTS = "widget_config_hide_amounts"
     const val CLOSEST = "widget_config_closest"
     const val DONE = "widget_config_done"
 
@@ -84,7 +85,8 @@ object WidgetConfigTags {
 /**
  * One card's settings (PLANNING.md §7), reached when it is placed and from the launcher's long
  * press: the card at the top, at the sizes it can be given; then what it is painted on, and which
- * caps it shows (and, on «In words», its sentence). Every choice is saved as it is made and redraws
+ * caps it shows (and, on «In words», its sentence), and whether it shows any amount at all (owner,
+ * 6 Nov 2026: the real card above says what hiding them leaves). Every choice is saved as it is made and redraws
  * this one card; «Reset this card» puts it back as it was placed, «Done» only closes the door.
  *
  * [model] is the reader's caps as the card reads them; [sample] says the preview draws sample caps
@@ -106,7 +108,9 @@ fun WidgetConfigScreen(
 ) {
     val gutter = pageGutter(sideInsets = false)
     val settings = model?.settings ?: UserSettings()
-    val caps = model?.caps.orEmpty()
+    // An ended one-off is on no card's list: «At a glance» leaves it out, and «In words» names it
+    // only while it was chosen before it ended (owner, 6 Nov 2026).
+    val caps = model?.caps.orEmpty().filter { !it.ended || (kind == WidgetKind.WORDS && it.cap.id == look.wordsCap) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -151,6 +155,17 @@ fun WidgetConfigScreen(
                         )
                     }
                 }
+            }
+
+            GroupHeader(stringResource(R.string.widget_config_privacy))
+            SettingsGroup {
+                SwitchRow(
+                    label = stringResource(R.string.widget_config_hide_amounts),
+                    note = stringResource(R.string.widget_config_hide_amounts_note),
+                    checked = look.hideAmounts,
+                    onChange = { onLook(look.copy(hideAmounts = it)) },
+                    modifier = Modifier.testTag(WidgetConfigTags.HIDE_AMOUNTS),
+                )
             }
 
             // The one control that undoes the others: outlined, in the error colour, at the foot.

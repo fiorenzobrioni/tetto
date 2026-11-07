@@ -30,6 +30,8 @@
     <string name="guide_period_forgiven_body">An overspend takes from the reserve first. What the reserve cannot cover is forgiven when the period ends: the next period starts at its full cap, never in debt. A bad week stays one bad week. The day a period starts again, the sentence on top says how the last one ended: forgiven, covered by the reserve, or what it left to it.</string>
     <string name="guide_period_calendar_title">Your weeks and months</string>
     <string name="guide_period_calendar_body">A week starts on your phone’s first day of the week, a month on the 1st, a year on that day of January. Both can change in Settings: a month from the 27th, say, for a salary paid on the 27th.</string>
+    <string name="guide_period_once_title">A cap for once</string>
+    <string name="guide_period_once_body">A trip, a festival, a move: a cap can run once, between two dates of its own, instead of every day, week, month or year. It keeps no reserve and never starts again. Its mark, its pace and its room ahead of the days follow its own length. The day after its last, the sentence on top says how it went; its tile then waits at the end, quieter, to run again with new dates or to be deleted.</string>
     <string name="guide_period_change_title">Changing a cap</string>
     <string name="guide_period_change_body">A new amount counts at once, in the period under way, and a reserve larger than it comes down to it: a reserve is never more than one period’s cap. A new period that holds this one’s days takes its spends. One that starts later, a week turned into days on a Thursday, closes the days already past on their share of the cap, and only what you spend from its first day counts in it.</string>
     <string name="guide_period_closing_title">Closed when you next look</string>
@@ -58,14 +60,17 @@
     <string name="guide_home_add_body">A touch on a cap on a widget opens the numpad over the home screen: two touches and the amount, and you are back where you were. A long press on Tetto’s icon offers your first four caps the same way.</string>
     <string name="guide_home_dates_title">Days, not countdowns</string>
     <string name="guide_home_dates_body">A widget says “until Sunday”, never how many hours are left: it is redrawn after every spend and at midnight, not every minute, so a countdown would soon be wrong.</string>
+    <string name="guide_home_hidden_title">No figures, if you prefer</string>
+    <string name="guide_home_hidden_body">A widget can show no amount at all, for a home screen others can see. The bars, the ring, the names and the days stay, and a cap over still says so in words.</string>
     <string name="guide_home_reminder_title">The evening reminder</string>
-    <string name="guide_home_reminder_body">Turned on in Settings, one notification in the evening asks whether there is anything to add, and only on a day with no spend added. It comes near the time you chose, not to the minute: Tetto asks Android for no exact alarm, so the phone can save its battery, and some phones hold it back a little longer.</string>
+    <string name="guide_home_reminder_body">Turned on at the first run or in Settings, one notification in the evening asks whether there is anything to add, and only on a day with no spend added. It comes near the time you chose, not to the minute: Tetto asks Android for no exact alarm, so the phone can save its battery, and some phones hold it back a little longer.</string>
 
     <!-- Your data -->
     <string name="guide_data_title">Your data</string>
     <string name="guide_data_p1">Tetto has no internet permission at all: it sends nothing, to anyone. Your caps and your spends are kept on this phone.</string>
     <string name="guide_data_p2">They leave it only in a file you save (a backup, to restore here or on another phone, or your spends as a CSV for a spreadsheet) or in Android’s own backup, if it is turned on: that copy is Android’s, not Tetto’s.</string>
     <string name="guide_data_p3">A backup file is not encrypted: keep it where you keep other private files. Restoring one replaces the caps on this phone, after it has said what it holds and what it replaces.</string>
+    <string name="guide_data_p4">Tetto can also lock itself behind the phone’s own fingerprint, face or screen lock, when it opens and after a minute away; the recent apps then show no picture of it. It keeps no secret of its own: the phone checks, and Tetto only hears yes or no.</string>
 
     <!-- What Tetto does not do -->
     <string name="guide_not_title">What Tetto does not do</string>

@@ -8,7 +8,9 @@ import androidx.room.RoomDatabase
  * committed: the database is a contract, every later version comes with a migration and its test,
  * and nothing is ever dropped to make an upgrade pass.
  *
- * - v1: the caps, their spends, the closed periods (Phase 1).
+ * - v1: the caps, their spends, the closed periods (Phase 1); a one-off cap's end (Phase 6b),
+ *   added to version 1 in place before the first release (owner, 6 Nov 2026: no reader has a
+ *   database to migrate yet).
  */
 @Database(
     entities = [CapEntity::class, SpendEntity::class, ClosedPeriodEntity::class],

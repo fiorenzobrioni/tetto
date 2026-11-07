@@ -1,5 +1,6 @@
 package com.callbackdev.tetto.shell
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -16,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -62,19 +64,33 @@ data object GuideKey : NavKey
  * The shell (PLANNING.md §11 Phases 2, 3, 5 and 6): the first run until it is done, then the pages. The
  * first run stands before them, not on the back stack: it is not a page to go back to. A run that
  * made caps ends on the home screen's card, where the launcher can place one and none is there
- * yet (PLANNING.md §8); the caps are already made then, so a process ended on that page loses
- * nothing and makes nothing twice.
+ * yet (PLANNING.md §8), then on the evening reminder, where it can still be turned on (owner,
+ * 7 Nov 2026); the caps are already made then, so a process ended on either page loses nothing
+ * and makes nothing twice.
  */
 @Composable
 fun TettoRoot(settings: UserSettings) {
     val offer: HomeOfferViewModel = hiltViewModel()
+    val context = LocalContext.current
+    val activity = LocalActivity.current
     var offeringHome by rememberSaveable { mutableStateOf(false) }
+    var offeringReminder by rememberSaveable { mutableStateOf(false) }
     if (!settings.onboardingCompleted) {
-        OnboardingRoute(onFinishing = { withCaps -> offeringHome = withCaps && offer.worthOffering() })
+        OnboardingRoute(
+            onFinishing = { withCaps ->
+                offeringHome = withCaps && offer.worthOffering()
+                // No cap, no reminder: it has nothing to ask about.
+                offeringReminder = withCaps && reminderWorthOffering(context, activity, settings)
+            },
+        )
         return
     }
     if (offeringHome) {
         HomeOfferRoute(onLeave = { offeringHome = false }, viewModel = offer)
+        return
+    }
+    if (offeringReminder) {
+        ReminderOfferRoute(onLeave = { offeringReminder = false })
         return
     }
     MainPages()

@@ -39,3 +39,24 @@ fun cap(
     openStart = openStart,
     position = position,
 )
+
+/** A one-off cap (owner, 6 Nov 2026): its own dates, [start] to [endExclusive], the day after its last. */
+fun oneOff(
+    start: LocalDate,
+    endExclusive: LocalDate,
+    amount: Money = euros(800),
+    id: Long = 1,
+    name: String = "Lisbon trip",
+    position: Int = 0,
+    openStart: LocalDate = start,
+) = Cap(
+    id = id,
+    name = name,
+    icon = CapIcon.TRAVEL,
+    amount = amount,
+    kind = PeriodKind.ONE_OFF,
+    reserve = Money.ZERO,
+    openStart = openStart,
+    position = position,
+    endExclusive = endExclusive,
+)

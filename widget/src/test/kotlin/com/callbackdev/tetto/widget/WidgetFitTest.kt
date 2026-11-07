@@ -60,25 +60,29 @@ class WidgetFitTest {
         RuntimeEnvironment.setFontScale(scale)
         val cut = mutableListOf<String>()
         sizes.forEach { size ->
-            listOf(1L, 2L, 5L).forEach { cap ->
-                listOf(true, false).forEach { sentence ->
-                    val model = WidgetSamples.model(
-                        context,
-                        currency = euro,
-                        look = WidgetLook(wordsCap = cap, showSentence = sentence),
-                    )
-                    val mayEllipsize = { text: String -> names(model).any { it in text } }
-                    cutTexts(context, size, STRETCH, mayEllipsize) { WordsCardContent(model) }
-                        .forEach {
-                            cut +=
-                                "In words, cap $cap, sentence $sentence, ${size.width}×${size.height} at $scale: $it"
-                        }
+            // With the amounts and without them (owner, 6 Nov 2026): the words that stand in for a
+            // figure are measured as the figures are, and nothing of them is cut either.
+            listOf(false, true).forEach { hidden ->
+                listOf(1L, 2L, 5L).forEach { cap ->
+                    listOf(true, false).forEach { sentence ->
+                        val model = WidgetSamples.model(
+                            context,
+                            currency = euro,
+                            look = WidgetLook(wordsCap = cap, showSentence = sentence, hideAmounts = hidden),
+                        )
+                        val mayEllipsize = { text: String -> names(model).any { it in text } }
+                        cutTexts(context, size, STRETCH, mayEllipsize) { WordsCardContent(model) }
+                            .forEach {
+                                cut += "In words, cap $cap, sentence $sentence, hidden $hidden, " +
+                                    "${size.width}×${size.height} at $scale: $it"
+                            }
+                    }
                 }
+                val model = WidgetSamples.model(context, currency = euro, look = WidgetLook(hideAmounts = hidden))
+                val mayEllipsize = { text: String -> names(model).any { it in text } }
+                cutTexts(context, size, STRETCH, mayEllipsize) { GlanceCardContent(model) }
+                    .forEach { cut += "At a glance, hidden $hidden, ${size.width}×${size.height} at $scale: $it" }
             }
-            val model = WidgetSamples.model(context, currency = euro)
-            val mayEllipsize = { text: String -> names(model).any { it in text } }
-            cutTexts(context, size, STRETCH, mayEllipsize) { GlanceCardContent(model) }
-                .forEach { cut += "At a glance, ${size.width}×${size.height} at $scale: $it" }
         }
         assertThat(cut).isEmpty()
     }

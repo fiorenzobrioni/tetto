@@ -108,6 +108,7 @@ constructor(
                         createdAt = Instant.ofEpochMilli(cap.createdAt),
                         spends = spends[cap.id].orEmpty().sortedBy { it.addedAt }.map { it.toBackup() },
                         closed = closed[cap.id].orEmpty().sortedBy { it.start }.map { it.toBackup() },
+                        endExclusive = cap.endExclusive?.let(LocalDate::ofEpochDay),
                     )
                 },
             )
@@ -131,7 +132,7 @@ constructor(
      *
      * Should the transaction fail, nothing of it is written and the settings are put back: the
      * phone is as it was. What belongs to this phone stays: whether it asked for the permission,
-     * whether it showed the caps screen's first-day tip.
+     * whether it showed the caps screen's first-day tip, its lock.
      */
     suspend fun restore(backup: Backup) {
         caps.exclusively {
@@ -142,6 +143,8 @@ constructor(
                     onboardingCompleted = true,
                     askedNotifications = current.askedNotifications,
                     capsTipSeen = current.capsTipSeen,
+                    // This phone's lock, guarded by this phone's own: never a file's to turn off.
+                    appLock = current.appLock,
                     // The week the backup's open periods were made by: the catch-up moves them to
                     // this phone's, where the reader's week follows the phone and the two differ.
                     weekInForce = backup.weekInForce,
@@ -170,13 +173,18 @@ constructor(
      * periods, then the settings, back to the first run. The caps first: should the settings fail,
      * the reader sees an empty caps screen, never a first run that would add its caps to the old.
      * Whether the permission was asked, and whether the first-day tip was shown, are the phone's,
-     * not the reader's data, and stay: a reader who erases has met the caps screen already.
+     * not the reader's data, and stay: a reader who erases has met the caps screen already. The
+     * lock stays too: what it guards is this phone's Tetto, whatever it holds.
      */
     suspend fun erase() {
         caps.exclusively {
             database.withTransaction { dao.deleteAllCaps() }
             preferences.update {
-                UserSettings(askedNotifications = it.askedNotifications, capsTipSeen = it.capsTipSeen)
+                UserSettings(
+                    askedNotifications = it.askedNotifications,
+                    capsTipSeen = it.capsTipSeen,
+                    appLock = it.appLock,
+                )
             }
         }
     }
@@ -204,6 +212,7 @@ private fun BackupCap.toEntity(position: Int) = CapEntity(
     openStart = openStart.toEpochDay(),
     position = position,
     createdAt = createdAt.toEpochMilli(),
+    endExclusive = endExclusive?.toEpochDay(),
 )
 
 private fun BackupSpend.toEntity(capId: Long) = SpendEntity(

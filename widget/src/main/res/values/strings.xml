@@ -56,7 +56,7 @@
 
     <!-- What TalkBack reads for a cap, one sentence, as on the caps screen. -->
     <string name="widget_description_left">%1$s, %2$s left of %3$s, %4$s</string>
-    <string name="widget_description_over">%1$s, %2$s over its cap of %3$s, starts again %4$s</string>
+    <string name="widget_description_over">%1$s, %2$s over its cap of %3$s, %4$s</string>
     <string name="widget_description_ahead">spending ahead of the days</string>
     <string name="widget_description_pace">about %s a day</string>
     <string name="widget_description_reserve">with %s in reserve</string>
@@ -113,4 +113,28 @@
     <string name="widget_config_no_caps">No caps yet: the card will show them as soon as you make one.</string>
     <string name="widget_config_reset">Reset this card</string>
     <string name="widget_config_done">Done</string>
+    <!-- An ended one-off cap, chosen for «In words» (owner, 6 Nov 2026): "Ended", "€720 of €800 · on 20 Nov". -->
+    <string name="widget_ended">Ended</string>
+    <string name="widget_ended_detail">%1$s of %2$s · %3$s</string>
+    <string name="widget_ended_of">%1$s of %2$s</string>
+    <string name="widget_ended_on">on %s</string>
+    <string name="widget_note_ended_under">%s to spare</string>
+    <string name="widget_note_ended_over">%s over, forgiven</string>
+    <string name="widget_note_forgiven_end">forgiven when it ends</string>
+    <string name="widget_description_ended">%1$s, ended %2$s, %3$s of %4$s</string>
+
+    <!-- The amounts hidden (owner, 6 Nov 2026): where a figure stood, where the cap is. No figure anywhere. -->
+    <string name="widget_hidden_under">Under its cap</string>
+    <string name="widget_hidden_ahead">Ahead of the days</string>
+    <string name="widget_hidden_over">Over its cap</string>
+    <string name="widget_hidden_under_short">Under</string>
+    <string name="widget_hidden_ahead_short">Ahead</string>
+    <string name="widget_hidden_over_short">Over</string>
+    <string name="widget_note_hidden_under">under its cap</string>
+    <string name="widget_note_hidden_over">over its cap</string>
+    <string name="widget_description_hidden">%1$s, %2$s, %3$s</string>
+    <string name="widget_description_hidden_ended">%1$s, ended %2$s, %3$s</string>
+    <string name="widget_config_privacy">Privacy</string>
+    <string name="widget_config_hide_amounts">Hide the amounts</string>
+    <string name="widget_config_hide_amounts_note">For a home screen others can see: no figure on the card. The bars, the ring, the names and the days stay, and a cap over is still said in words.</string>
 </resources>

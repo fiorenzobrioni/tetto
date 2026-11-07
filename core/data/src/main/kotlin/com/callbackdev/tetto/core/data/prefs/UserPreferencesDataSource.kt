@@ -73,6 +73,7 @@ constructor(private val dataStore: DataStore<Preferences>) {
             askedNotifications = prefs[Keys.ASKED_NOTIFICATIONS] ?: defaults.askedNotifications,
             capsTipSeen = prefs[Keys.CAPS_TIP_SEEN] ?: defaults.capsTipSeen,
             weekInForce = prefs[Keys.WEEK_IN_FORCE]?.let { name -> DayOfWeek.entries.firstOrNull { it.name == name } },
+            appLock = prefs[Keys.APP_LOCK] ?: defaults.appLock,
         )
     }
 
@@ -92,6 +93,7 @@ constructor(private val dataStore: DataStore<Preferences>) {
         prefs.putOrRemove(Keys.ASKED_NOTIFICATIONS, settings.askedNotifications, defaults.askedNotifications)
         prefs.putOrRemove(Keys.CAPS_TIP_SEEN, settings.capsTipSeen, defaults.capsTipSeen)
         prefs.putOrRemove(Keys.WEEK_IN_FORCE, settings.weekInForce?.name, defaults.weekInForce?.name)
+        prefs.putOrRemove(Keys.APP_LOCK, settings.appLock, defaults.appLock)
     }
 
     private fun <T> MutablePreferences.putOrRemove(key: Preferences.Key<T>, value: T?, default: T?) {
@@ -135,6 +137,9 @@ constructor(private val dataStore: DataStore<Preferences>) {
 
         /** The week the weekly caps' open periods were made by: the engine's note (§4.5). */
         val WEEK_IN_FORCE = stringPreferencesKey("week_in_force")
+
+        /** The lock (owner, 6 Nov 2026): the phone's own credential at start and after a minute away. */
+        val APP_LOCK = booleanPreferencesKey("app_lock")
     }
 
     companion object {

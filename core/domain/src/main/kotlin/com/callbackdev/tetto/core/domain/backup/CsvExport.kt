@@ -44,8 +44,15 @@ object CsvExport {
     fun spends(backup: Backup, weekStart: DayOfWeek, zone: ZoneId): String {
         val decimals = backup.currency.fractionDigits
         val rows = backup.caps.flatMapIndexed { order, cap ->
-            val rule = PeriodRule(cap.kind, backup.settings.weekStart ?: weekStart, backup.settings.monthStartDay)
-            val open = PeriodCalendar.openPeriod(cap.openStart, rule)
+            // A one-off's dates are its own (owner, 6 Nov 2026); once it has ended, none is open.
+            val open = when (val end = cap.endExclusive) {
+                null -> PeriodCalendar.openPeriod(
+                    cap.openStart,
+                    PeriodRule(cap.kind, backup.settings.weekStart ?: weekStart, backup.settings.monthStartDay),
+                )
+
+                else -> if (cap.openStart < end) DateRange(cap.openStart, end) else null
+            }
             cap.spends.map { spend -> Row(order, cap.name, spend, periodOf(spend.periodStart, open, cap.closed)) }
         }.sortedWith(compareBy<Row>({ it.spend.addedAt }, { it.order }))
         return buildString {
@@ -73,8 +80,8 @@ object CsvExport {
      * start. Every spend has one; should a file say otherwise, its end is left empty rather than
      * guessed.
      */
-    private fun periodOf(start: LocalDate, open: DateRange, closed: List<BackupClosed>): DateRange? = when {
-        start == open.start -> open
+    private fun periodOf(start: LocalDate, open: DateRange?, closed: List<BackupClosed>): DateRange? = when {
+        start == open?.start -> open
         else -> closed.firstOrNull { it.range.start == start }?.range ?: closed.firstOrNull { start in it.range }?.range
     }
 

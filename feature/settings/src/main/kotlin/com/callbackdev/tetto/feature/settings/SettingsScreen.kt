@@ -52,6 +52,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -118,6 +119,7 @@ import com.callbackdev.tetto.feature.settings.data.DataGroup
 import com.callbackdev.tetto.feature.settings.data.DataUiState
 import com.callbackdev.tetto.feature.settings.data.DataViewModel
 import com.callbackdev.tetto.feature.settings.data.rememberDataFiles
+import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -149,13 +151,18 @@ fun SettingsRoute(
         showRationale = activity?.shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) == true,
     )
     var reach by remember { mutableStateOf(readReach(asked)) }
+    var lockAvailable by remember { mutableStateOf(viewModel.lockAvailable()) }
     // Read again whenever the page comes back: from the permission's question, from the system's
-    // notification settings, or from anywhere the reader may have turned them off.
+    // notification settings, or from anywhere the reader may have turned them off; and the phone's
+    // screen lock, which the reader may have just set.
     LifecycleResumeEffect(asked) {
         reach = readReach(asked)
+        lockAvailable = viewModel.lockAvailable()
         viewModel.reminderAccessMayHaveChanged()
         onPauseOrDispose { }
     }
+    val scope = rememberCoroutineScope()
+    val lockTitle = stringResource(R.string.settings_lock_off_prompt)
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         reach = readReach(askedBefore = true)
         viewModel.reminderAccessMayHaveChanged()
@@ -168,6 +175,7 @@ fun SettingsRoute(
         state = state,
         onBack = onBack,
         reach = reach,
+        lockAvailable = lockAvailable,
         data = data,
         dataActions = remember(dataViewModel) {
             DataActions(
@@ -213,6 +221,9 @@ fun SettingsRoute(
             // The browser opens it: Tetto itself has no network access. No browser, no crash.
             openUrl = { url -> runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri())) } },
             openGuide = onOpenGuide,
+            setAppLock = { on -> scope.launch { viewModel.setAppLock(on, activity, lockTitle) } },
+            // Where the phone's screen lock is set: Tetto's lock is the phone's own.
+            openSecurity = { runCatching { context.startActivity(Intent(Settings.ACTION_SECURITY_SETTINGS)) } },
         ),
     )
 }
@@ -234,6 +245,8 @@ class SettingsActions(
     val openLanguage: () -> Unit = {},
     val openUrl: (String) -> Unit = {},
     val openGuide: () -> Unit = {},
+    val setAppLock: (Boolean) -> Unit = {},
+    val openSecurity: () -> Unit = {},
 )
 
 /**
@@ -271,6 +284,7 @@ fun SettingsScreen(
     reach: ReminderReach = ReminderReach.Clear,
     data: DataUiState = DataUiState(),
     dataActions: DataActions = DataActions(),
+    lockAvailable: Boolean = true,
 ) {
     val scroll = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     Scaffold(
@@ -291,7 +305,15 @@ fun SettingsScreen(
         // Until the store's first answer the list is not drawn: a screen of defaults that may be
         // about to change is a lie with good intentions.
         if (state != null) {
-            SettingsList(state, actions, reach, data, dataActions, Modifier.fillMaxSize().padding(padding))
+            SettingsList(
+                state,
+                actions,
+                reach,
+                data,
+                dataActions,
+                lockAvailable,
+                Modifier.fillMaxSize().padding(padding),
+            )
         }
     }
 }
@@ -314,6 +336,7 @@ private fun SettingsList(
     reach: ReminderReach,
     data: DataUiState,
     dataActions: DataActions,
+    lockAvailable: Boolean,
     modifier: Modifier,
 ) {
     val settings = state.settings
@@ -444,6 +467,36 @@ private fun SettingsList(
                     trailing = true,
                     onClick = actions.openLanguage,
                 )
+            }
+        }
+
+        // The lock (owner, 6 Nov 2026): the phone's own, at start and after a minute away. On a
+        // phone with no screen lock the switch cannot be turned on, says why, and leads to where
+        // one is set.
+        item { GroupHeader(stringResource(R.string.settings_group_privacy)) }
+        item {
+            SettingsGroup {
+                SwitchRow(
+                    label = stringResource(R.string.settings_lock),
+                    note = stringResource(
+                        if (lockAvailable) R.string.settings_lock_note else R.string.settings_lock_none,
+                    ),
+                    checked = settings.appLock,
+                    onChange = actions.setAppLock,
+                    icon = TettoIcons.Lock,
+                    enabled = lockAvailable || settings.appLock,
+                    modifier = Modifier.testTag(SettingsTags.LOCK),
+                )
+                if (!lockAvailable) {
+                    GroupDivider()
+                    ValueRow(
+                        label = stringResource(R.string.settings_lock_set),
+                        value = stringResource(R.string.settings_lock_set_note),
+                        trailing = true,
+                        onClick = actions.openSecurity,
+                        modifier = Modifier.testTag(SettingsTags.LOCK_SET),
+                    )
+                }
             }
         }
 
@@ -1118,6 +1171,9 @@ object SettingsTags {
     const val DATA = "settings_data"
     const val CARD_GLANCE = "settings_card_glance"
     const val CARD_WORDS = "settings_card_words"
+
+    const val LOCK = "settings_lock"
+    const val LOCK_SET = "settings_lock_set"
 
     fun day(day: Int) = "settings_day_$day"
 }

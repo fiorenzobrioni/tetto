@@ -19,6 +19,10 @@ import java.time.LocalDate
  * @property renewedToday a period closed today and this one began with it.
  * @property renewal how the period that closed today ended, said on the day it renews (owner,
  *   6 Nov 2026); null on any other day.
+ * @property ended a one-off cap whose dates are over (owner, 6 Nov 2026): [period] is the dates it
+ *   had, [spent] what they spent and [left] what they left of the cap; no mark, no pace, no news
+ *   but [endedToday].
+ * @property endedToday a one-off cap whose last day was yesterday: the sentence says how it ended.
  */
 data class CapState(
     val cap: Cap,
@@ -32,6 +36,8 @@ data class CapState(
     val pace: Money?,
     val renewedToday: Boolean,
     val renewal: Renewal? = null,
+    val ended: Boolean = false,
+    val endedToday: Boolean = false,
 ) {
     val over: Boolean get() = left.isNegative
 
@@ -41,8 +47,14 @@ data class CapState(
     /** The open period's last day: "€12 until Sunday" (owner, 5 Nov 2026: the day included). */
     val lastDay: LocalDate get() = period.lastDay
 
-    /** The first day of the next period: "it starts again on Monday". */
+    /**
+     * The first day of the next period: "it starts again on Monday". A one-off cap has none: over,
+     * it says when it ends, the day after its last ([PeriodKind.ONE_OFF]).
+     */
     val startsAgain: LocalDate get() = period.endExclusive
+
+    /** Whether a new period follows this one: false for a one-off cap. */
+    val renews: Boolean get() = cap.kind.renews
 }
 
 /**

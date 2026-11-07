@@ -146,6 +146,7 @@ private fun Backup.toFile() = BackupFile(
                     periods = it.periods,
                 )
             },
+            endExclusive = cap.endExclusive?.toString(),
         )
     },
 )
@@ -193,6 +194,16 @@ private fun BackupFile.toBackup(): Backup {
         require(MoneyInput.canType(amount, currency)) { "A cap past the numpad's digits" }
         val reserve = typed(dto.reserve)
         require(!reserve.isNegative) { "A negative reserve" }
+        // A one-off cap, and only one, has its end (owner, 6 Nov 2026): no reserve, and an open
+        // start on or before it, on it once it has ended.
+        val endExclusive = dto.endExclusive?.let(LocalDate::parse)
+        require((kind == PeriodKind.ONE_OFF) == (endExclusive != null)) {
+            "A one-off without its end, or an end on another"
+        }
+        if (endExclusive != null) {
+            require(openStart <= endExclusive) { "A one-off that starts after its end" }
+            require(reserve == Money.ZERO) { "A one-off with a reserve" }
+        }
         val spends = dto.spends.map { spend ->
             val periodStart = LocalDate.parse(spend.periodStart)
             // A spend counts in the open period or in one before it, never in one to come.
@@ -234,6 +245,7 @@ private fun BackupFile.toBackup(): Backup {
             createdAt = Instant.ofEpochMilli(dto.createdAtMillis),
             spends = spends.sortedBy { it.addedAt },
             closed = closed.sortedBy { it.range.start },
+            endExclusive = endExclusive,
         )
     }
     // Every figure together still fits a Long, so no sum the engine makes of them can overflow:

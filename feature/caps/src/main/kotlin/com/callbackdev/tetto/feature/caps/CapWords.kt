@@ -51,11 +51,49 @@ internal fun againWords(startsAgain: LocalDate, today: LocalDate): String = when
     NearDay.DATE -> stringResource(R.string.again_day, dateWords(startsAgain, today))
 }
 
+/**
+ * What a cap over says of its next day: when it starts again ("on Monday"); a one-off, which never
+ * does, until when it runs ("until Friday").
+ */
+@Composable
+@ReadOnlyComposable
+internal fun overDayWords(state: CapState, today: LocalDate): String =
+    if (state.renews) againWords(state.startsAgain, today) else untilWords(state.lastDay, today)
+
 /** The sentence on top of the caps screen; null with no cap (the empty page says it its own way). */
 @Composable
 @ReadOnlyComposable
 internal fun sentenceWords(sentence: CapsSentence, format: MoneyFormat, today: LocalDate): String? = when (sentence) {
     CapsSentence.NoCaps -> null
+
+    is CapsSentence.AllEnded -> stringResource(R.string.sentence_all_ended)
+
+    is CapsSentence.Ended -> {
+        val first = sentence.first
+        when {
+            sentence.others > 0 -> pluralStringResource(
+                R.plurals.sentence_ended_some,
+                sentence.others,
+                first.cap.name,
+                sentence.others,
+            )
+
+            first.over -> stringResource(
+                R.string.sentence_ended_over,
+                first.cap.name,
+                format.short(first.spent),
+                format.short(first.cap.amount),
+                format.short(first.overBy),
+            )
+
+            else -> stringResource(
+                R.string.sentence_ended_under,
+                first.cap.name,
+                format.short(first.spent),
+                format.short(first.cap.amount),
+            )
+        }
+    }
 
     is CapsSentence.NothingSpent -> stringResource(R.string.sentence_nothing_spent)
 
@@ -71,19 +109,25 @@ internal fun sentenceWords(sentence: CapsSentence, format: MoneyFormat, today: L
 
     is CapsSentence.Over -> {
         val first = sentence.first
-        val again = againWords(first.startsAgain, today)
+        val again = overDayWords(first, today)
+        // A one-off never starts again: it says until when it runs (owner, 6 Nov 2026).
+        val renews = first.renews
         when {
             sentence.others == 0 -> stringResource(
-                R.string.sentence_over_one,
+                if (renews) R.string.sentence_over_one else R.string.sentence_over_one_until,
                 first.cap.name,
                 format.short(first.overBy),
                 again,
             )
 
-            sentence.others + 1 == sentence.caps -> stringResource(R.string.sentence_over_every, first.cap.name, again)
+            sentence.others + 1 == sentence.caps -> stringResource(
+                if (renews) R.string.sentence_over_every else R.string.sentence_over_every_until,
+                first.cap.name,
+                again,
+            )
 
             else -> pluralStringResource(
-                R.plurals.sentence_over_some,
+                if (renews) R.plurals.sentence_over_some else R.plurals.sentence_over_some_until,
                 sentence.others,
                 first.cap.name,
                 sentence.others,
@@ -136,7 +180,9 @@ internal fun leftWords(state: CapState, format: MoneyFormat): String = if (state
 /** A tile's second line: "of €20 · until Sunday", or, over, "of €100 · starts again on Monday". */
 @Composable
 @ReadOnlyComposable
-internal fun detailWords(state: CapState, format: MoneyFormat, today: LocalDate): String = if (state.over) {
+internal fun detailWords(state: CapState, format: MoneyFormat, today: LocalDate): String = if (state.over &&
+    state.renews
+) {
     stringResource(R.string.tile_detail_over, format.short(state.cap.amount), againWords(state.startsAgain, today))
 } else {
     stringResource(R.string.tile_detail, format.short(state.cap.amount), untilWords(state.lastDay, today))
@@ -146,7 +192,7 @@ internal fun detailWords(state: CapState, format: MoneyFormat, today: LocalDate)
 @Composable
 @ReadOnlyComposable
 internal fun tileLines(state: CapState, format: MoneyFormat, today: LocalDate): Pair<String, String> =
-    stringResource(R.string.tile_of, format.short(state.cap.amount)) to if (state.over) {
+    stringResource(R.string.tile_of, format.short(state.cap.amount)) to if (state.over && state.renews) {
         stringResource(R.string.tile_again, againWords(state.startsAgain, today))
     } else {
         untilWords(state.lastDay, today)
@@ -168,11 +214,11 @@ internal fun reserveWords(state: CapState, format: MoneyFormat): String? =
 internal fun tileDescription(state: CapState, format: MoneyFormat, today: LocalDate): String {
     val main = if (state.over) {
         stringResource(
-            R.string.tile_description_over,
+            if (state.renews) R.string.tile_description_over else R.string.tile_description_over_until,
             state.cap.name,
             format.short(state.overBy),
             format.short(state.cap.amount),
-            againWords(state.startsAgain, today),
+            overDayWords(state, today),
         )
     } else {
         stringResource(
@@ -192,6 +238,51 @@ internal fun tileDescription(state: CapState, format: MoneyFormat, today: LocalD
     )
     return (listOf(main) + extras).joinToString(", ")
 }
+
+/**
+ * An ended one-off's two lines (owner, 6 Nov 2026): "Ended on 20 Nov" and "€720 of €800", or, over,
+ * "€850 of €800 · €50 over": over said in words.
+ */
+@Composable
+@ReadOnlyComposable
+internal fun endedLines(state: CapState, format: MoneyFormat, today: LocalDate): Pair<String, String> =
+    stringResource(R.string.tile_ended, dayWords(state.lastDay, today)) to if (state.over) {
+        stringResource(
+            R.string.tile_ended_over,
+            format.short(state.spent),
+            format.short(state.cap.amount),
+            format.short(state.overBy),
+        )
+    } else {
+        stringResource(R.string.tile_ended_of, format.short(state.spent), format.short(state.cap.amount))
+    }
+
+/** What TalkBack reads for an ended one-off: "Lisbon trip, ended on 20 Nov, €720 spent of €800". */
+@Composable
+@ReadOnlyComposable
+internal fun endedDescription(state: CapState, format: MoneyFormat, today: LocalDate): String = if (state.over) {
+    stringResource(
+        R.string.tile_ended_description_over,
+        state.cap.name,
+        dayWords(state.lastDay, today),
+        format.short(state.spent),
+        format.short(state.cap.amount),
+        format.short(state.overBy),
+    )
+} else {
+    stringResource(
+        R.string.tile_ended_description,
+        state.cap.name,
+        dayWords(state.lastDay, today),
+        format.short(state.spent),
+        format.short(state.cap.amount),
+    )
+}
+
+/** A day as a date, "20 Nov", in the locale's pattern: an ended cap's last day, a one-off's dates. */
+@Composable
+@ReadOnlyComposable
+internal fun dayWords(date: LocalDate, today: LocalDate): String = dateWords(date, today)
 
 /** The numpad's preview: what the spend typed would leave. */
 @Composable
@@ -213,9 +304,15 @@ internal fun lineWords(line: ClosedPeriod, kind: PeriodKind, format: MoneyFormat
     if (line.periods > 1) {
         val plurals = when (kind) {
             PeriodKind.DAY -> R.plurals.line_run_days
+
             PeriodKind.WEEK -> R.plurals.line_run_weeks
+
             PeriodKind.MONTH -> R.plurals.line_run_months
+
             PeriodKind.YEAR -> R.plurals.line_run_years
+
+            // A one-off closes once, never a run: its line is never folded.
+            PeriodKind.ONE_OFF -> R.plurals.line_run_days
         }
         return pluralStringResource(plurals, line.periods, range, line.periods, format.short(line.reserveAfter))
     }

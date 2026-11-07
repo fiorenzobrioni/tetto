@@ -47,6 +47,8 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.callbackdev.tetto.core.designsystem.components.CapRow
 import com.callbackdev.tetto.core.designsystem.components.CapTile
+import com.callbackdev.tetto.core.designsystem.components.EndedCapRow
+import com.callbackdev.tetto.core.designsystem.components.EndedCapTile
 import com.callbackdev.tetto.core.designsystem.components.FewLinesAutoSize
 import com.callbackdev.tetto.core.designsystem.components.NewCapRow
 import com.callbackdev.tetto.core.designsystem.components.NewCapTile
@@ -282,7 +284,7 @@ private fun TileGrid(
     onNewCap: () -> Unit,
 ) {
     val columns = tileColumns()
-    val cells: List<CapState?> = state.caps + null
+    val cells: List<CapState?> = state.shown + null
     Column(verticalArrangement = Arrangement.spacedBy(TileGap)) {
         cells.chunked(columns).forEach { row ->
             Row(
@@ -291,10 +293,17 @@ private fun TileGrid(
             ) {
                 row.forEach { cell ->
                     val cellModifier = Modifier.weight(1f).fillMaxHeight()
-                    if (cell == null) {
-                        NewCapTile(stringResource(R.string.new_cap), TettoIcons.Plus, onNewCap, cellModifier)
-                    } else {
-                        Tile(cell, format, state.today, onAddSpend, onOpenCap, cellModifier)
+                    when {
+                        cell == null -> NewCapTile(
+                            stringResource(R.string.new_cap),
+                            TettoIcons.Plus,
+                            onNewCap,
+                            cellModifier,
+                        )
+
+                        cell.ended -> EndedTile(cell, format, state.today, onOpenCap, cellModifier)
+
+                        else -> Tile(cell, format, state.today, onAddSpend, onOpenCap, cellModifier)
                     }
                 }
                 repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
@@ -316,10 +325,28 @@ private fun RowList(
     onNewCap: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(RowGap)) {
-        state.caps.forEach { cap ->
+        state.shown.forEach { cap ->
             val id = cap.cap.id
             // Keyed by the cap, so a figure rolls from its own last value, never a neighbour's.
-            key(id) { ListRow(cap, id, format, state.today, onAddSpend, onOpenCap) }
+            key(id) {
+                if (cap.ended) {
+                    val (ended, detail) = endedLines(cap, format, state.today)
+                    EndedCapRow(
+                        icon = cap.cap.icon.symbol,
+                        name = cap.cap.name,
+                        ended = ended,
+                        detail = detail,
+                        bar = cap.bar,
+                        over = cap.over,
+                        description = endedDescription(cap, format, state.today),
+                        clickLabel = stringResource(R.string.tile_long_click),
+                        onClick = { onOpenCap(id) },
+                        modifier = Modifier.fillMaxWidth().testTag(CapsTags.tile(id)),
+                    )
+                } else {
+                    ListRow(cap, id, format, state.today, onAddSpend, onOpenCap)
+                }
+            }
         }
         NewCapRow(stringResource(R.string.new_cap), TettoIcons.Plus, onNewCap, Modifier.fillMaxWidth())
     }
@@ -387,6 +414,34 @@ private fun Tile(
 }
 
 /**
+ * An ended one-off's tile (owner, 6 Nov 2026), muted, last: when it ended and what its dates spent.
+ * A touch opens its sheet, where it can run again with new dates: no numpad, its dates are over.
+ */
+@Composable
+private fun EndedTile(
+    state: CapState,
+    format: MoneyFormat,
+    today: LocalDate,
+    onOpenCap: (Long) -> Unit,
+    modifier: Modifier,
+) {
+    val id = state.cap.id
+    val (ended, detail) = endedLines(state, format, today)
+    EndedCapTile(
+        icon = state.cap.icon.symbol,
+        name = state.cap.name,
+        ended = ended,
+        detail = detail,
+        bar = state.bar,
+        over = state.over,
+        description = endedDescription(state, format, today),
+        clickLabel = stringResource(R.string.tile_long_click),
+        onClick = { onOpenCap(id) },
+        modifier = modifier.testTag(CapsTags.tile(id)),
+    )
+}
+
+/**
  * Two columns on a phone, one at large text sizes (VISION, «Caps»): from one and a half times the
  * text, or where the page, measured in the reader's text, is narrow.
  */
@@ -440,4 +495,10 @@ object CapsTags {
 
     /** A cap's sheet's figures: the cap, its reserve, what was spent and what is left. */
     const val RECEIPT = "cap_receipt"
+
+    /** An ended one-off's «Again, with new dates». */
+    const val AGAIN = "cap_again"
+
+    /** The editor's dates, a one-off's. */
+    const val EDITOR_DATES = "cap_editor_dates"
 }

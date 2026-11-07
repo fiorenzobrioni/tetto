@@ -65,6 +65,57 @@ internal object CapsSample {
 
     val underCaps = listOf(coffee, groceries, restaurants, lunch)
 
+    /** A one-off (owner, 6 Nov 2026): Lisbon, Tuesday 3 to Friday 13 Nov, €800, €240 spent. */
+    val lisbon: CapState = CapStates.of(
+        cap = Cap(
+            id = 7,
+            name = "Lisbon trip",
+            icon = CapIcon.TRAVEL,
+            amount = euros(800),
+            kind = PeriodKind.ONE_OFF,
+            reserve = Money.ZERO,
+            openStart = LocalDate.of(2026, 11, 3),
+            position = 7,
+            endExclusive = LocalDate.of(2026, 11, 14),
+        ),
+        spent = euros(240),
+        rule = rule(PeriodKind.ONE_OFF),
+        today = today,
+        currency = EUR,
+    )
+
+    /** A one-off that ended yesterday: the Paris weekend, 30 Oct to 4 Nov, €280 of €300. */
+    val parisLine = ClosedPeriod(
+        capId = 8,
+        range = DateRange(LocalDate.of(2026, 10, 30), LocalDate.of(2026, 11, 5)),
+        cap = euros(300),
+        spent = euros(280),
+        reserveBefore = Money.ZERO,
+        reserveAfter = Money.ZERO,
+        forgiven = Money.ZERO,
+        periods = 1,
+    )
+
+    fun paris(line: ClosedPeriod = parisLine): CapState = CapStates.of(
+        cap = Cap(
+            id = 8,
+            name = "Paris weekend",
+            icon = CapIcon.TRAVEL,
+            amount = euros(300),
+            kind = PeriodKind.ONE_OFF,
+            reserve = Money.ZERO,
+            openStart = line.range.endExclusive,
+            position = 8,
+            endExclusive = line.range.endExclusive,
+        ),
+        spent = Money.ZERO,
+        rule = rule(PeriodKind.ONE_OFF),
+        today = today,
+        currency = EUR,
+        lastClosedEnd = line.range.endExclusive,
+        lastClosed = line,
+    )
+
     fun ui(
         caps: List<CapState>,
         currency: AppCurrency = EUR,

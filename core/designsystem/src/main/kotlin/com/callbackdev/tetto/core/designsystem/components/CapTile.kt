@@ -38,7 +38,10 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.role
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.callbackdev.tetto.core.designsystem.R
@@ -440,3 +443,167 @@ private fun ReserveChip(text: String, modifier: Modifier = Modifier) {
 
 /** A row's figure line: the reading value's 24 sp on 28, not the tile's 32. */
 private val RowFigureLine = 28.sp
+
+/**
+ * An ended one-off cap's tile (owner, 6 Nov 2026), after the running caps and muted: its icon in a quiet
+ * badge, its [name], when it ended ([ended], "Ended on 20 Nov") and what its dates spent of the cap
+ * ([detail], "€720 of €800", or with how far over: over is said in words), its bar in a quiet ink.
+ * A touch opens its sheet (no numpad: its dates are over); TalkBack reads [description] and offers
+ * the sheet by [clickLabel].
+ */
+@Composable
+fun EndedCapTile(
+    icon: ImageVector,
+    name: String,
+    ended: String,
+    detail: String,
+    bar: Share,
+    over: Boolean,
+    description: String,
+    clickLabel: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.endedTouch(description, clickLabel, onClick),
+        shape = GroupShape,
+        // No outline: an outline is «New cap»'s, the one thing to touch to make something; an
+        // ended cap is set back by its quieter ground, its badge and its bar instead.
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    ) {
+        Column(Modifier.padding(vertical = 16.dp)) {
+            Row(
+                Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp).padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                QuietBadge(icon)
+                Spacer(Modifier.size(12.dp))
+                CapName(name, Modifier.weight(1f, fill = false))
+                Icon(
+                    TettoIcons.ChevronRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 2.dp).size(18.dp),
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            Column(Modifier.padding(horizontal = 16.dp)) {
+                EndedWords(ended, detail, over)
+                Spacer(Modifier.height(10.dp))
+                CapBar(bar = bar, mark = null, over = over, ahead = false, muted = true)
+            }
+        }
+    }
+}
+
+/**
+ * An ended one-off cap's row in the list: [EndedCapTile]'s words across the page, as short as a
+ * running cap's row (owner, 7 Nov 2026): the name, then when it ended and what its dates spent on
+ * one line ("Ended on 4 Nov · €280 of €300", wrapping only where the text is large), then the bar.
+ */
+@Composable
+fun EndedCapRow(
+    icon: ImageVector,
+    name: String,
+    ended: String,
+    detail: String,
+    bar: Share,
+    over: Boolean,
+    description: String,
+    clickLabel: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.endedTouch(description, clickLabel, onClick),
+        shape = GroupShape,
+        // No outline: an outline is «New cap»'s, the one thing to touch to make something; an
+        // ended cap is set back by its quieter ground, its badge and its bar instead.
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    ) {
+        Row(
+            Modifier.padding(start = 16.dp, end = 4.dp, top = 10.dp, bottom = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            QuietBadge(icon)
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                CapName(name)
+                EndedLine(ended, detail, over)
+                Spacer(Modifier.height(4.dp))
+                CapBar(bar = bar, mark = null, over = over, ahead = false, muted = true)
+            }
+            Icon(
+                TettoIcons.ChevronRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(12.dp),
+            )
+        }
+    }
+}
+
+/** "Ended on 20 Nov" over "€720 of €800": the second in the over ink when it says over. */
+@Composable
+private fun EndedWords(ended: String, detail: String, over: Boolean) {
+    Text(
+        ended,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Text(
+        detail,
+        style = MaterialTheme.typography.bodyMedium.tabular(),
+        color = if (over) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
+/** "Ended on 20 Nov · €720 of €800" as one line, its figures in the over ink when they say over. */
+@Composable
+private fun EndedLine(ended: String, detail: String, over: Boolean) {
+    val separator = stringResource(R.string.ended_separator)
+    val error = MaterialTheme.colorScheme.error
+    Text(
+        buildAnnotatedString {
+            append(ended)
+            append(separator)
+            if (over) withStyle(SpanStyle(color = error)) { append(detail) } else append(detail)
+        },
+        style = MaterialTheme.typography.bodyMedium.tabular(),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
+/** A cap's icon in a quiet circle: an ended cap's, set back from the others' tinted badges. */
+@Composable
+private fun QuietBadge(icon: ImageVector) {
+    Box(
+        Modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(22.dp),
+        )
+    }
+}
+
+/** An ended cap's touch: its sheet, named; one sentence for TalkBack. */
+private fun Modifier.endedTouch(description: String, clickLabel: String, onClick: () -> Unit): Modifier =
+    clip(GroupShape)
+        .clickable(onClick = onClick)
+        .clearAndSetSemantics {
+            contentDescription = description
+            role = Role.Button
+            onClick(label = clickLabel) {
+                onClick()
+                true
+            }
+        }

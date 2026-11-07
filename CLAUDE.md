@@ -25,7 +25,9 @@ the caps screen's first-day tip, the accessibility pass and the README's screens
 in the build are `:app`, `:core:model`, `:core:domain`, `:core:data`, `:core:reminder`,
 `:core:designsystem`, `:core:testing`, `:feature:caps`, `:feature:onboarding`,
 `:feature:settings`, `:feature:guide` and `:widget`. The device checks of Phases 4 to 6 are done
-on the owner's phone (6 Nov 2026); Phase 7 is the 1.0 release.
+on the owner's phone (6 Nov 2026). **Phase 6b is built and checked on the phone (7 Nov 2026)**: the
+one-off cap, the hidden amounts on the cards and the lock, with the first run's reminder page;
+Phase 7 is the 1.0 release.
 
 **Tetto and Saldo are two separate apps, alternatives to each other** (owner, 5 Nov 2026).
 Tetto takes the family's look and structure from its sisters, so the apps are recognisable;
@@ -105,15 +107,15 @@ that does not match it.
 
 | Module | Kind | Holds |
 |---|---|---|
-| `:core:model` | pure Kotlin/JVM | data classes shared by everything: `Money` (`Long` minor units), `AppCurrency`, `PeriodKind`, `PeriodRule`, `DateRange`, `Cap`, `Spend`, `ClosedPeriod`, `CapState`, `CapIcon`, `CapDraft`, the settings enums and `UserSettings`, `WidgetLook` |
-| `:core:domain` | pure Kotlin/JVM | the cap engine: `PeriodCalendar` (a period from a date and a rule), `Days` (where dates meet instants: midnights, a day's instants, how near a day is), `Rollover` and `CatchUp` (closing periods, the reserve's limit, forgiveness, a run of empty periods folded), `CapChanges` (the open period a new cap or a new rule gets), `CapStates` (left, over, the bar, the mark for today, ahead of the days, the pace, the renewal), `MoneyInput` (the numpad's buffer), `RecentAmounts` (the cap's habits above its keys), `Rescale` (a change of currency's decimals), `SpendPreview`, `CapsSentence`, `MonthSums` (the reader's month under the caps); `ReminderSchedule`; `BackupCodec`, `CsvExport`; the widgets' arithmetic (`GlanceFit`, `WidgetType`, the text metrics) and what they show (`WidgetCaps`, `CapNote`) |
-| `:core:data` | Android library | Room (`TettoDatabase`: `caps`, `spends`, `closed_periods`; schema exported to `core/data/schemas/`), DataStore (`settings`; `widgets`, not backed up); `CapsRepository` (the catch-up before every read and write, in one transaction, one at a time), `SettingsRepository`, `BackupRepository` (the backup's snapshot, the restore, the CSV, erasing everything, under the caps' lock), `TodaySource`, `PhoneDefaults` (the region's currency, the locale's week); `HomeScreenCards` (the pin request, bound by `:widget`) and `QuickAdd` (the door to the numpad over the home screen) |
+| `:core:model` | pure Kotlin/JVM | data classes shared by everything: `Money` (`Long` minor units), `AppCurrency`, `PeriodKind` (`ONE_OFF` among them), `PeriodRule`, `DateRange`, `Cap` (a one-off's `endExclusive`, `ended`), `Spend`, `ClosedPeriod`, `CapState`, `CapIcon`, `CapDraft`, the settings enums and `UserSettings`, `WidgetLook` |
+| `:core:domain` | pure Kotlin/JVM | the cap engine: `PeriodCalendar` (a period from a date and a rule), `Days` (where dates meet instants: midnights, a day's instants, how near a day is), `Rollover` and `CatchUp` (closing periods, the reserve's limit, forgiveness, a run of empty periods folded), `CapChanges` (the open period a new cap or a new rule gets), `CapStates` (left, over, the bar, the mark for today, ahead of the days, the pace, the renewal), `MoneyInput` (the numpad's buffer), `RecentAmounts` (the cap's habits above its keys), `Rescale` (a change of currency's decimals), `SpendPreview`, `CapsSentence`, `MonthSums` (the reader's month under the caps); `ReminderSchedule`; `LockSchedule` (when the lock asks); `BackupCodec`, `CsvExport`; the widgets' arithmetic (`GlanceFit`, `WidgetType`, the text metrics) and what they show (`WidgetCaps`, `CapNote`) |
+| `:core:data` | Android library | Room (`TettoDatabase`: `caps`, `spends`, `closed_periods`; schema exported to `core/data/schemas/`), DataStore (`settings`; `widgets`, not backed up); `CapsRepository` (the catch-up before every read and write, in one transaction, one at a time), `SettingsRepository`, `BackupRepository` (the backup's snapshot, the restore, the CSV, erasing everything, under the caps' lock), `TodaySource`, `PhoneDefaults` (the region's currency, the locale's week); `HomeScreenCards` (the pin request, bound by `:widget`) and `QuickAdd` (the door to the numpad over the home screen); the lock's Android half, `DeviceLock` (the platform's `BiometricPrompt`; `USE_BIOMETRIC` in its manifest) and `AppLock` (the process's lock) |
 | `:core:reminder` | Android library | the evening reminder's Android half (`EveningReminder`, started by the application): the inexact alarm and its re-arming, the receiver (alarm, boot, package replaced, time and zone, the notifications' block states), the `reminder` channel and its notification (`ic_stat_tetto`, drawn by the icon script), `ReminderAccess` (whether it can show, and the page that fixes it) |
-| `:core:designsystem` | Android library | M3 theme (Chiaro's dresses through Passo and Tempo), typography, shapes, motion, page gutter (`PageWidth.kt`), the widget card colours, `TettoIcons` (the curated cap icons, Material Symbols drawn in code); the settings rows and `StatusCard`; the numpad's keys, a cap's tile and its row (the list), the bar with its mark, the ring; the amount field (`MoneyField`, through `:core:domain`'s `MoneyInput`, its one use of the domain) and the currency picker (`CurrencyPickerDialog`, `Currencies`), shared by the editor, the first run and Settings; money formatting (`MoneyFormat`, from minor units and the locale) |
+| `:core:designsystem` | Android library | M3 theme (Chiaro's dresses through Passo and Tempo), typography, shapes, motion, page gutter (`PageWidth.kt`), the widget card colours, `TettoIcons` (the curated cap icons, Material Symbols drawn in code); the settings rows and `StatusCard`; the numpad's keys, a cap's tile and its row (the list), an ended one-off's (`EndedCapTile`, `EndedCapRow`), the bar with its mark, the ring; the amount field (`MoneyField`, through `:core:domain`'s `MoneyInput`, its one use of the domain) and the currency picker (`CurrencyPickerDialog`, `Currencies`), shared by the editor, the first run and Settings; money formatting (`MoneyFormat`, from minor units and the locale) |
 | `:core:testing` | Android library, test-only | `assertAccessible()` (labels, 48dp touch targets) and `walkPage()`, shared by the UI tests as `testImplementation`; `RealMainThread`, Main on a thread of its own for a ViewModel's test on real threads, stopped first in `@After` with the test's ViewModels (PLANNING.md §12) |
 | `:feature:*` | Android library | `caps` (the caps screen with its first-day tip, the numpad sheet and its ViewModel, a cap's sheet, the cap editor, the numpad over the home screen's ViewModel and sheet), `onboarding` (welcome, the areas, the amounts), `settings` (the guide's card, money, the reminder, appearance, your data with its `DataViewModel`, about), `guide` (six chapters in the family's prose kit, its examples drawn by the engine in the reader's currency and week: `GuideScreen`, `GuideSamples`, `GuideViewModel`) |
 | `:widget` | Android library | the two Glance cards («At a glance», «In words»), the ring's painter, their settings screen with the real card as its preview, their looks (`WidgetLookStore`, the `widgets` file), the refresh (`WidgetUpdater` after every write, `MidnightAlarm`, the exempt broadcasts), the pin request (`PinnedCards`), the generated previews, the card that says it could not be drawn (`WidgetFailure`) |
-| `:app` | application | `Application`, `MainActivity` (the reader's appearance), the shell (onboarding, the first run's last page `HomeOffer`, then Navigation 3), `QuickAddActivity` (the numpad over the home screen, from a card or a shortcut), the dynamic launcher shortcuts (`CapShortcuts`), DI entry points; wires everything |
+| `:app` | application | `Application`, `MainActivity` (the reader's appearance), the shell (onboarding, the first run's last pages `HomeOffer` and `ReminderOffer`, then Navigation 3), `QuickAddActivity` (the numpad over the home screen, from a card or a shortcut), the dynamic launcher shortcuts (`CapShortcuts`), the lock's pages (`LockedPage`, `LockedSheet`), DI entry points; wires everything |
 
 Rules: `:core:model` and `:core:domain` stay pure Kotlin/JVM; if a class there needs a `Context`
 or a `Resources`, it is in the wrong module. Feature modules depend on `core:*`, never on each
@@ -143,7 +145,8 @@ the phase that brings its first code.
 - **Don't change the cap engine without its tests** for every edge case in PLANNING.md §4.7.
 - **The database is a contract.** The Room schema is exported and committed; every migration has
   a test (`MigrationTestHelper`) and the upgrade from the first release's schema is tested.
-  Never `fallbackToDestructiveMigration`.
+  Never `fallbackToDestructiveMigration`. (Before the first release, and only then, version 1
+  changed in place for Phase 6b: PLANNING §15, 7 Nov 2026.)
 - **No ledger.** No history screen, statistics, charts, accounts, income, notes, tags or dates on
   a spend (VISION, non-goals and «Tetto and Saldo»). A feature that needs one is out of scope;
   ask before building anything that looks like it.
@@ -199,7 +202,10 @@ cap, not the app, so it stays a roof.
 `GuideScreen`: its card first in Settings, a first-day tip on the caps screen, short chapters.
 It never teaches a control, only what a part of the screen is for; it shows the app's own
 components as examples, each captioned as one, so no sample reads as the reader's money. The Compose UI tests write
-screenshots to each module's `build/screenshots`: look at them after changing a screen.
+screenshots to each module's `build/screenshots`: look at them after changing a screen, **every
+one the change draws, before committing**. The caps screen has two layouts, the tiles and the
+list (Settings, Appearance): a change to what a cap shows is drawn, tested and looked at in
+both (owner, 7 Nov 2026, after an ended one-off's row went unchecked in Phase 6b).
 
 **The numpad** is the app's most used surface: keys at least the family's touch target, the
 locale's decimal separator, the phone's own keyboard haptics through `LocalHapticFeedback`

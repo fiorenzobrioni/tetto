@@ -117,6 +117,7 @@ private fun GuideContent(state: GuideUiState, modifier: Modifier) {
         Feature(R.string.guide_period_reserve_title, R.string.guide_period_reserve_body)
         Feature(R.string.guide_period_forgiven_title, R.string.guide_period_forgiven_body)
         Feature(R.string.guide_period_calendar_title, R.string.guide_period_calendar_body)
+        Feature(R.string.guide_period_once_title, R.string.guide_period_once_body)
         Feature(R.string.guide_period_change_title, R.string.guide_period_change_body)
         Feature(R.string.guide_period_closing_title, R.string.guide_period_closing_body)
         Feature(R.string.guide_period_frozen_title, R.string.guide_period_frozen_body)
@@ -140,12 +141,14 @@ private fun GuideContent(state: GuideUiState, modifier: Modifier) {
         Feature(R.string.guide_home_two_title, R.string.guide_home_two_body)
         Feature(R.string.guide_home_add_title, R.string.guide_home_add_body)
         Feature(R.string.guide_home_dates_title, R.string.guide_home_dates_body)
+        Feature(R.string.guide_home_hidden_title, R.string.guide_home_hidden_body)
         Feature(R.string.guide_home_reminder_title, R.string.guide_home_reminder_body)
 
         Chapter(TettoIcons.Shield, stringResource(R.string.guide_data_title))
         Paragraph(stringResource(R.string.guide_data_p1))
         Paragraph(stringResource(R.string.guide_data_p2))
         Paragraph(stringResource(R.string.guide_data_p3))
+        Paragraph(stringResource(R.string.guide_data_p4))
 
         Chapter(TettoIcons.Ledger, stringResource(R.string.guide_not_title))
         Paragraph(stringResource(R.string.guide_not_p1))
