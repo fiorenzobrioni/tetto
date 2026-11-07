@@ -17,6 +17,7 @@ import com.callbackdev.tetto.core.domain.cap.CapStates
 import com.callbackdev.tetto.core.domain.cap.CatchUp
 import com.callbackdev.tetto.core.domain.cap.MonthSums
 import com.callbackdev.tetto.core.domain.cap.RecentAmounts
+import com.callbackdev.tetto.core.domain.cap.SpendSplits
 import com.callbackdev.tetto.core.domain.cap.YourMonth
 import com.callbackdev.tetto.core.domain.money.Rescale
 import com.callbackdev.tetto.core.domain.period.Days
@@ -512,7 +513,9 @@ constructor(
      * Runs inside a transaction: [cap]'s open period, made by [oldRule], replaced by [newRule]'s
      * that holds today, with [newAmount] the cap from then on (§4.5, [CapChanges.replace]). The
      * days kept, where the new period starts later, are those before its first instant in the zone
-     * of asking: a spend added before it stays in them, one added from it on moves.
+     * of asking: a spend added before it stays in them, one added from it on moves, except a
+     * refund that gave back a spend across the cut, which follows it ([SpendSplits]): neither
+     * side ever spends less than nothing, so no later spend is swallowed.
      *
      * A one-off's new [dates] stand in for the rule's period; where they start after today, only
      * the days already past are kept, and what was added today goes with the new dates. A one-off
@@ -536,18 +539,30 @@ constructor(
         }
         val keptUntil = minOf(start, moment.today)
         val from = cap.openStart.toEpochDay()
-        val cut = Days.instantsOf(keptUntil, moment.zone).first.toEpochMilli()
-        val spentBefore = if (keptUntil > cap.openStart) {
-            Money(maxOf(0, dao.spentBefore(cap.id, from, cut)))
-        } else {
-            Money.ZERO
-        }
+        val to = start.toEpochDay()
         val limit = if (newRule.kind == PeriodKind.ONE_OFF) Money.ZERO else newAmount
-        val plan = CapChanges.replace(cap, oldRule, start, newAmount, spentBefore, keptUntil, limit)
-        plan.closed?.let { dao.insertClosedPeriods(listOf(it.toEntity())) }
-        dao.moveSpends(cap.id, from, start.toEpochDay(), since = if (plan.closed != null) cut else Long.MIN_VALUE)
-        dao.setCapPeriod(cap.id, newRule.kind.name, start.toEpochDay(), end?.toEpochDay())
+        val plan = if (keptUntil > cap.openStart) {
+            // The days kept and the new period divide the spends by their instants, a refund
+            // following what it gave back where the two fall apart (SpendSplits).
+            val spends = dao.spends(cap.id, from)
+            val split = SpendSplits.at(spends.map { it.toModel() }, Days.instantsOf(keptUntil, moment.zone).first)
+            val plan = CapChanges.replace(cap, oldRule, start, newAmount, split.keptSpent, keptUntil, limit)
+            plan.closed?.let { dao.insertClosedPeriods(listOf(it.toEntity())) }
+            split.divided?.let { divided ->
+                val refund = spends.first { it.id == divided.spendId }
+                // The part kept, a spend of its own at the refund's instant; the refund itself, its
+                // id kept for an Undo, goes into the new period with the rest.
+                dao.insertSpend(refund.copy(id = 0, amount = divided.kept.minor))
+                dao.setSpendAmount(refund.id, divided.moving.minor)
+            }
+            if (split.moving.isNotEmpty()) dao.moveSpendsById(split.moving, to)
+            plan
+        } else {
+            dao.moveSpends(cap.id, from, to)
+            CapChanges.replace(cap, oldRule, start, newAmount, Money.ZERO, keptUntil, limit)
+        }
         dao.setReserve(cap.id, plan.reserve.minor)
+        dao.setCapPeriod(cap.id, newRule.kind.name, to, end?.toEpochDay())
     }
 
     /**

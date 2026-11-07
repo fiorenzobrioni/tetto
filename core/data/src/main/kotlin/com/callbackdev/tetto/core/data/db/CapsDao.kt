@@ -84,16 +84,23 @@ interface CapsDao {
     suspend fun deleteSpend(id: Long): Int
 
     /**
-     * Moves the open period's spends added at [since] or after (epoch milliseconds) into the
-     * period that replaces it (§4.5): all of them where the new period holds the old one's days,
-     * those of its own days where it starts later.
+     * Moves every spend of the open period that starts on [from] into the period that replaces it,
+     * starting on [to]: a new period that holds the old one's days (§4.5).
      */
-    @Query(
-        "UPDATE spends SET period_start = :to WHERE cap_id = :capId AND period_start = :from AND added_at >= :since",
-    )
-    suspend fun moveSpends(capId: Long, from: Long, to: Long, since: Long): Int
+    @Query("UPDATE spends SET period_start = :to WHERE cap_id = :capId AND period_start = :from")
+    suspend fun moveSpends(capId: Long, from: Long, to: Long): Int
 
-    /** What the open period's spends added before [until] (epoch milliseconds) come to: the days kept (§4.5). */
+    /**
+     * Moves the spends [ids] into the period that starts on [to]: where a change keeps the days
+     * before the new period, the spends that go into it, by `SpendSplits` (§4.5).
+     */
+    @Query("UPDATE spends SET period_start = :to WHERE id IN (:ids)")
+    suspend fun moveSpendsById(ids: List<Long>, to: Long): Int
+
+    /**
+     * What the period's spends added before [until] (epoch milliseconds) come to, refunds taken off:
+     * with no bound, what a refund may give back (§4.3).
+     */
     @Query(
         "SELECT COALESCE(SUM(amount), 0) FROM spends WHERE cap_id = :capId AND period_start = :from AND added_at < :until",
     )

@@ -13,6 +13,7 @@ import com.callbackdev.tetto.core.data.db.SpendEntity
 import com.callbackdev.tetto.core.data.db.TettoDatabase
 import com.callbackdev.tetto.core.data.euros
 import com.callbackdev.tetto.core.data.prefs.UserPreferencesDataSource
+import com.callbackdev.tetto.core.domain.cap.CapsSentence
 import com.callbackdev.tetto.core.domain.period.Days
 import com.callbackdev.tetto.core.model.CapDraft
 import com.callbackdev.tetto.core.model.CapIcon.COFFEE
@@ -483,6 +484,91 @@ class CapsRepositoryTest {
         val bought = repository.openSpends(shoes).single { !it.refund }
         assertThat(repository.deleteSpend(bought.id)).isEqualTo(SpendChange.RefundsHeld)
         assertThat(repository.currentStates().single().spent).isEqualTo(euros(30))
+    }
+
+    @Test
+    fun `a refund given after a change's cut follows the spend it gave back, and swallows no later spend`() = runTest {
+        // Monday's €50, given back on Thursday; the week turned into days that Thursday.
+        clock.at("2026-11-02T10:00")
+        val coffee = repository.addCap("Coffee", COFFEE, euros(100), WEEK)
+        spend(coffee, euros(50))
+        clock.at("2026-11-05T10:00")
+        val refund = checkNotNull(repository.addRefund(coffee, euros(50)))
+        repository.changeCap(coffee, "Coffee", COFFEE, euros(30), DAY)
+
+        // The days kept spent nothing: the refund stays with them.
+        val kept = repository.closedPeriods(coffee).single()
+        assertThat(kept.range).isEqualTo(DateRange(date(2026, 11, 2), date(2026, 11, 5)))
+        assertThat(kept.spent).isEqualTo(Money.ZERO)
+        assertThat(dao.spend(refund.id)?.periodStart).isEqualTo(date(2026, 11, 2).toEpochDay())
+        // And Thursday starts at nothing: its next spend counts in full.
+        assertThat(repository.openSpends(coffee)).isEmpty()
+        spend(coffee, euros(20))
+        val state = repository.currentStates().single()
+        assertThat(state.spent).isEqualTo(euros(20))
+        assertThat(state.left).isEqualTo(euros(10) + state.cap.reserve)
+    }
+
+    @Test
+    fun `a refund that gave back spends on both sides of a change's cut is cut in two, every cent kept`() = runTest {
+        clock.at("2026-11-02T10:00")
+        val coffee = repository.addCap("Coffee", COFFEE, euros(100), WEEK)
+        spend(coffee, euros(40))
+        clock.at("2026-11-05T09:00")
+        spend(coffee, euros(20))
+        clock.at("2026-11-05T10:00")
+        val refund = checkNotNull(repository.addRefund(coffee, euros(50)))
+        repository.changeCap(coffee, "Coffee", COFFEE, euros(30), DAY)
+
+        // €20 of it gives back Thursday's spend, in the open day, with its id for an Undo; the €30
+        // more stays with Monday's, as a spend of its own at the same instant.
+        assertThat(repository.openSpends(coffee).map { it.id to it.amount })
+            .contains(refund.id to -euros(20))
+        assertThat(repository.currentStates().single().spent).isEqualTo(Money.ZERO)
+        val kept = repository.closedPeriods(coffee).single()
+        assertThat(kept.spent).isEqualTo(euros(10))
+        val keptPart = dao.spends(coffee, date(2026, 11, 2).toEpochDay()).filter { it.amount < 0 }.single()
+        assertThat(keptPart.amount).isEqualTo(-3_000)
+        assertThat(keptPart.addedAt).isEqualTo(refund.addedAt.toEpochMilli())
+        // Nothing lost or made up: the spends still add up to what the week spent.
+        assertThat(dao.allSpends().sumOf { it.amount }).isEqualTo(1_000)
+        // The Undo of the refund takes back the part in the open day; the line stays as it closed.
+        assertThat(repository.undoAdd(refund)).isTrue()
+        assertThat(repository.currentStates().single().spent).isEqualTo(euros(20))
+    }
+
+    @Test
+    fun `a month turned into a week on a Monday says its reserve is full, never an overspend covered`() = runTest {
+        clock.at("2026-10-20T12:00")
+        val groceries = repository.addCap("Groceries", GROCERIES, euros(300), MONTH)
+        spend(groceries, euros(40))
+        clock.at("2026-11-08T12:00")
+        spend(groceries, euros(30))
+        clock.at("2026-11-09T12:00")
+        assertThat(repository.currentStates().single().cap.reserve).isEqualTo(euros(260))
+
+        repository.changeCap(groceries, "Groceries", GROCERIES, euros(80), WEEK)
+
+        // 1 to 8 November kept, on €80 of the month's €300; €30 spent, the reserve held to €80.
+        val state = repository.currentStates().single()
+        assertThat(state.renewedToday).isTrue()
+        assertThat(state.cap.reserve).isEqualTo(euros(80))
+        assertThat(state.renewal).isEqualTo(Renewal(Renewal.Kind.RESERVE_FULL, euros(80)))
+    }
+
+    @Test
+    fun `a cap of a few minor units cut to a day still has one, and every read stands`() = runTest {
+        // A day's €0.05 spent in full, then turned into a month of €0.01 on its 6th: 25 days of 30
+        // of a cent round down to nothing, held at a cent.
+        val tiny = repository.addCap("Tiny", COFFEE, euros(0, 5), DAY)
+        spend(tiny, euros(0, 5))
+        clock.at("2026-11-06T10:00")
+        repository.changeCap(tiny, "Tiny", COFFEE, euros(0, 1), MONTH)
+        val state = repository.currentStates().single()
+        assertThat(state.amount).isEqualTo(euros(0, 1))
+        assertThat(state.left).isEqualTo(euros(0, 1))
+        // The sentence weighs it against the others, as a share of what it has: never of nothing.
+        assertThat(CapsSentence.of(listOf(state))).isNotNull()
     }
 
     @Test
