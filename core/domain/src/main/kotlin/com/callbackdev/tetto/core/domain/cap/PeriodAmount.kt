@@ -14,12 +14,17 @@ import com.callbackdev.tetto.core.model.Share
  * share is derived from the dates, never stored: the next period is whole again, and a change of
  * amount applies to the share at once.
  *
+ * A share never comes to nothing (owner, 7 Nov 2026, as a change of currency never makes an
+ * amount nothing): a cap of a few minor units cut to a day of a year would round down to zero,
+ * and a period of nothing, with no reserve, has no bar to draw. Held at one minor unit instead.
+ *
  * A one-off cap's dates are its own, never cut by a rule: its whole amount.
  */
 object PeriodAmount {
     fun of(cap: Cap, rule: PeriodRule): Money {
         val days = partOf(cap, rule) ?: return cap.amount
-        return Money(Math.multiplyExact(cap.amount.minor, days.part) / days.whole)
+        val share = Math.multiplyExact(cap.amount.minor, days.part) / days.whole
+        return Money(if (share == 0L && cap.amount.isPositive) 1 else share)
     }
 
     /**

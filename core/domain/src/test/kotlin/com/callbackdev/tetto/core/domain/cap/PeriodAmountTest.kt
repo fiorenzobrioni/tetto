@@ -1,11 +1,13 @@
 package com.callbackdev.tetto.core.domain.cap
 
 import com.callbackdev.tetto.core.domain.EUR
+import com.callbackdev.tetto.core.domain.JPY
 import com.callbackdev.tetto.core.domain.cap
 import com.callbackdev.tetto.core.domain.date
 import com.callbackdev.tetto.core.domain.euros
 import com.callbackdev.tetto.core.domain.oneOff
 import com.callbackdev.tetto.core.domain.rule
+import com.callbackdev.tetto.core.model.Money
 import com.callbackdev.tetto.core.model.PeriodKind.DAY
 import com.callbackdev.tetto.core.model.PeriodKind.MONTH
 import com.callbackdev.tetto.core.model.PeriodKind.WEEK
@@ -39,6 +41,20 @@ class PeriodAmountTest {
         // Four sevenths of €20 is €11.428…: €11.42, never a cent the cap did not give.
         val week = cap(WEEK, openStart = date(2026, 11, 5), amount = euros(20))
         assertThat(PeriodAmount.of(week, rule(WEEK))).isEqualTo(euros(11, 42))
+    }
+
+    @Test
+    fun `a share never comes to nothing, so a period always has a cap to draw`() {
+        // ¥300 a year, from 31 December: a day of 365 is 0.8 of a yen, held at ¥1.
+        val year = cap(YEAR, openStart = date(2026, 12, 31), amount = Money(300))
+        assertThat(PeriodAmount.of(year, rule(YEAR))).isEqualTo(Money(1))
+        val state = CapStates.of(year, Money.ZERO, rule(YEAR), date(2026, 12, 31), JPY)
+        assertThat(state.amount).isEqualTo(Money(1))
+        assertThat(state.left).isEqualTo(Money(1))
+        // Spent past it, it is over, as any cap is: never a bar of nothing.
+        val over = CapStates.of(year, Money(5), rule(YEAR), date(2026, 12, 31), JPY)
+        assertThat(over.overBy).isEqualTo(Money(4))
+        assertThat(over.bar.isWhole).isTrue()
     }
 
     @Test

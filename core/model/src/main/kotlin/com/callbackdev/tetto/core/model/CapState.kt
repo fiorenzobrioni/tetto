@@ -116,7 +116,10 @@ data class Renewal(val kind: Kind, val amount: Money) {
         /** Under the cap: [amount] went to the reserve. */
         SAVED,
 
-        /** Under the cap, with the reserve already at its limit: nothing more to keep. */
+        /**
+         * Under the cap, with the reserve at its limit: nothing more to keep. The limit may be a
+         * lower one a change of kind held the reserve to (owner, 7 Nov 2026).
+         */
         RESERVE_FULL,
 
         /** Right on the cap. */
