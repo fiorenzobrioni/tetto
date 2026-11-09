@@ -190,11 +190,11 @@ feature that has not shipped, a section with nothing to say is not drawn. Amount
 figures; the hero size is kept for one number per screen. The semantic inks are `attention`
 (spending ahead of the days) and, only if a phase needs it, one for over, each with its contrast
 test. Icons are `TettoIcons`, drawn in code: the cap palette is a curated set of Material
-Symbols (Apache-2.0, credited in `licenses/`), never the whole library. The launcher icon (the
-family's ring in slate, cut by Tetto's amber house with a four-pane window at the lower right,
-Saldo's place: owner, 5 and 6 Nov 2026) and the reminder's status-bar icon (the house alone,
-`ic_stat_tetto`) are written by `tools/draw_launcher_icon.py`: change the script and re-run it,
-never the XML. The app shows its mark nowhere inside itself: the first run shows no icon (the
+Symbols (Apache-2.0, credited in `licenses/`), never the whole library. The launcher icon (a
+white roof with its chimney over an amber coin, on the app's indigo: the family's series of
+9 Nov 2026, its three layers) and the reminder's status-bar icon (the roof and the coin in one
+ink, `ic_stat_tetto`) are written by `tools/draw_launcher_icon.py`: change the script and re-run
+it, never the XML. The app shows its mark nowhere inside itself: the first run shows no icon (the
 family's onboarding frame), and the roof glyph (`TettoIcons.Roof`, the tip and the guide) names a
 cap, not the app, so it stays a roof.
 
