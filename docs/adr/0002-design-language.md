@@ -72,6 +72,20 @@ keeps one drawing of each thing in the family.
    The status-bar icon is the house alone, its window cut out. The README's badges take the
    ring's deep end, `273857`. The app shows its mark nowhere inside itself; the roof glyph of
    the tip and the guide (`TettoIcons.Roof`) names a cap, not the app, and stays a roof.
+
+   **Redrawn on 9 Nov 2026, with the whole family** (owner: the four marks redrawn from
+   scratch as one series, full frame in Android's style, clean when small, flat, the light from
+   one side, one palette; PLANNING.md §15, 9 Nov 2026). The ring and its emblem are gone. The
+   badge's ground is the app's colour, **indigo** (`717BE0` to `4750BC` to `2F3796`), lit from
+   the upper left; on it **a white roof with its chimney over an amber coin**, the coin's rim
+   struck in a deeper amber: a cap over the money. The chimney makes the slab a roof, which
+   alone read as a caret (6 Nov). The family's rules, the same in the four apps: the app's
+   colour as the ground, a white symbol with one amber accent (`FFD36A` to `FDB528`), every shape
+   a ramp from its light tone at the upper left, no shadow, and the whole symbol within 28 units
+   of the centre, a 56 dp circle on the 72 that show, so a round mask leaves 8 dp of air. The
+   ground is a drawing now, `ic_launcher_background.xml`, where it was the colour `#F7F4EE`.
+   The status-bar icon is the roof and the coin in one ink, the rim cut out. The README's
+   badges take the indigo's deep tone, `2F3796`.
 6. **Tests carried over**: `TypographyTest` (every Material role follows the typeface setting),
    `ContrastTest` (every text ink at 4.5:1 on every ground, in both dresses and themes),
    `PageWidthTest` (the column's gutter), and the shared UI checks of `:core:testing`

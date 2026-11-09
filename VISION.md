@@ -436,7 +436,9 @@ accepted with them.
 8. **The mark**: the family's ring, with Tetto's emblem at the lower right, where Saldo's
    coins stand (the owner's choice: the two money apps share the place, and a reader most often
    has one of them). Drawn in Phase 0 as a roof on a fuchsia ring; redrawn by the owner on
-   6 Nov 2026 as a house with a window on a slate ring, clearly apart from Saldo's.
+   6 Nov 2026 as a house with a window on a slate ring, clearly apart from Saldo's. Redrawn on
+   9 Nov 2026 with the whole family as one series, without the ring: a white roof over an amber
+   coin on the app's indigo (PLANNING.md §15, 9 Nov 2026).
 
 ## Glossary
 
