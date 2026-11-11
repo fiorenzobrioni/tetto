@@ -16,17 +16,17 @@
     <!-- La frase in cima: prima un tetto sforato, poi uno rinnovato oggi, poi tutti sotto. -->
     <string name="sentence_one_under">%1$s: ancora %2$s %3$s.</string>
     <string name="sentence_nothing_spent">Tutti sotto il tetto.</string>
-    <string name="sentence_all_under">Tutti sotto il tetto. Il più vicino è %1$s: ancora %2$s %3$s.</string>
-    <string name="sentence_over_one">%1$s è sotto di %2$s. Riparte %3$s.</string>
+    <string name="sentence_all_under">Tutti sotto il tetto.\nIl più vicino è %1$s: ancora %2$s %3$s.</string>
+    <string name="sentence_over_one">%1$s è sotto di %2$s.\nRiparte %3$s.</string>
     <plurals name="sentence_over_some">
-        <item quantity="one">%1$s e %2$d altro tetto sono sotto. %1$s riparte %3$s.</item>
-        <item quantity="many">%1$s e altri %2$d tetti sono sotto. %1$s riparte %3$s.</item>
-        <item quantity="other">%1$s e altri %2$d tetti sono sotto. %1$s riparte %3$s.</item>
+        <item quantity="one">%1$s e %2$d altro tetto sono sotto.\n%1$s riparte %3$s.</item>
+        <item quantity="many">%1$s e altri %2$d tetti sono sotto.\n%1$s riparte %3$s.</item>
+        <item quantity="other">%1$s e altri %2$d tetti sono sotto.\n%1$s riparte %3$s.</item>
     </plurals>
-    <string name="sentence_over_every">Tutti i tetti sono sotto. %1$s riparte %2$s.</string>
+    <string name="sentence_over_every">Tutti i tetti sono sotto.\n%1$s riparte %2$s.</string>
     <string name="sentence_renewed_one">%1$s riparte oggi: %2$s %3$s.</string>
-    <string name="sentence_renewed_forgiven">%1$s riparte oggi: %2$s %3$s. Era sotto di %4$s: condonato, si riparte da zero.</string>
-    <string name="sentence_renewed_covered">%1$s riparte oggi: %2$s %3$s. La riserva ha coperto %4$s di sforamento.</string>
+    <string name="sentence_renewed_forgiven">%1$s riparte oggi: %2$s %3$s.\nEra sotto di %4$s: condonato, si riparte da zero.</string>
+    <string name="sentence_renewed_covered">%1$s riparte oggi: %2$s %3$s.\nLa riserva ha coperto %4$s di sforamento.</string>
     <string name="sentence_renewed_saved">%1$s riparte oggi: %2$s %3$s, con %4$s in più di riserva.</string>
     <string name="sentence_renewed_full">%1$s riparte oggi: %2$s %3$s, con la riserva al completo.</string>
     <plurals name="sentence_renewed_some">
@@ -97,9 +97,9 @@
     <string name="numpad_refund_amount">Rimborsa %s</string>
     <string name="numpad_refunding">Un rimborso · %s spesi in questo periodo</string>
     <string name="numpad_correcting_refund">Correzione di un rimborso</string>
-    <string name="preview_left">Ancora %s</string>
-    <string name="preview_over">Sotto di %s</string>
-    <string name="preview_still_over">Ancora sotto di %s</string>
+    <string name="preview_left">ancora %s</string>
+    <string name="preview_over">sotto di %s</string>
+    <string name="preview_still_over">ancora sotto di %s</string>
     <string name="preview_refund_most">Al massimo %s, quanto speso in questo periodo</string>
     <string name="preview_spend_least">Almeno %s, per coprire i rimborsi del periodo</string>
     <string name="numpad_open_cap">Apri %s</string>
@@ -134,30 +134,32 @@
     <string name="spend_correct">Correggi</string>
     <string name="spend_delete">Elimina</string>
     <string name="sheet_last_periods">Gli ultimi periodi</string>
-    <string name="line_even">%1$s: %2$s su %3$s</string>
-    <string name="line_to_reserve">%1$s: %2$s su %3$s, +%4$s alla riserva</string>
-    <string name="line_from_reserve">%1$s: %2$s su %3$s, %4$s dalla riserva</string>
-    <string name="line_forgiven">%1$s: %2$s su %3$s, condono di %4$s</string>
+    <string name="line_spent">%1$s su %2$s</string>
+    <string name="line_to_reserve">+%s alla riserva</string>
+    <string name="line_from_reserve">%s dalla riserva</string>
+    <string name="line_forgiven">condono di %s</string>
     <plurals name="line_run_days">
-        <item quantity="one">%1$s: nessuna spesa in %2$d giorno, riserva a %3$s</item>
-        <item quantity="many">%1$s: nessuna spesa in %2$d giorni, riserva a %3$s</item>
-        <item quantity="other">%1$s: nessuna spesa in %2$d giorni, riserva a %3$s</item>
+        <item quantity="one">nessuna spesa in %1$d giorno, riserva a %2$s</item>
+        <item quantity="many">nessuna spesa in %1$d giorni, riserva a %2$s</item>
+        <item quantity="other">nessuna spesa in %1$d giorni, riserva a %2$s</item>
     </plurals>
     <plurals name="line_run_weeks">
-        <item quantity="one">%1$s: nessuna spesa in %2$d settimana, riserva a %3$s</item>
-        <item quantity="many">%1$s: nessuna spesa in %2$d settimane, riserva a %3$s</item>
-        <item quantity="other">%1$s: nessuna spesa in %2$d settimane, riserva a %3$s</item>
+        <item quantity="one">nessuna spesa in %1$d settimana, riserva a %2$s</item>
+        <item quantity="many">nessuna spesa in %1$d settimane, riserva a %2$s</item>
+        <item quantity="other">nessuna spesa in %1$d settimane, riserva a %2$s</item>
     </plurals>
     <plurals name="line_run_months">
-        <item quantity="one">%1$s: nessuna spesa in %2$d mese, riserva a %3$s</item>
-        <item quantity="many">%1$s: nessuna spesa in %2$d mesi, riserva a %3$s</item>
-        <item quantity="other">%1$s: nessuna spesa in %2$d mesi, riserva a %3$s</item>
+        <item quantity="one">nessuna spesa in %1$d mese, riserva a %2$s</item>
+        <item quantity="many">nessuna spesa in %1$d mesi, riserva a %2$s</item>
+        <item quantity="other">nessuna spesa in %1$d mesi, riserva a %2$s</item>
     </plurals>
     <plurals name="line_run_years">
-        <item quantity="one">%1$s: nessuna spesa in %2$d anno, riserva a %3$s</item>
-        <item quantity="many">%1$s: nessuna spesa in %2$d anni, riserva a %3$s</item>
-        <item quantity="other">%1$s: nessuna spesa in %2$d anni, riserva a %3$s</item>
+        <item quantity="one">nessuna spesa in %1$d anno, riserva a %2$s</item>
+        <item quantity="many">nessuna spesa in %1$d anni, riserva a %2$s</item>
+        <item quantity="other">nessuna spesa in %1$d anni, riserva a %2$s</item>
     </plurals>
+    <string name="line_whole">%1$s: %2$s</string>
+    <string name="line_whole_outcome">%1$s: %2$s, %3$s</string>
     <string name="sheet_clear_reserve">Azzera la riserva</string>
     <string name="sheet_edit">Modifica</string>
     <string name="sheet_delete">Elimina il tetto</string>
@@ -186,8 +188,8 @@
     <string name="quick_gone_body">È stato eliminato in Tetto dopo che la scheda o la scorciatoia sono state create.</string>
     <string name="quick_open_app">Apri Tetto</string>
     <!-- Un tetto una tantum (owner, 6 Nov 2026): ha le sue date e finisce una volta; sotto, dice fino a quando dura. -->
-    <string name="sentence_ended_under">%1$s è finito: %2$s su %3$s.</string>
-    <string name="sentence_ended_over">%1$s è finito: %2$s su %3$s. Era sotto di %4$s: condonato.</string>
+    <string name="sentence_ended_under">%1$s è finito: %2$s\u00A0su\u00A0%3$s.</string>
+    <string name="sentence_ended_over">%1$s è finito: %2$s\u00A0su\u00A0%3$s.\nEra sotto di %4$s: condonato.</string>
     <plurals name="sentence_ended_some">
         <item quantity="one">%1$s e %2$d altro tetto sono finiti ieri.</item>
         <item quantity="many">%1$s e altri %2$d tetti sono finiti ieri.</item>
@@ -196,11 +198,11 @@
     <string name="sentence_all_ended">Nessun tetto in corso: sono tutti finiti.</string>
     <string name="sentence_over_one_until">%1$s è sotto di %2$s, %3$s.</string>
     <plurals name="sentence_over_some_until">
-        <item quantity="one">%1$s e %2$d altro tetto sono sotto. %1$s dura %3$s.</item>
-        <item quantity="many">%1$s e altri %2$d tetti sono sotto. %1$s dura %3$s.</item>
-        <item quantity="other">%1$s e altri %2$d tetti sono sotto. %1$s dura %3$s.</item>
+        <item quantity="one">%1$s e %2$d altro tetto sono sotto.\n%1$s dura %3$s.</item>
+        <item quantity="many">%1$s e altri %2$d tetti sono sotto.\n%1$s dura %3$s.</item>
+        <item quantity="other">%1$s e altri %2$d tetti sono sotto.\n%1$s dura %3$s.</item>
     </plurals>
-    <string name="sentence_over_every_until">Tutti i tetti sono sotto. %1$s dura %2$s.</string>
+    <string name="sentence_over_every_until">Tutti i tetti sono sotto.\n%1$s dura %2$s.</string>
     <string name="tile_description_over_until">%1$s, sotto di %2$s su un tetto di %3$s, %4$s</string>
     <string name="tile_ended">Finito %s</string>
     <string name="tile_ended_of">%1$s su %2$s</string>
@@ -214,7 +216,7 @@
     <string name="sheet_ended_note">Le sue date sono passate: non prende altre spese. Ripetilo con nuove date: stesso nome, icona e importo.</string>
     <string name="sheet_again">Di nuovo, con nuove date</string>
     <string name="editor_again">Di nuovo, con nuove date</string>
-    <string name="editor_dates">Date</string>
+    <string name="editor_once_hint">Tra due date, senza riserva</string>
     <string name="editor_dates_choose">Scegli il primo e l’ultimo giorno</string>
     <plurals name="editor_dates_days">
         <item quantity="one">%1$s · %2$d giorno</item>

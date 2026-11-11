@@ -4,22 +4,22 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -28,19 +28,24 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDateRangePickerState
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -51,6 +56,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -60,9 +67,13 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.callbackdev.tetto.core.designsystem.components.ChoiceSegments
 import com.callbackdev.tetto.core.designsystem.components.MoneyField
 import com.callbackdev.tetto.core.designsystem.format.rememberMoneyFormat
 import com.callbackdev.tetto.core.designsystem.icons.TettoIcons
@@ -70,6 +81,7 @@ import com.callbackdev.tetto.core.designsystem.icons.label
 import com.callbackdev.tetto.core.designsystem.icons.symbol
 import com.callbackdev.tetto.core.designsystem.theme.GroupShape
 import com.callbackdev.tetto.core.designsystem.theme.ScreenMargin
+import com.callbackdev.tetto.core.designsystem.theme.balanced
 import com.callbackdev.tetto.core.designsystem.theme.padding
 import com.callbackdev.tetto.core.designsystem.theme.pageGutter
 import com.callbackdev.tetto.core.designsystem.theme.tabular
@@ -111,6 +123,7 @@ fun CapEditorRoute(capId: Long?, onBack: () -> Unit, viewModel: CapsViewModel = 
     }
     if (!filled) return
     val scope = rememberCoroutineScope()
+    var confirmingDelete by rememberSaveable { mutableStateOf(false) }
     CapEditorScreen(
         editing = editing?.cap?.kind,
         draft = draft,
@@ -127,17 +140,49 @@ fun CapEditorRoute(capId: Long?, onBack: () -> Unit, viewModel: CapsViewModel = 
         today = current.today,
         reserve = editing?.cap?.reserve ?: Money.ZERO,
         again = editing?.ended == true,
+        onDelete = if (editing != null) {
+            { confirmingDelete = true }
+        } else {
+            null
+        },
     )
+    if (confirmingDelete && editing != null) {
+        AlertDialog(
+            onDismissRequest = { confirmingDelete = false },
+            title = { Text(stringResource(R.string.delete_title, editing.cap.name)) },
+            text = { Text(stringResource(R.string.delete_body)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        confirmingDelete = false
+                        // Back to the caps first: they say the cap is gone, and offer nothing to undo.
+                        onBack()
+                        viewModel.deleteCap(editing.cap.id)
+                    },
+                ) { Text(stringResource(R.string.delete_confirm)) }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    confirmingDelete = false
+                }) { Text(stringResource(DesignR.string.action_cancel)) }
+            },
+        )
+    }
 }
 
 /**
- * The editor drawn from its draft. [editing] is the kind the cap has now, null for a new cap: a
- * change of kind says what it does to this period (§4.5). A one-off's dates (owner, 6 Nov 2026)
- * come from Material's range picker, said in the locale's patterns; an end before [today] is
- * refused. [reserve] is the cap's, let go when it becomes a one-off, and said so; [again], an
- * ended one-off running again with new dates.
+ * The editor drawn from its draft, as the family draws a page that is edited: its title in the bar
+ * that stays, with the cap's deletion ([onDelete], an existing cap's) at its end, its fields
+ * scrolling under, and Save in a bar of its own at the foot, always within reach.
+ *
+ * [editing] is the kind the cap has now, null for a new cap: a change of kind says what it does to
+ * this period (§4.5). The period is one choice in two shapes: the four that return, side by side,
+ * and under them the one that does not, a one-off between two dates, which is also where its dates
+ * are read and changed. The dates come from Material's range picker, on a page of its own, said in
+ * the locale's patterns; an end before [today] is refused. [reserve] is the cap's, let go when it
+ * becomes a one-off, and said so; [again], an ended one-off running again with new dates.
  */
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CapEditorScreen(
     editing: PeriodKind?,
@@ -150,102 +195,131 @@ fun CapEditorScreen(
     today: LocalDate = LocalDate.now(),
     reserve: Money = Money.ZERO,
     again: Boolean = false,
+    onDelete: (() -> Unit)? = null,
 ) {
     val format = rememberMoneyFormat(currency)
     // An ended one-off, again: the picker opens at once, its dates being what is new.
     var picking by rememberSaveable { mutableStateOf(again && draft.dates == null) }
-    Column(
-        modifier
-            .fillMaxSize()
-            .testTag(CapsTags.EDITOR)
-            .verticalScroll(rememberScrollState())
-            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Vertical))
-            .imePadding()
-            .padding(pageGutter())
-            .padding(horizontal = ScreenMargin, vertical = 16.dp),
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) {
-                Icon(TettoIcons.Back, contentDescription = stringResource(DesignR.string.action_back))
-            }
-            Spacer(Modifier.size(8.dp))
-            Text(
-                stringResource(
-                    when {
-                        again -> R.string.editor_again
-                        editing == null -> R.string.new_cap
-                        else -> R.string.editor_edit
-                    },
-                ),
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.semantics { heading() },
+    val once = draft.kind == PeriodKind.ONE_OFF
+    val scroll = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val gutter = pageGutter(sideInsets = false)
+    Scaffold(
+        modifier = modifier.nestedScroll(scroll.nestedScrollConnection),
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        stringResource(
+                            when {
+                                again -> R.string.editor_again
+                                editing == null -> R.string.new_cap
+                                else -> R.string.editor_edit
+                            },
+                        ),
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(TettoIcons.Back, contentDescription = stringResource(DesignR.string.action_back))
+                    }
+                },
+                actions = {
+                    if (onDelete != null) {
+                        IconButton(onClick = onDelete, modifier = Modifier.testTag(CapsTags.EDITOR_DELETE)) {
+                            Icon(TettoIcons.Trash, contentDescription = stringResource(R.string.sheet_delete))
+                        }
+                    }
+                },
+                windowInsets = TopAppBarDefaults.windowInsets.add(gutter.asInsets()),
+                scrollBehavior = scroll,
             )
-        }
-        Spacer(Modifier.height(16.dp))
-        OutlinedTextField(
-            value = draft.name,
-            onValueChange = { onChange(draft.copy(name = it.take(NAME_LENGTH))) },
-            label = { Text(stringResource(R.string.editor_name)) },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                capitalization = KeyboardCapitalization.Sentences,
-                imeAction = ImeAction.Next,
-            ),
-            modifier = Modifier.fillMaxWidth().testTag(CapsTags.EDITOR_NAME),
-        )
-        Spacer(Modifier.height(12.dp))
-        MoneyField(
-            amount = draft.amount,
-            format = format,
-            label = stringResource(R.string.editor_amount),
-            onAmount = { onChange(draft.copy(amount = it)) },
-            modifier = Modifier.fillMaxWidth().testTag(CapsTags.EDITOR_AMOUNT),
-        )
-
-        Section(stringResource(R.string.editor_period))
-        FlowRow(Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            PeriodKind.entries.forEach { kind ->
-                FilterChip(
-                    selected = draft.kind == kind,
-                    onClick = {
-                        onChange(draft.copy(kind = kind))
-                        // Once, with no dates yet: they are what the choice asks next.
-                        if (kind == PeriodKind.ONE_OFF && draft.dates == null) picking = true
-                    },
-                    label = { Text(kind.label()) },
-                    modifier = Modifier.heightIn(min = 48.dp),
-                )
-            }
-        }
-        val once = draft.kind == PeriodKind.ONE_OFF
-        AnimatedVisibility(visible = once) {
-            Column {
-                Spacer(Modifier.height(12.dp))
-                DatesRow(draft.dates, today, onClick = { picking = true })
-                EditorNote(stringResource(R.string.editor_once_note))
-                if (editing != null && editing != PeriodKind.ONE_OFF && reserve.isPositive) {
-                    EditorNote(stringResource(R.string.editor_once_reserve_note, format.short(reserve)))
+        },
+        bottomBar = {
+            // The fields always run under Save: its bar wears the tone of a bar scrolled under.
+            Surface(color = MaterialTheme.colorScheme.surfaceContainer) {
+                Button(
+                    onClick = onSave,
+                    enabled = draft.name.isNotBlank() && draft.amount.isPositive && (!once || draft.dates != null),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        // Drawn edge to edge, the window does not shrink for the keyboard: the
+                        // button rides on it, and the fields above end where it begins.
+                        .windowInsetsPadding(WindowInsets.navigationBars.union(WindowInsets.ime))
+                        .padding(gutter)
+                        .padding(horizontal = ScreenMargin, vertical = 12.dp)
+                        .heightIn(min = 56.dp)
+                        .testTag(CapsTags.EDITOR_SAVE),
+                ) {
+                    Text(stringResource(R.string.editor_save))
                 }
             }
-        }
-        if (editing != null && editing != draft.kind && !again) {
-            EditorNote(stringResource(R.string.editor_kind_note))
-        }
-
-        Section(stringResource(R.string.editor_icon))
-        FlowRow(Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            CapIcon.entries.forEach { icon ->
-                IconChoice(icon, selected = draft.icon == icon) { onChange(draft.copy(icon = icon)) }
-            }
-        }
-
-        Spacer(Modifier.height(24.dp))
-        Button(
-            onClick = onSave,
-            enabled = draft.name.isNotBlank() && draft.amount.isPositive && (!once || draft.dates != null),
-            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag(CapsTags.EDITOR_SAVE),
+        },
+    ) { padding ->
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .testTag(CapsTags.EDITOR)
+                .verticalScroll(rememberScrollState())
+                .padding(gutter)
+                .padding(horizontal = ScreenMargin)
+                .padding(top = 8.dp, bottom = 24.dp),
         ) {
-            Text(stringResource(R.string.editor_save))
+            OutlinedTextField(
+                value = draft.name,
+                onValueChange = { onChange(draft.copy(name = it.take(NAME_LENGTH))) },
+                label = { Text(stringResource(R.string.editor_name)) },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Sentences,
+                    imeAction = ImeAction.Next,
+                ),
+                modifier = Modifier.fillMaxWidth().testTag(CapsTags.EDITOR_NAME),
+            )
+            Spacer(Modifier.height(12.dp))
+            MoneyField(
+                amount = draft.amount,
+                format = format,
+                label = stringResource(R.string.editor_amount),
+                onAmount = { onChange(draft.copy(amount = it)) },
+                modifier = Modifier.fillMaxWidth().testTag(CapsTags.EDITOR_AMOUNT),
+            )
+
+            Section(stringResource(R.string.editor_period))
+            Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                val renewing = PeriodKind.entries.filter { it.renews }.map { it to it.label() }
+                ChoiceSegments(
+                    options = renewing,
+                    selected = draft.kind.takeIf { !once },
+                    onSelect = { onChange(draft.copy(kind = it)) },
+                    modifier = Modifier.testTag(CapsTags.EDITOR_PERIODS),
+                )
+                OnceRow(
+                    selected = once,
+                    dates = draft.dates,
+                    today = today,
+                    onClick = {
+                        if (!once) onChange(draft.copy(kind = PeriodKind.ONE_OFF))
+                        // Chosen with no dates yet, they are what the choice asks next; chosen
+                        // already, a touch is how its dates are changed.
+                        if (once || draft.dates == null) picking = true
+                    },
+                )
+            }
+            AnimatedVisibility(visible = once) {
+                Column {
+                    EditorNote(stringResource(R.string.editor_once_note))
+                    if (editing != null && editing != PeriodKind.ONE_OFF && reserve.isPositive) {
+                        EditorNote(stringResource(R.string.editor_once_reserve_note, format.short(reserve)))
+                    }
+                }
+            }
+            if (editing != null && editing != draft.kind && !again) {
+                EditorNote(stringResource(R.string.editor_kind_note))
+            }
+
+            Section(stringResource(R.string.editor_icon))
+            IconGrid(selected = draft.icon, onSelect = { onChange(draft.copy(icon = it)) })
         }
     }
     if (picking) {
@@ -265,57 +339,89 @@ fun CapEditorScreen(
 private fun EditorNote(text: String) {
     Text(
         text,
-        style = MaterialTheme.typography.bodyMedium,
+        style = MaterialTheme.typography.bodyMedium.balanced(),
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(top = 8.dp),
+        modifier = Modifier.padding(start = TextInset, end = TextInset, top = 8.dp),
     )
 }
 
 /**
- * A one-off's dates, as a row that opens the picker: "10 – 20 Nov · 11 days", or the words that ask
- * for them. The whole row is the touch, named by its words for TalkBack.
+ * The period that does not return, a choice beside the four that do: a one-off cap, between two
+ * dates. Not chosen, it says what it is; chosen, it wears the chosen segment's ground and reads
+ * its dates, "10 – 20 Nov · 11 days", or asks for them, and a touch opens the picker. One of the
+ * period's radio buttons for TalkBack, named by its words.
  */
 @Composable
-private fun DatesRow(dates: DateRange?, today: LocalDate, onClick: () -> Unit) {
+private fun OnceRow(selected: Boolean, dates: DateRange?, today: LocalDate, onClick: () -> Unit) {
     val value = dates?.let {
         pluralStringResource(R.plurals.editor_dates_days, it.length, rangeWords(it, today), it.length)
     }
+    val colors = MaterialTheme.colorScheme
     Surface(
-        onClick = onClick,
         shape = GroupShape,
-        color = MaterialTheme.colorScheme.surfaceContainer,
-        modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag(CapsTags.EDITOR_DATES),
+        color = if (selected) colors.secondaryContainer else colors.surfaceContainer,
+        contentColor = if (selected) colors.onSecondaryContainer else colors.onSurface,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
+            .clip(GroupShape)
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
+            .testTag(CapsTags.EDITOR_DATES),
     ) {
         Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(TettoIcons.Calendar, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            Icon(
+                TettoIcons.Calendar,
+                contentDescription = null,
+                tint = if (selected) colors.onSecondaryContainer else colors.primary,
+            )
             Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
+                Text(PeriodKind.ONE_OFF.label(), style = MaterialTheme.typography.bodyLarge)
                 Text(
-                    stringResource(R.string.editor_dates),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    value ?: stringResource(R.string.editor_dates_choose),
-                    style = MaterialTheme.typography.bodyLarge.tabular(),
-                    color = if (value ==
-                        null
-                    ) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
+                    when {
+                        !selected -> stringResource(R.string.editor_once_hint)
+                        value != null -> value
+                        else -> stringResource(R.string.editor_dates_choose)
                     },
+                    style = MaterialTheme.typography.bodyMedium.tabular(),
+                    color = if (selected) colors.onSecondaryContainer else colors.onSurfaceVariant,
                 )
             }
-            Icon(TettoIcons.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            // Chosen, the arrow to its dates; not chosen, the empty mark of a choice not made.
+            if (selected) {
+                Icon(TettoIcons.ChevronRight, contentDescription = null)
+            } else {
+                RadioButton(selected = false, onClick = null)
+            }
         }
     }
 }
 
 /**
- * Material's range picker in its dialog: the first and the last day, the first today unless the
- * cap has dates already. Any day can start a cap (a trip already under way), but its last day
- * cannot be before today: Done waits, and says why, until it is not.
+ * The icons of the palette across the page, their first on the fields' left edge and their last
+ * on the right one: as many to a line as fit, six on a phone.
+ */
+@Composable
+private fun IconGrid(selected: CapIcon, onSelect: (CapIcon) -> Unit) {
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val columns = (maxWidth / IconSize).toInt().coerceIn(1, ICON_COLUMNS)
+        Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            CapIcon.entries.chunked(columns).forEach { line ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    line.forEach { icon -> IconChoice(icon, selected = selected == icon) { onSelect(icon) } }
+                    // A last line that is not full keeps the columns of the lines above it.
+                    repeat(columns - line.size) { Spacer(Modifier.size(IconSize)) }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Material's range picker on a page of its own, as Material sets a range on a phone: a cross to
+ * leave it, Done at the bar's end, and the months scrolling under. The first and the last day, the
+ * first today unless the cap has dates already. Any day can start a cap (a trip already under
+ * way), but its last day cannot be before today: Done waits, and says why, until it is not.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -328,35 +434,44 @@ private fun DatesPicker(dates: DateRange?, today: LocalDate, onPick: (DateRange)
     val start = state.selectedStartDateMillis?.let(::utcDate)
     val last = state.selectedEndDateMillis?.let(::utcDate)
     val past = last != null && last < today
-    DatePickerDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(
-                onClick = { if (start != null && last != null) onPick(DateRange(start, last.plusDays(1))) },
-                enabled = start != null && last != null && !past,
-            ) { Text(stringResource(R.string.editor_dates_done)) }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(DesignR.string.action_cancel)) }
-        },
-    ) {
-        DateRangePicker(
-            state = state,
-            title = {
-                Text(
-                    stringResource(R.string.editor_dates_title),
-                    modifier = Modifier.padding(start = 24.dp, end = 12.dp, top = 16.dp),
+    val colors = DatePickerDefaults.colors()
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Surface(color = colors.containerColor, modifier = Modifier.fillMaxSize()) {
+            Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
+                Row(
+                    Modifier.fillMaxWidth().padding(horizontal = 4.dp).heightIn(min = 56.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    IconButton(onClick = onDismiss) {
+                        Icon(TettoIcons.Close, contentDescription = stringResource(DesignR.string.action_cancel))
+                    }
+                    Spacer(Modifier.weight(1f))
+                    TextButton(
+                        onClick = { if (start != null && last != null) onPick(DateRange(start, last.plusDays(1))) },
+                        enabled = start != null && last != null && !past,
+                        modifier = Modifier.padding(end = 8.dp),
+                    ) { Text(stringResource(R.string.editor_dates_done)) }
+                }
+                if (past) {
+                    Text(
+                        stringResource(R.string.editor_dates_past),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
+                    )
+                }
+                DateRangePicker(
+                    state = state,
+                    title = {
+                        Text(
+                            stringResource(R.string.editor_dates_title),
+                            modifier = Modifier.padding(start = 24.dp, end = 12.dp),
+                        )
+                    },
+                    colors = colors,
+                    modifier = Modifier.weight(1f),
                 )
-            },
-            modifier = Modifier.weight(1f),
-        )
-        if (past) {
-            Text(
-                stringResource(R.string.editor_dates_past),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
-            )
+            }
         }
     }
 }
@@ -372,7 +487,7 @@ private fun Section(title: String) {
         title,
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(top = 24.dp, bottom = 8.dp).semantics { heading() },
+        modifier = Modifier.padding(start = TextInset, top = 24.dp, bottom = 8.dp).semantics { heading() },
     )
 }
 
@@ -385,7 +500,7 @@ private fun IconChoice(icon: CapIcon, selected: Boolean, onClick: () -> Unit) {
         color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
         border = if (selected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
         modifier = Modifier
-            .size(52.dp)
+            .size(IconSize)
             .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
             .semantics { contentDescription = label },
     ) {
@@ -402,6 +517,13 @@ private fun IconChoice(icon: CapIcon, selected: Boolean, onClick: () -> Unit) {
         }
     }
 }
+
+/** An icon's circle in the palette, and how many of them a line holds at most. */
+private val IconSize: Dp = 52.dp
+private const val ICON_COLUMNS = 6
+
+/** How far in from a field's edge the page's own words start, as a section's title in Settings does. */
+private val TextInset = 4.dp
 
 /** A name a tile can hold on two lines. */
 private const val NAME_LENGTH = 40

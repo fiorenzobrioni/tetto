@@ -329,12 +329,17 @@ internal fun previewWords(preview: SpendPreview, format: MoneyFormat): String = 
 }
 
 /**
- * One line of a cap's story: "2 – 8 Nov: €18 of €20, +€2 to the reserve"; a run of empty periods
- * "26 Oct – 15 Nov: nothing spent in 3 weeks, the reserve at €20".
+ * One line of a cap's story, in its parts: its days ("2 – 8 Nov"), what they spent of the cap
+ * ("€18 of €20"; none for a run of empty periods) and what that did to the reserve ("+€2 to the
+ * reserve", "€6 from the reserve", "€30 forgiven"; a run's "nothing spent in 3 weeks, the reserve
+ * at €20"; none where a period ended even). The sheet sets them in columns; [sentence] is the line
+ * as TalkBack reads it, "2 – 8 Nov: €18 of €20, +€2 to the reserve".
  */
+internal class PeriodLine(val range: String, val spent: String?, val outcome: String?, val sentence: String)
+
 @Composable
 @ReadOnlyComposable
-internal fun lineWords(line: ClosedPeriod, kind: PeriodKind, format: MoneyFormat, today: LocalDate): String {
+internal fun periodLine(line: ClosedPeriod, kind: PeriodKind, format: MoneyFormat, today: LocalDate): PeriodLine {
     val range = rangeWords(line.range, today)
     if (line.periods > 1) {
         val plurals = when (kind) {
@@ -349,40 +354,36 @@ internal fun lineWords(line: ClosedPeriod, kind: PeriodKind, format: MoneyFormat
             // A one-off closes once, never a run: its line is never folded.
             PeriodKind.ONE_OFF -> R.plurals.line_run_days
         }
-        return pluralStringResource(plurals, line.periods, range, line.periods, format.short(line.reserveAfter))
+        val run = pluralStringResource(plurals, line.periods, line.periods, format.short(line.reserveAfter))
+        return PeriodLine(range, spent = null, outcome = run, stringResource(R.string.line_whole, range, run))
     }
-    val spent = format.short(line.spent)
-    val cap = format.short(line.cap)
-    return when {
-        line.forgiven.isPositive -> stringResource(
-            R.string.line_forgiven,
-            range,
-            spent,
-            cap,
-            format.short(line.forgiven),
-        )
+    // Held together, so the two amounts never part at a line's end.
+    val spent = stringResource(R.string.line_spent, format.short(line.spent), format.short(line.cap))
+        .replace(' ', NO_BREAK)
+    val outcome = when {
+        line.forgiven.isPositive -> stringResource(R.string.line_forgiven, format.short(line.forgiven))
 
         line.reserveAfter > line.reserveBefore ->
-            stringResource(
-                R.string.line_to_reserve,
-                range,
-                spent,
-                cap,
-                format.short(line.reserveAfter - line.reserveBefore),
-            )
+            stringResource(R.string.line_to_reserve, format.short(line.reserveAfter - line.reserveBefore))
 
         line.reserveAfter < line.reserveBefore ->
-            stringResource(
-                R.string.line_from_reserve,
-                range,
-                spent,
-                cap,
-                format.short(line.reserveBefore - line.reserveAfter),
-            )
+            stringResource(R.string.line_from_reserve, format.short(line.reserveBefore - line.reserveAfter))
 
-        else -> stringResource(R.string.line_even, range, spent, cap)
+        else -> null
     }
+    val sentence = if (outcome != null) {
+        stringResource(R.string.line_whole_outcome, range, spent, outcome)
+    } else {
+        stringResource(R.string.line_whole, range, spent)
+    }
+    return PeriodLine(range, spent, outcome, sentence)
 }
+
+/** One line of a cap's story as a sentence: "2 – 8 Nov: €18 of €20, +€2 to the reserve". */
+@Composable
+@ReadOnlyComposable
+internal fun lineWords(line: ClosedPeriod, kind: PeriodKind, format: MoneyFormat, today: LocalDate): String =
+    periodLine(line, kind, format, today).sentence
 
 /** A range of days as the locale writes one: "2 – 8 Nov", one day alone for a day; the year only when it is not this one. */
 @Composable
@@ -411,10 +412,16 @@ internal fun momentWords(instant: Instant): String {
     return pattern(skeleton).format(instant.atZone(ZoneId.systemDefault()))
 }
 
-/** The caps screen's heading: today, "Thursday, 5 November". */
+/**
+ * The caps screen's heading: today, "Thursday, 5 November". A heading starts with a capital, also
+ * where the language writes its days small ("Giovedì 5 novembre").
+ */
 @Composable
 @ReadOnlyComposable
-internal fun headingDate(today: LocalDate): String = pattern("EEEEdMMMM").format(today)
+internal fun headingDate(today: LocalDate): String {
+    val locale = locale()
+    return pattern("EEEEdMMMM").format(today).replaceFirstChar { it.titlecase(locale) }
+}
 
 @Composable
 @ReadOnlyComposable

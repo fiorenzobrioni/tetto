@@ -42,6 +42,8 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.text
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -62,6 +64,7 @@ import com.callbackdev.tetto.core.designsystem.theme.GroupShape
 import com.callbackdev.tetto.core.designsystem.theme.ScreenMargin
 import com.callbackdev.tetto.core.designsystem.theme.TettoMotion
 import com.callbackdev.tetto.core.designsystem.theme.TettoTheme
+import com.callbackdev.tetto.core.designsystem.theme.balanced
 import com.callbackdev.tetto.core.designsystem.theme.padding
 import com.callbackdev.tetto.core.designsystem.theme.pageGutter
 import com.callbackdev.tetto.core.designsystem.theme.reducedMotion
@@ -103,16 +106,18 @@ fun CapsScreen(
             .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Vertical))
             .padding(contentPadding)
             .padding(pageGutter())
-            .padding(horizontal = ScreenMargin, vertical = 24.dp),
+            .padding(horizontal = ScreenMargin)
+            .padding(bottom = 24.dp),
     ) {
-        // Today, and the gear at the row's end: the family's first row. The gear's 48dp touch
-        // overhangs the margin, so its drawing lines up with the tiles' edge.
+        // Today, and the gear at the row's end: the family's first row, straight under the status
+        // bar. The gear's 48dp touch overhangs the margin, so its drawing lines up with the tiles'
+        // edge; words that stand on the page, not on a card, start a step further in ([TextInset]).
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             Text(
                 headingDate(state.today),
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f),
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f).padding(start = TextInset),
             )
             IconButton(
                 onClick = onOpenSettings,
@@ -123,13 +128,14 @@ fun CapsScreen(
         }
         Spacer(Modifier.height(4.dp))
         val sentence = sentenceWords(state.sentence, format, state.today)
-        Sentence(sentence ?: stringResource(R.string.caps_empty_title))
+        Sentence(sentence ?: stringResource(R.string.caps_empty_title), Modifier.padding(horizontal = TextInset))
         if (state.caps.isEmpty()) {
             Spacer(Modifier.height(8.dp))
             Text(
                 stringResource(R.string.caps_empty_body),
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyLarge.balanced(),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = TextInset),
             )
         }
         // Gone with a fade and the space closing, so the tiles rise to where it was: the reader sees
@@ -232,23 +238,45 @@ private fun MonthCard(month: YourMonth, format: MoneyFormat, today: LocalDate) {
 }
 
 /**
- * The sentence on top, the page's heading: two lines where a step down from the headline's size
- * to [SENTENCE_MIN] makes it fit, so the caps start higher; at the headline's size, on as many
- * lines as it takes, where it does not (a long cap's name, a large text size), never cut.
+ * The sentence on top, the page's heading, in two voices where it has two parts (the strings mark
+ * the place with a line break): what the caps are like in the headline, "All under your caps.",
+ * and what to know of the one that matters in a quieter line under it, "Restaurants is the
+ * closest: €12 left until 30 Nov." So the caps start higher, and the eye has the answer before the
+ * detail. A sentence of one part is the headline alone: two lines where a step down from the
+ * headline's size to [SENTENCE_MIN] makes it fit, on as many lines as it takes at the headline's
+ * size where it does not (a long cap's name, a large text size), never cut. TalkBack reads the two
+ * as the one sentence they are.
  */
 @Composable
-private fun Sentence(text: String) {
+private fun Sentence(text: String, modifier: Modifier = Modifier) {
     val headline = MaterialTheme.typography.headlineSmall
-    BasicText(
-        text,
-        style = headline.copy(
-            color = LocalContentColor.current,
-            // The headline's leading as a share of its size, so a smaller step keeps its rhythm.
-            lineHeight = (headline.lineHeight.value / headline.fontSize.value).em,
-        ),
-        autoSize = FewLinesAutoSize(max = headline.fontSize, min = SENTENCE_MIN, lines = 2),
-        modifier = Modifier.semantics { heading() },
-    )
+    val title = text.substringBefore(SENTENCE_BREAK)
+    val detail = text.substringAfter(SENTENCE_BREAK, missingDelimiterValue = "").takeIf { it.isNotEmpty() }
+    val whole = text.replace(SENTENCE_BREAK, ' ')
+    Column(
+        modifier.clearAndSetSemantics {
+            this.text = AnnotatedString(whole)
+            heading()
+        },
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        BasicText(
+            title,
+            style = headline.copy(
+                color = LocalContentColor.current,
+                // The headline's leading as a share of its size, so a smaller step keeps its rhythm.
+                lineHeight = (headline.lineHeight.value / headline.fontSize.value).em,
+            ),
+            autoSize = FewLinesAutoSize(max = headline.fontSize, min = SENTENCE_MIN, lines = 2),
+        )
+        if (detail != null) {
+            Text(
+                detail,
+                style = MaterialTheme.typography.bodyLarge.balanced(),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
 }
 
 /**
@@ -273,7 +301,8 @@ private fun TipCard(onOpenGuide: () -> Unit, onDismiss: () -> Unit) {
 
 /**
  * The tiles in rows, each row as tall as its tallest tile, so a row ends together; not a lazy
- * grid, which would leave a short tile hanging: the caps are a screenful, not a list.
+ * grid, which would leave a short tile hanging: the caps are a screenful, not a list. "New cap" is
+ * the last tile where a cap stands beside it, and a row across the page where it would stand alone.
  */
 @Composable
 private fun TileGrid(
@@ -287,6 +316,12 @@ private fun TileGrid(
     val cells: List<CapState?> = state.shown + null
     Column(verticalArrangement = Arrangement.spacedBy(TileGap)) {
         cells.chunked(columns).forEach { row ->
+            // "New cap" alone on its line is a row across the page, as in the list: half a line of
+            // nothing beside a tall empty tile said less.
+            if (row.size == 1 && row[0] == null) {
+                NewCapRow(stringResource(R.string.new_cap), TettoIcons.Plus, onNewCap, Modifier.fillMaxWidth())
+                return@forEach
+            }
             Row(
                 Modifier.fillMaxWidth().height(IntrinsicSize.Min),
                 horizontalArrangement = Arrangement.spacedBy(TileGap),
@@ -454,6 +489,12 @@ private fun tileColumns(): Int {
     return if (fontScale >= LARGE_TEXT || width.value / fontScale < NARROW_DP) 1 else 2
 }
 
+/** How far in from a card's edge the page's own words start: a card's corner is round, a word's is not. */
+private val TextInset = 4.dp
+
+/** Where a sentence's strings part its headline from its detail. */
+private const val SENTENCE_BREAK = '\n'
+
 private val TileGap = 12.dp
 private val RowGap = 8.dp
 
@@ -497,6 +538,15 @@ object CapsTags {
 
     /** A cap's sheet's figures: the cap, its reserve, what was spent and what is left. */
     const val RECEIPT = "cap_receipt"
+
+    /** A cap's sheet's pencil: its editor. */
+    const val SHEET_EDIT = "cap_sheet_edit"
+
+    /** The editor's bin, a cap's deletion, and its confirmation. */
+    const val EDITOR_DELETE = "cap_editor_delete"
+
+    /** The editor's choice of a period that returns: a day, a week, a month, a year. */
+    const val EDITOR_PERIODS = "cap_editor_periods"
 
     /** An ended one-off's «Again, with new dates». */
     const val AGAIN = "cap_again"

@@ -28,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.callbackdev.tetto.core.designsystem.R
 import com.callbackdev.tetto.core.designsystem.icons.TettoIcons
@@ -35,6 +36,7 @@ import com.callbackdev.tetto.core.designsystem.theme.GroupShape
 import com.callbackdev.tetto.core.designsystem.theme.ScreenMargin
 import com.callbackdev.tetto.core.designsystem.theme.SectionBottom
 import com.callbackdev.tetto.core.designsystem.theme.SectionTop
+import com.callbackdev.tetto.core.designsystem.theme.balanced
 
 /*
  * The settings kit (`docs/adr/0002-design-language.md`): a
@@ -105,7 +107,7 @@ fun ValueRow(
         if (icon != null) RowIcon(icon)
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(label, style = MaterialTheme.typography.bodyLarge, color = labelColor)
-            Text(value, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(value, style = RowNote, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         if (trailing) {
             Icon(
@@ -127,7 +129,7 @@ fun InfoRow(label: String, value: String, modifier: Modifier = Modifier) {
             .padding(horizontal = ScreenMargin, vertical = 14.dp),
     ) {
         Text(label, style = MaterialTheme.typography.bodyLarge)
-        Text(value, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(value, style = RowNote, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -165,16 +167,19 @@ fun SwitchRow(
                 },
             )
             if (note != null) {
-                Text(
-                    note,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Text(note, style = RowNote, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         Switch(checked = checked, onCheckedChange = null, enabled = enabled)
     }
 }
+
+/**
+ * A row's second line, what it says now or what it is for: two or three lines at most, so balanced,
+ * never one word alone on the last ("…with no spend / added").
+ */
+private val RowNote: TextStyle
+    @Composable get() = MaterialTheme.typography.bodyMedium.balanced()
 
 @Composable
 private fun RowIcon(icon: ImageVector) {

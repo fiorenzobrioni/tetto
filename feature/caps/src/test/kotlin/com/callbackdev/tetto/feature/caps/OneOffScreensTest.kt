@@ -8,6 +8,7 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -79,7 +80,7 @@ class OneOffScreensTest {
     @Test
     fun `an ended one-off stands last and muted, the sentence says how it ended, a touch opens its sheet`() {
         drawCaps(listOf(CapsSample.paris(), CapsSample.coffee, CapsSample.lisbon, CapsSample.groceries))
-        compose.onNodeWithText("Paris weekend ended: €280 of €300.").assertExists()
+        compose.onNodeWithText("Paris weekend ended: €280\u00A0of\u00A0€300.").assertExists()
         assertThat(description(CapsTags.tile(8))).isEqualTo("Paris weekend, ended on 4\u00A0Nov, €280 spent of €300")
         compose.onNodeWithTag(CapsTags.tile(8)).performScrollTo().performClick()
         assertThat(opened).containsExactly(8L)
@@ -101,7 +102,7 @@ class OneOffScreensTest {
     fun `ended over, over is said in words`() {
         val over = CapsSample.paris(CapsSample.parisLine.copy(spent = euros(350), forgiven = euros(50)))
         drawCaps(listOf(over, CapsSample.coffee))
-        compose.onNodeWithText("Paris weekend ended: €350 of €300. It was €50 over: forgiven.").assertExists()
+        compose.onNodeWithText("Paris weekend ended: €350\u00A0of\u00A0€300. It was €50 over: forgiven.").assertExists()
         assertThat(description(CapsTags.tile(8))).endsWith("€350 spent of €300, €50 over, forgiven")
     }
 
@@ -130,7 +131,7 @@ class OneOffScreensTest {
         compose.onNodeWithTag(CapsTags.RECEIPT).fetchSemanticsNode().config[SemanticsProperties.ContentDescription]
             .single().let { assertThat(it).isEqualTo("€300 cap, less €280 spent: €20 to spare") }
         compose.onNodeWithText("Add a refund").assertDoesNotExist()
-        compose.onNodeWithText("Edit").assertDoesNotExist()
+        compose.onNodeWithContentDescription("Edit").assertDoesNotExist()
         compose.onNodeWithTag(CapsTags.AGAIN).performScrollTo().performClick()
         compose.onNodeWithText("Delete the cap").performScrollTo().performClick()
         assertThat(again to deleted).isEqualTo(1 to 1)
@@ -157,12 +158,12 @@ class OneOffScreensTest {
         compose.onNodeWithText("Once").performClick()
         // The picker opens at once; dismissed, the row asks for the dates and Save waits.
         compose.onNodeWithText("The cap’s dates").assertExists()
-        compose.onNodeWithText("Cancel").performClick()
+        compose.onNodeWithContentDescription("Cancel").performClick()
         compose.onNodeWithText("Choose the first and the last day").assertExists()
-        compose.onNodeWithTag(CapsTags.EDITOR_SAVE).performScrollTo().assertIsNotEnabled()
+        compose.onNodeWithTag(CapsTags.EDITOR_SAVE).assertIsNotEnabled()
         draft = draft.copy(dates = DateRange(LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 21)))
         compose.onNodeWithText("10–20 Nov · 11 days", substring = true, useUnmergedTree = true).assertExists()
-        compose.onNodeWithTag(CapsTags.EDITOR_SAVE).performScrollTo().assertIsEnabled()
+        compose.onNodeWithTag(CapsTags.EDITOR_SAVE).assertIsEnabled()
         compose.assertAccessible()
         compose.writeScreenshot("editor-once")
     }

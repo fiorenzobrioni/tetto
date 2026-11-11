@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -20,6 +21,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -61,7 +63,9 @@ import com.callbackdev.tetto.core.designsystem.theme.TettoTheme
 import com.callbackdev.tetto.core.designsystem.theme.tabular
 import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.CapState
+import com.callbackdev.tetto.core.model.ClosedPeriod
 import com.callbackdev.tetto.core.model.Money
+import com.callbackdev.tetto.core.model.PeriodKind
 import com.callbackdev.tetto.core.model.Spend
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -141,6 +145,19 @@ internal fun CapSheetContent(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            // The cap's editor, where the sheet starts: its name, amount, period and icon, and the
+            // way to delete it. Its 48dp touch overhangs the margin, so the pencil stands on the
+            // line of the receipt's edge.
+            IconButton(
+                onClick = actions.onEdit,
+                modifier = Modifier.offset(x = 12.dp).testTag(CapsTags.SHEET_EDIT),
+            ) {
+                Icon(
+                    TettoIcons.Edit,
+                    contentDescription = stringResource(R.string.sheet_edit),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
         Spacer(Modifier.height(16.dp))
         CapBar(
@@ -210,27 +227,63 @@ internal fun CapSheetContent(
 
         if (data.lines.isNotEmpty()) {
             GroupHeader(stringResource(R.string.sheet_last_periods))
-            data.lines.forEach { line ->
-                Text(
-                    lineWords(line, state.cap.kind, format, today),
-                    style = MaterialTheme.typography.bodyMedium.tabular(),
-                    modifier = Modifier.padding(horizontal = ScreenMargin, vertical = 6.dp),
-                )
-            }
+            PeriodLines(data.lines, state.cap.kind, format, today)
         }
 
-        Spacer(Modifier.height(24.dp))
-        Column(Modifier.padding(horizontal = ScreenMargin), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (state.cap.reserve.isPositive) {
-                OutlinedButton(onClick = actions.onClearReserve, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.sheet_clear_reserve))
+        // The one thing left to do here: the cap's editor is behind the pencil above, and deleting
+        // the cap is the editor's (a button for it stood here, the nearest to the thumb).
+        if (state.cap.reserve.isPositive) {
+            Spacer(Modifier.height(24.dp))
+            OutlinedButton(
+                onClick = actions.onClearReserve,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = ScreenMargin),
+            ) {
+                Text(stringResource(R.string.sheet_clear_reserve))
+            }
+        }
+    }
+}
+
+/**
+ * The last periods' lines, on one ground and in columns: a period's days and, under them, what it
+ * did to the reserve; at the row's end what it spent of the cap, the figures of every row on one
+ * edge. A run of empty periods has no figure: its words say it. TalkBack reads each row as the
+ * sentence it is ("26 Oct – 1 Nov: €16 of €20, +€4 to the reserve").
+ */
+@Composable
+private fun PeriodLines(lines: List<ClosedPeriod>, kind: PeriodKind, format: MoneyFormat, today: LocalDate) {
+    Column(
+        Modifier
+            .padding(horizontal = ScreenMargin)
+            .fillMaxWidth()
+            .clip(GroupShape)
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .padding(vertical = 6.dp),
+    ) {
+        lines.forEachIndexed { index, closed ->
+            if (index > 0) GroupDivider()
+            val line = periodLine(closed, kind, format, today)
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                    .clearAndSetSemantics { contentDescription = line.sentence },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text(line.range, style = MaterialTheme.typography.bodyMedium.tabular())
+                    if (line.outcome != null) {
+                        Text(
+                            line.outcome,
+                            style = MaterialTheme.typography.bodySmall.tabular(),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
-            }
-            OutlinedButton(onClick = actions.onEdit, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.sheet_edit))
-            }
-            TextButton(onClick = actions.onDeleteCap, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.sheet_delete), color = MaterialTheme.colorScheme.error)
+                if (line.spent != null) {
+                    Text(line.spent, style = MaterialTheme.typography.bodyMedium.tabular())
+                }
             }
         }
     }
@@ -298,13 +351,7 @@ private fun EndedSheetContent(
         )
         if (data.lines.size > 1) {
             GroupHeader(stringResource(R.string.sheet_last_periods))
-            data.lines.drop(1).forEach { line ->
-                Text(
-                    lineWords(line, state.cap.kind, format, today),
-                    style = MaterialTheme.typography.bodyMedium.tabular(),
-                    modifier = Modifier.padding(horizontal = ScreenMargin, vertical = 6.dp),
-                )
-            }
+            PeriodLines(data.lines.drop(1), state.cap.kind, format, today)
         }
         Spacer(Modifier.height(24.dp))
         Column(Modifier.padding(horizontal = ScreenMargin), verticalArrangement = Arrangement.spacedBy(8.dp)) {

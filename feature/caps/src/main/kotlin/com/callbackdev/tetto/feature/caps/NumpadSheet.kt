@@ -288,7 +288,9 @@ internal fun NumpadContent(
             enabled = ready,
             modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag(CapsTags.CONFIRM),
         ) {
-            Text(label, style = MaterialTheme.typography.titleMedium)
+            // The label's own style, as every other wide button's: only its figures are tabular,
+            // so the amount does not shift the word as it is typed.
+            Text(label, style = MaterialTheme.typography.labelLarge.tabular())
         }
     }
 }

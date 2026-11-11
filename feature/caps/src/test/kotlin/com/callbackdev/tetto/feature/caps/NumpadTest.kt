@@ -215,7 +215,7 @@ class NumpadTest {
         draw()
         type("2,5")
         compose.onNodeWithTag(CapsTags.CONFIRM).assertTextEquals("Aggiungi 2,50 €")
-        preview().assertTextEquals("Ancora 13,50 €")
+        preview().assertTextEquals("ancora 13,50 €")
         compose.writeScreenshot("numpad-it")
     }
 
