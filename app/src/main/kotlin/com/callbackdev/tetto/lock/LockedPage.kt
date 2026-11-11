@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import com.callbackdev.tetto.R
 import com.callbackdev.tetto.core.designsystem.icons.TettoIcons
 import com.callbackdev.tetto.core.designsystem.theme.ScreenMargin
+import com.callbackdev.tetto.core.designsystem.theme.balanced
 import com.callbackdev.tetto.core.designsystem.theme.padding
 import com.callbackdev.tetto.core.designsystem.theme.pageGutter
 
@@ -104,7 +105,7 @@ private fun LockedContent(onUnlock: () -> Unit, modifier: Modifier = Modifier) {
         Spacer(Modifier.height(8.dp))
         Text(
             stringResource(R.string.lock_body),
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.bodyLarge.balanced(),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )

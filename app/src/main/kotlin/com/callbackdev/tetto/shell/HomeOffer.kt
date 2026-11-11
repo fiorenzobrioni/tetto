@@ -50,6 +50,7 @@ import com.callbackdev.tetto.core.data.time.TodaySource
 import com.callbackdev.tetto.core.data.widget.HomeCard
 import com.callbackdev.tetto.core.data.widget.HomeScreenCards
 import com.callbackdev.tetto.core.designsystem.icons.TettoIcons
+import com.callbackdev.tetto.core.designsystem.theme.balanced
 import com.callbackdev.tetto.core.designsystem.theme.padding
 import com.callbackdev.tetto.core.designsystem.theme.pageGutter
 import com.callbackdev.tetto.core.model.AppCurrency
@@ -152,7 +153,7 @@ fun HomeOfferPage(state: HomeOfferState?, placed: Boolean, onPin: () -> Unit, on
                     Spacer(Modifier.height(12.dp))
                     Text(
                         text = stringResource(R.string.home_offer_body),
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.bodyLarge.balanced(),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                     )
@@ -165,7 +166,7 @@ fun HomeOfferPage(state: HomeOfferState?, placed: Boolean, onPin: () -> Unit, on
                     Spacer(Modifier.height(12.dp))
                     Text(
                         text = stringResource(R.string.home_offer_note),
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodySmall.balanced(),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                     )

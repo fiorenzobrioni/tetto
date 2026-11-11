@@ -59,6 +59,7 @@ import androidx.lifecycle.viewModelScope
 import com.callbackdev.tetto.R
 import com.callbackdev.tetto.core.data.settings.SettingsRepository
 import com.callbackdev.tetto.core.designsystem.icons.TettoIcons
+import com.callbackdev.tetto.core.designsystem.theme.balanced
 import com.callbackdev.tetto.core.designsystem.theme.padding
 import com.callbackdev.tetto.core.designsystem.theme.pageGutter
 import com.callbackdev.tetto.core.model.UserSettings
@@ -184,7 +185,7 @@ fun ReminderOfferPage(time: LocalTime, onRemind: () -> Unit, onLeave: () -> Unit
                     Spacer(Modifier.height(12.dp))
                     Text(
                         text = stringResource(R.string.reminder_offer_body),
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.bodyLarge.balanced(),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                     )
@@ -193,7 +194,7 @@ fun ReminderOfferPage(time: LocalTime, onRemind: () -> Unit, onLeave: () -> Unit
                     Spacer(Modifier.height(16.dp))
                     Text(
                         text = stringResource(R.string.reminder_offer_note),
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodySmall.balanced(),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                     )

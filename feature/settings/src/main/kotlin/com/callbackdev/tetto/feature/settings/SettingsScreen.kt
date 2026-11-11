@@ -1045,9 +1045,11 @@ private fun GuideCard(onOpenGuide: () -> Unit) {
 
 @Composable
 private fun PrivacyCard() {
+    // A note's quiet ground, not a tinted one: the words reassure, and an amber card read as a
+    // warning (amber is also the ink of a cap spending ahead of its days).
     Surface(
-        color = MaterialTheme.colorScheme.secondaryContainer,
-        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        contentColor = MaterialTheme.colorScheme.onSurface,
         shape = GroupShape,
         modifier = Modifier.fillMaxWidth().padding(horizontal = ScreenMargin),
     ) {
@@ -1055,7 +1057,11 @@ private fun PrivacyCard() {
             Icon(TettoIcons.Shield, contentDescription = null, modifier = Modifier.size(24.dp))
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(stringResource(R.string.settings_privacy_headline), style = MaterialTheme.typography.titleSmall)
-                Text(stringResource(R.string.settings_privacy_body), style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    stringResource(R.string.settings_privacy_body),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }
