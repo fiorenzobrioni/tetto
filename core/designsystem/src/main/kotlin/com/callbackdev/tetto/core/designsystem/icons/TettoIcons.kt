@@ -331,6 +331,75 @@ object TettoIcons {
         }
     }
 
+    /** A cross: closes a page that covers the screen (a one-off cap's dates). */
+    val Close: ImageVector by lazy {
+        icon("close") {
+            moveTo(6f, 6f)
+            lineTo(18f, 18f)
+            moveTo(18f, 6f)
+            lineTo(6f, 18f)
+        }
+    }
+
+    /** A pencil at work: a cap's editor, from its sheet. */
+    val Edit: ImageVector by lazy {
+        icon("edit") {
+            moveTo(4.5f, 19.5f)
+            lineTo(8.5f, 19.5f)
+            lineTo(19f, 9f)
+            lineTo(15f, 5f)
+            lineTo(4.5f, 15.5f)
+            close()
+            moveTo(12.8f, 7.2f)
+            lineTo(16.8f, 11.2f)
+        }
+    }
+
+    /** An arrow rising out of a tray: a file written for the reader to keep (the backup). */
+    val Export: ImageVector by lazy {
+        icon("export") {
+            tray()
+            moveTo(12f, 15f)
+            lineTo(12f, 3.5f)
+            moveTo(7.5f, 8f)
+            lineTo(12f, 3.5f)
+            lineTo(16.5f, 8f)
+        }
+    }
+
+    /** An arrow coming down into a tray: a file taken back in (the restore). */
+    val Import: ImageVector by lazy {
+        icon("import") {
+            tray()
+            moveTo(12f, 3.5f)
+            lineTo(12f, 15f)
+            moveTo(7.5f, 10.5f)
+            lineTo(12f, 15f)
+            lineTo(16.5f, 10.5f)
+        }
+    }
+
+    /** A sheet ruled in rows and columns: a table for a spreadsheet (the CSV). */
+    val Table: ImageVector by lazy {
+        icon("table") {
+            roundRect(4f, 4f, 20f, 20f, 2f)
+            moveTo(4f, 9.5f)
+            lineTo(20f, 9.5f)
+            moveTo(4f, 14.8f)
+            lineTo(20f, 14.8f)
+            moveTo(10f, 9.5f)
+            lineTo(10f, 20f)
+        }
+    }
+
+    /** The tray a file leaves or enters: three sides of a box, open at the top. */
+    private fun PathBuilder.tray() {
+        moveTo(4.5f, 15.5f)
+        lineTo(4.5f, 19.5f)
+        lineTo(19.5f, 19.5f)
+        lineTo(19.5f, 15.5f)
+    }
+
     private fun PathBuilder.roundRect(left: Float, top: Float, right: Float, bottom: Float, r: Float) {
         moveTo(left + r, top)
         lineTo(right - r, top)

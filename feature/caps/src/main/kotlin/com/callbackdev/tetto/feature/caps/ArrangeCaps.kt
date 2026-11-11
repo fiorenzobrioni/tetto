@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -20,11 +21,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -42,7 +45,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -75,6 +77,7 @@ fun ArrangeCapsRoute(onBack: () -> Unit, viewModel: CapsViewModel = hiltViewMode
  * The caps in a list, each dragged by its handle; TalkBack moves them a place at a time. Every
  * drop and every move is written at once ([onOrder]), so leaving by Done or by back keeps it.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ArrangeCapsScreen(
     items: List<ArrangeItem>,
@@ -99,30 +102,26 @@ fun ArrangeCapsScreen(
         modifier
             .fillMaxSize()
             .testTag(CapsTags.ARRANGE)
-            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Vertical)),
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)),
     ) {
-        Row(
-            Modifier.padding(start = gutter.start + 4.dp, end = gutter.end + ScreenMargin, top = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            IconButton(onClick = onDone) {
-                Icon(TettoIcons.Back, contentDescription = stringResource(DesignR.string.action_back))
-            }
-            Spacer(Modifier.size(8.dp))
-            Text(
-                stringResource(R.string.change_order),
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.semantics { heading() },
-            )
-        }
+        // The family's bar, as on every page that is not the first: its arrow and its title where
+        // Settings and the editor have theirs.
+        TopAppBar(
+            title = { Text(stringResource(R.string.change_order)) },
+            navigationIcon = {
+                IconButton(onClick = onDone) {
+                    Icon(TettoIcons.Back, contentDescription = stringResource(DesignR.string.action_back))
+                }
+            },
+            windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top).add(gutter.asInsets()),
+        )
         Text(
             stringResource(R.string.arrange_hint),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(
-                start = gutter.start + ScreenMargin,
-                end = gutter.end + ScreenMargin,
-                top = 8.dp,
+                start = gutter.start + ScreenMargin + 4.dp,
+                end = gutter.end + ScreenMargin + 4.dp,
                 bottom = 8.dp,
             ),
         )

@@ -603,6 +603,20 @@ object GlanceFit {
     const val ICON_GAP = 6f
     const val SLOT_FIGURE_MIN_SP = 12f
 
+    /**
+     * The size of a grid item's name on the line it shares with its figure: the label's, or, where
+     * the figure's words leave the name less than its width ("sotto di 6 €" beside "Svago" cut it
+     * to "Sva…"), the scale's next step down, the caption's. A name a little smaller is still a
+     * name; one that fits at neither size is cut at the smaller, where more of it shows.
+     *
+     * @param column the item's width; [nameEm] and [figureEm], the widths of its name and of its
+     *   figure's words, in ems.
+     */
+    fun itemNameSp(column: Float, nameEm: Float, figureEm: Float, fontScale: Float): Float {
+        val beside = column - ITEM_ICON - ICON_GAP - ITEM_FIGURE_GAP - widthOf(figureEm, ITEM_FIGURE_SP, fontScale)
+        return if (widthOf(nameEm, ITEM_NAME_SP, fontScale) <= beside) ITEM_NAME_SP else ITEM_NAME_SMALL_SP
+    }
+
     /** One grid item's height: its line or lines of words, the bar and the air between. */
     fun itemHeight(inline: Boolean, fontScale: Float): Float = if (inline) {
         maxOf(lineHeight(ITEM_FIGURE_SP, fontScale), ITEM_ICON) + BAR_GAP + BAR_HEIGHT
@@ -641,4 +655,10 @@ object GlanceFit {
     const val ITEM_ICON = 18f
     const val ITEM_FIGURE_SP = WidgetType.BODY
     const val ITEM_NAME_SP = WidgetType.LABEL
+
+    /** A name's size where its figure's words leave it too little room at the label's. */
+    const val ITEM_NAME_SMALL_SP = WidgetType.CAPTION
+
+    /** The air between an item's name and the figure on its line. */
+    const val ITEM_FIGURE_GAP = 8f
 }

@@ -9,6 +9,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.callbackdev.tetto.core.designsystem.R
@@ -63,38 +64,40 @@ internal fun familyFor(font: AppFont): FontFamily = when (font) {
 private const val TABULAR = "tnum"
 
 /**
- * Material's scale in [family], with four adjustments. Every role is named, so no
- * line of the app falls back to the platform face by accident (`TypographyTest` counts them).
+ * Material's scale in [family], with four adjustments, and the way each role breaks its lines: a
+ * heading balanced, so it never leaves one word alone on its last line ("…and until / when."); a
+ * body by the paragraph, the best breaks a long text can have. Every role is named, so no line of
+ * the app falls back to the platform face by accident (`TypographyTest` counts them).
  */
 internal fun typographyFor(family: FontFamily): Typography = Typography().run {
     Typography(
-        displayLarge = displayLarge.copy(fontFamily = family),
-        displayMedium = displayMedium.copy(fontFamily = family),
-        displaySmall = displaySmall.copy(fontFamily = family, fontSize = 36.sp, lineHeight = 44.sp),
-        headlineLarge = headlineLarge.copy(fontFamily = family),
-        headlineMedium = headlineMedium.copy(fontFamily = family),
-        headlineSmall = headlineSmall.copy(fontFamily = family),
-        titleLarge = titleLarge.copy(
-            fontFamily = family,
+        displayLarge = displayLarge.heading(family),
+        displayMedium = displayMedium.heading(family),
+        displaySmall = displaySmall.heading(family).copy(fontSize = 36.sp, lineHeight = 44.sp),
+        headlineLarge = headlineLarge.heading(family),
+        headlineMedium = headlineMedium.heading(family),
+        headlineSmall = headlineSmall.heading(family),
+        titleLarge = titleLarge.heading(family).copy(
             fontSize = 22.sp,
             lineHeight = 28.sp,
             fontWeight = FontWeight.Medium,
         ),
-        titleMedium = titleMedium.copy(
-            fontFamily = family,
+        titleMedium = titleMedium.heading(family).copy(
             fontSize = 16.sp,
             lineHeight = 24.sp,
             fontWeight = FontWeight.SemiBold,
         ),
-        titleSmall = titleSmall.copy(fontFamily = family),
-        bodyLarge = bodyLarge.copy(fontFamily = family),
-        bodyMedium = bodyMedium.copy(fontFamily = family),
-        bodySmall = bodySmall.copy(fontFamily = family),
+        titleSmall = titleSmall.heading(family),
+        bodyLarge = bodyLarge.copy(fontFamily = family, lineBreak = LineBreak.Paragraph),
+        bodyMedium = bodyMedium.copy(fontFamily = family, lineBreak = LineBreak.Paragraph),
+        bodySmall = bodySmall.copy(fontFamily = family, lineBreak = LineBreak.Paragraph),
         labelLarge = labelLarge.copy(fontFamily = family),
         labelMedium = labelMedium.copy(fontFamily = family),
         labelSmall = labelSmall.copy(fontFamily = family),
     )
 }
+
+private fun TextStyle.heading(family: FontFamily): TextStyle = copy(fontFamily = family, lineBreak = LineBreak.Heading)
 
 /**
  * The two roles Material does not have, in the reader's family.
@@ -136,3 +139,10 @@ val LocalTettoType = staticCompositionLocalOf { tettoTypeFor(GoogleSansFamily) }
 
 /** Any style, with tabular figures. */
 fun TextStyle.tabular(): TextStyle = copy(fontFeatureSettings = TABULAR)
+
+/**
+ * Any style, its lines balanced: a few lines of about one width, never a word alone on the last.
+ * For a short text that stands on its own (a centred paragraph, a row's note, a card's words); a
+ * long one reads better by the paragraph, as the body roles break already.
+ */
+fun TextStyle.balanced(): TextStyle = copy(lineBreak = LineBreak.Heading)

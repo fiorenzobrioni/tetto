@@ -16,16 +16,16 @@
     <!-- The sentence on top (PLANNING.md §4.6): a cap over first, then one renewed today, then all under. -->
     <string name="sentence_one_under">%1$s: %2$s left %3$s.</string>
     <string name="sentence_nothing_spent">All under your caps.</string>
-    <string name="sentence_all_under">All under your caps. %1$s is the closest: %2$s left %3$s.</string>
-    <string name="sentence_over_one">%1$s is %2$s over. It starts again %3$s.</string>
+    <string name="sentence_all_under">All under your caps.\n%1$s is the closest: %2$s left %3$s.</string>
+    <string name="sentence_over_one">%1$s is %2$s over.\nIt starts again %3$s.</string>
     <plurals name="sentence_over_some">
-        <item quantity="one">%1$s and %2$d other cap are over. %1$s starts again %3$s.</item>
-        <item quantity="other">%1$s and %2$d other caps are over. %1$s starts again %3$s.</item>
+        <item quantity="one">%1$s and %2$d other cap are over.\n%1$s starts again %3$s.</item>
+        <item quantity="other">%1$s and %2$d other caps are over.\n%1$s starts again %3$s.</item>
     </plurals>
-    <string name="sentence_over_every">Every cap is over. %1$s starts again %2$s.</string>
+    <string name="sentence_over_every">Every cap is over.\n%1$s starts again %2$s.</string>
     <string name="sentence_renewed_one">%1$s starts again today: %2$s %3$s.</string>
-    <string name="sentence_renewed_forgiven">%1$s starts again today: %2$s %3$s. It was %4$s over: forgiven, a clean start.</string>
-    <string name="sentence_renewed_covered">%1$s starts again today: %2$s %3$s. The reserve covered %4$s over.</string>
+    <string name="sentence_renewed_forgiven">%1$s starts again today: %2$s %3$s.\nIt was %4$s over: forgiven, a clean start.</string>
+    <string name="sentence_renewed_covered">%1$s starts again today: %2$s %3$s.\nThe reserve covered %4$s over.</string>
     <string name="sentence_renewed_saved">%1$s starts again today: %2$s %3$s, with %4$s more in reserve.</string>
     <string name="sentence_renewed_full">%1$s starts again today: %2$s %3$s, with its reserve full.</string>
     <plurals name="sentence_renewed_some">
@@ -132,26 +132,30 @@
     <string name="spend_correct">Correct</string>
     <string name="spend_delete">Delete</string>
     <string name="sheet_last_periods">The last periods</string>
-    <string name="line_even">%1$s: %2$s of %3$s</string>
-    <string name="line_to_reserve">%1$s: %2$s of %3$s, +%4$s to the reserve</string>
-    <string name="line_from_reserve">%1$s: %2$s of %3$s, %4$s from the reserve</string>
-    <string name="line_forgiven">%1$s: %2$s of %3$s, %4$s forgiven</string>
+    <!-- A closed period's line in a cap's sheet, in its parts: the range, what was spent of the cap,
+         and what it did to the reserve. TalkBack reads them as one sentence (line_whole). -->
+    <string name="line_spent">%1$s of %2$s</string>
+    <string name="line_to_reserve">+%s to the reserve</string>
+    <string name="line_from_reserve">%s from the reserve</string>
+    <string name="line_forgiven">%s forgiven</string>
     <plurals name="line_run_days">
-        <item quantity="one">%1$s: nothing spent in %2$d day, the reserve at %3$s</item>
-        <item quantity="other">%1$s: nothing spent in %2$d days, the reserve at %3$s</item>
+        <item quantity="one">nothing spent in %1$d day, the reserve at %2$s</item>
+        <item quantity="other">nothing spent in %1$d days, the reserve at %2$s</item>
     </plurals>
     <plurals name="line_run_weeks">
-        <item quantity="one">%1$s: nothing spent in %2$d week, the reserve at %3$s</item>
-        <item quantity="other">%1$s: nothing spent in %2$d weeks, the reserve at %3$s</item>
+        <item quantity="one">nothing spent in %1$d week, the reserve at %2$s</item>
+        <item quantity="other">nothing spent in %1$d weeks, the reserve at %2$s</item>
     </plurals>
     <plurals name="line_run_months">
-        <item quantity="one">%1$s: nothing spent in %2$d month, the reserve at %3$s</item>
-        <item quantity="other">%1$s: nothing spent in %2$d months, the reserve at %3$s</item>
+        <item quantity="one">nothing spent in %1$d month, the reserve at %2$s</item>
+        <item quantity="other">nothing spent in %1$d months, the reserve at %2$s</item>
     </plurals>
     <plurals name="line_run_years">
-        <item quantity="one">%1$s: nothing spent in %2$d year, the reserve at %3$s</item>
-        <item quantity="other">%1$s: nothing spent in %2$d years, the reserve at %3$s</item>
+        <item quantity="one">nothing spent in %1$d year, the reserve at %2$s</item>
+        <item quantity="other">nothing spent in %1$d years, the reserve at %2$s</item>
     </plurals>
+    <string name="line_whole">%1$s: %2$s</string>
+    <string name="line_whole_outcome">%1$s: %2$s, %3$s</string>
     <string name="sheet_clear_reserve">Clear the reserve</string>
     <string name="sheet_edit">Edit</string>
     <string name="sheet_delete">Delete the cap</string>
@@ -181,8 +185,8 @@
     <string name="quick_gone_body">It was deleted in Tetto after the card or the shortcut was made.</string>
     <string name="quick_open_app">Open Tetto</string>
     <!-- A one-off cap (owner, 6 Nov 2026): its own dates, it ends once; over, it says until when it runs. -->
-    <string name="sentence_ended_under">%1$s ended: %2$s of %3$s.</string>
-    <string name="sentence_ended_over">%1$s ended: %2$s of %3$s. It was %4$s over: forgiven.</string>
+    <string name="sentence_ended_under">%1$s ended: %2$s\u00A0of\u00A0%3$s.</string>
+    <string name="sentence_ended_over">%1$s ended: %2$s\u00A0of\u00A0%3$s.\nIt was %4$s over: forgiven.</string>
     <plurals name="sentence_ended_some">
         <item quantity="one">%1$s and %2$d other cap ended yesterday.</item>
         <item quantity="other">%1$s and %2$d other caps ended yesterday.</item>
@@ -190,10 +194,10 @@
     <string name="sentence_all_ended">Nothing runs now: every cap has ended.</string>
     <string name="sentence_over_one_until">%1$s is %2$s over, %3$s.</string>
     <plurals name="sentence_over_some_until">
-        <item quantity="one">%1$s and %2$d other cap are over. %1$s runs %3$s.</item>
-        <item quantity="other">%1$s and %2$d other caps are over. %1$s runs %3$s.</item>
+        <item quantity="one">%1$s and %2$d other cap are over.\n%1$s runs %3$s.</item>
+        <item quantity="other">%1$s and %2$d other caps are over.\n%1$s runs %3$s.</item>
     </plurals>
-    <string name="sentence_over_every_until">Every cap is over. %1$s runs %2$s.</string>
+    <string name="sentence_over_every_until">Every cap is over.\n%1$s runs %2$s.</string>
     <string name="tile_description_over_until">%1$s, %2$s over its cap of %3$s, %4$s</string>
     <string name="tile_ended">Ended on %s</string>
     <string name="tile_ended_of">%1$s of %2$s</string>
@@ -207,7 +211,7 @@
     <string name="sheet_ended_note">Its dates are over, so it takes no more spends. Run it again with new dates: the same name, icon and amount.</string>
     <string name="sheet_again">Again, with new dates</string>
     <string name="editor_again">Again, with new dates</string>
-    <string name="editor_dates">Dates</string>
+    <string name="editor_once_hint">Between two dates, with no reserve</string>
     <string name="editor_dates_choose">Choose the first and the last day</string>
     <plurals name="editor_dates_days">
         <item quantity="one">%1$s · %2$d day</item>

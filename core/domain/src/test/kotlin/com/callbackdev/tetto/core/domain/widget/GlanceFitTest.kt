@@ -286,6 +286,22 @@ class GlanceFitTest {
     }
 
     @Test
+    fun `an item's name steps down a size before its figure's words cut it`() {
+        // 4×2 at the reference grant, two columns: "Svago" beside "6 € oltre".
+        val column = (340f - GlanceFit.CARD_PADDING * 2 - GlanceFit.GRID_COLUMN_GAP) / 2
+        // Beside a figure alone, the name keeps the label's size.
+        assertThat(GlanceFit.itemNameSp(column, nameEm = 2.9f, figureEm = 2.2f, fontScale = 1f))
+            .isEqualTo(GlanceFit.ITEM_NAME_SP)
+        // Beside the words of a cap over, it has less than its width: the caption's size, whole.
+        val small = GlanceFit.itemNameSp(column, nameEm = 2.9f, figureEm = 4.6f, fontScale = 1f)
+        assertThat(small).isEqualTo(GlanceFit.ITEM_NAME_SMALL_SP)
+        val beside = column - GlanceFit.ITEM_ICON - GlanceFit.ICON_GAP - GlanceFit.ITEM_FIGURE_GAP -
+            widthOf(4.6f, GlanceFit.ITEM_FIGURE_SP, 1f)
+        assertThat(widthOf(2.9f, small, 1f)).isAtMost(beside)
+        assertThat(widthOf(2.9f, GlanceFit.ITEM_NAME_SP, 1f)).isGreaterThan(beside)
+    }
+
+    @Test
     fun `a grid with few caps uses the rows it needs`() {
         val plan = GlanceFit.glancePlan(GlanceSpec(340f, 293f, 1f, caps = 3))
         assertThat(plan.columns).isEqualTo(2)

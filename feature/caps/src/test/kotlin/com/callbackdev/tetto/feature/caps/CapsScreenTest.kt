@@ -304,20 +304,26 @@ class CapsScreenTest {
 
     @Test
     @Config(qualifiers = "it-rIT-w393dp-h851dp-xxhdpi")
-    fun `the sentence steps down to two lines where that is enough`() {
-        val fuel = CapsSample.state(8, "Benzina", CapIcon.FUEL, euros(250), PeriodKind.MONTH, euros(50))
-        val coffee = CapsSample.state(9, "Caffè e Bar", CapIcon.COFFEE, euros(100), PeriodKind.MONTH, euros(10))
-        draw(CapsSample.ui(listOf(fuel, coffee)))
-        // Three lines at the headline's 24 sp; two at 20 sp, its smallest step, 26.7 dp each.
-        assertThat(sentenceHeight("Il più vicino è Benzina")).isLessThan(60f)
+    fun `the sentence is a headline and, under it, its detail, read as one`() {
+        draw(CapsSample.ui(CapsSample.underCaps))
+        // One node for TalkBack and for a test, the sentence whole.
+        val whole = "Tutti sotto il tetto. Il più vicino è Restaurants: ancora 12 € fino a lunedì 30 nov."
+        val heading = compose.onNodeWithText("Tutti sotto il tetto", substring = true).fetchSemanticsNode()
+        assertThat(heading.config[SemanticsProperties.Text].single().text.replace('\u00A0', ' ')).isEqualTo(whole)
+        assertThat(heading.config.contains(SemanticsProperties.Heading)).isTrue()
+        // The headline on one line of its 32 dp, the detail on two of the body's 24, 4 dp between:
+        // the caps start higher than under three lines of headline (96 dp).
+        assertThat(sentenceHeight("Tutti sotto il tetto")).isWithin(1f).of(84f)
     }
 
     @Test
     @Config(qualifiers = "it-rIT-w393dp-h851dp-xxhdpi")
-    fun `a sentence two lines cannot hold keeps the headline's size`() {
-        draw(CapsSample.ui(CapsSample.underCaps))
-        // "Restaurants" would need 18 sp for two lines: three lines, then, at 24 sp, never shrunk for nothing.
-        assertThat(sentenceHeight("Il più vicino è Restaurants")).isWithin(1f).of(96f)
+    fun `a sentence of one part is the headline alone, on two lines where a step down is enough`() {
+        val coffee = CapsSample.state(9, "Caffè e Bar", CapIcon.COFFEE, euros(100), PeriodKind.MONTH, euros(10))
+        draw(CapsSample.ui(listOf(coffee)))
+        // "Caffè e Bar: ancora 90 € fino a lunedì 30 nov." has no second part: three lines at the
+        // headline's 24 sp, two a step or two down.
+        assertThat(sentenceHeight("Caffè e Bar: ancora")).isLessThan(65f)
     }
 
     @Test

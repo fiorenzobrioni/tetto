@@ -93,7 +93,8 @@ internal fun rememberDataFiles(actions: DataActions): DataFiles {
 
 /**
  * Your data's rows (PLANNING.md §11 Phase 4): the backup, the restore and the spends for a
- * spreadsheet, each saying what it carries before it is touched; erasing everything apart, below.
+ * spreadsheet, each with the mark of what it does (a file out, a file in, a table) and saying what
+ * it carries before it is touched; erasing everything apart, below.
  * The system's file picker chooses where a file goes or comes from, so no storage permission is
  * asked. What an export or a restore came to is a card over the rows, until it is put away.
  */
@@ -106,6 +107,7 @@ internal fun DataGroup(state: DataUiState, files: DataFiles, onDismissOutcome: (
         SettingsGroup {
             ValueRow(
                 label = stringResource(R.string.data_backup),
+                icon = TettoIcons.Export,
                 value = when (state.task) {
                     DataTask.WRITING_BACKUP -> stringResource(R.string.data_busy_writing)
                     else -> backupNote(contents)
@@ -117,6 +119,7 @@ internal fun DataGroup(state: DataUiState, files: DataFiles, onDismissOutcome: (
             GroupDivider()
             ValueRow(
                 label = stringResource(R.string.data_restore),
+                icon = TettoIcons.Import,
                 value = when (state.task) {
                     DataTask.READING -> stringResource(R.string.data_busy_reading)
                     DataTask.RESTORING -> stringResource(R.string.data_busy_restoring)
@@ -129,6 +132,7 @@ internal fun DataGroup(state: DataUiState, files: DataFiles, onDismissOutcome: (
             GroupDivider()
             ValueRow(
                 label = stringResource(R.string.data_spends),
+                icon = TettoIcons.Table,
                 value = when {
                     state.task == DataTask.WRITING_SPENDS -> stringResource(R.string.data_busy_writing)
                     contents.spends == 0 -> stringResource(R.string.data_spends_none)
@@ -143,6 +147,7 @@ internal fun DataGroup(state: DataUiState, files: DataFiles, onDismissOutcome: (
         SettingsGroup {
             ValueRow(
                 label = stringResource(R.string.data_erase),
+                icon = TettoIcons.Trash,
                 value = if (state.task == DataTask.ERASING) {
                     stringResource(R.string.data_busy_erasing)
                 } else {

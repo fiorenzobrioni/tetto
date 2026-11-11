@@ -48,7 +48,7 @@
     <string name="guide_numpad_undo_title">Undo, and later too</string>
     <string name="guide_numpad_undo_body">After a spend is added, the figure rolls to its new value and a message offers to undo it, for as long as your phone’s accessibility settings ask. A wrong amount noticed later can still be fixed: every spend of the period under way is in the cap’s sheet, to correct or to delete.</string>
     <string name="guide_numpad_sheet_title">A cap’s sheet</string>
-    <string name="guide_numpad_sheet_body">Behind the arrow by a cap’s name, or a long press on its tile: this period’s figures as a receipt, its spends with the day and time of each, a refund for money that comes back (a return, a friend’s share), the last periods in one line each, and the cap itself, to change or delete. A refund gives back at most what the period spent, so the spend it gave back for is deleted only after it. Clearing the reserve there starts a cap afresh.</string>
+    <string name="guide_numpad_sheet_body">Behind the arrow by a cap’s name, or a long press on its tile: this period’s figures as a receipt, its spends with the day and time of each, a refund for money that comes back (a return, a friend’s share), the last periods in a row each, and the way to the cap itself, to change it or delete it. A refund gives back at most what the period spent, so the spend it gave back for is deleted only after it. Clearing the reserve there starts a cap afresh.</string>
     <string name="guide_numpad_keys_title">Keys like your keyboard</string>
     <string name="guide_numpad_keys_body">The decimal key is your language’s, and a currency without cents has none. Each key ticks as your phone’s keyboard does; your phone’s own touch feedback setting turns it off.</string>
 

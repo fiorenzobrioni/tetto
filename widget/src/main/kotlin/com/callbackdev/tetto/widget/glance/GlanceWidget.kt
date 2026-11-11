@@ -398,17 +398,32 @@ private fun GridContent(parts: GlanceParts, plan: GlancePlan, states: List<CapSt
 @Composable
 private fun Item(parts: GlanceParts, plan: GlancePlan, state: CapState, width: Dp) {
     val icon = GlanceFit.ITEM_ICON.dp
+    // Over is said in words: "€30 over", in the over ink; under, the figure alone reads as what is
+    // left. Hidden, the short word for where the cap is, "Over" among them.
+    val figure = when {
+        plan.inline -> parts.words.besideName(state)
+        state.over && !parts.words.hidden -> parts.words.figure(state)
+        else -> parts.words.amount(state)
+    }
+    // On one line with its figure, the name steps down before the figure's words cut it.
+    val nameSp = if (plan.inline) {
+        GlanceFit.itemNameSp(
+            column = width.value,
+            nameEm = textEm(parts.context, state.cap.name, TextWeight.REGULAR),
+            figureEm = textEm(parts.context, figure, TextWeight.MEDIUM),
+            fontScale = parts.scale,
+        )
+    } else {
+        GlanceFit.ITEM_NAME_SP
+    }
     val name = @Composable { modifier: GlanceModifier ->
         Text(
             text = state.cap.name,
-            style = TextStyle(color = parts.palette.primaryInk, fontSize = GlanceFit.ITEM_NAME_SP.sp),
+            style = TextStyle(color = parts.palette.primaryInk, fontSize = nameSp.sp),
             maxLines = 1,
             modifier = modifier,
         )
     }
-    // Over is said in words: "€30 over", in the over ink; under, the figure alone reads as what is
-    // left. Hidden, the short word for where the cap is, "Over" among them.
-    val figure = if (state.over && !parts.words.hidden) parts.words.figure(state) else parts.words.amount(state)
     val figureText = @Composable {
         Text(
             text = figure,
@@ -426,7 +441,7 @@ private fun Item(parts: GlanceParts, plan: GlancePlan, state: CapState, width: D
             Spacer(modifier = GlanceModifier.width(GlanceFit.ICON_GAP.dp))
             name(GlanceModifier.defaultWeight())
             if (plan.inline) {
-                Spacer(modifier = GlanceModifier.width(ITEM_FIGURE_GAP))
+                Spacer(modifier = GlanceModifier.width(GlanceFit.ITEM_FIGURE_GAP.dp))
                 figureText()
             }
         }
@@ -438,4 +453,3 @@ private fun Item(parts: GlanceParts, plan: GlancePlan, state: CapState, width: D
 
 private val MARK_WIDTH = 2.dp
 private val MARK_WITH_HALO = 4.dp
-private val ITEM_FIGURE_GAP = 8.dp

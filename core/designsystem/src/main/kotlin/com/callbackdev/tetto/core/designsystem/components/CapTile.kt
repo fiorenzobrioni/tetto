@@ -334,7 +334,13 @@ private fun CapName(name: String, modifier: Modifier = Modifier) {
 @Composable
 private fun CapFigure(figure: String, figureValue: Long, over: Boolean) {
     val first = booleanResource(R.bool.cap_word_first)
+    val style = TettoTheme.type.readingValue
     Row(Modifier.fillMaxWidth()) {
+        // The figure's line at its full size, drawn empty: a figure that steps down to fit ("ancora
+        // 203,60 €" on a narrow phone) would make its line shorter, and every line under it, the
+        // bar too, would stand higher than the next tile's. The strut keeps the line's height and
+        // its baseline, whatever the figure's size.
+        BasicText("", style = style, modifier = Modifier.alignByBaseline())
         if (first) {
             FigureWord(over, Modifier.alignByBaseline())
             Spacer(Modifier.width(6.dp))
@@ -342,7 +348,7 @@ private fun CapFigure(figure: String, figureValue: Long, over: Boolean) {
         RollingText(
             text = figure,
             value = figureValue,
-            style = TettoTheme.type.readingValue,
+            style = style,
             color = figureInk(over),
             modifier = Modifier.weight(1f, fill = false).alignByBaseline(),
         )
@@ -425,11 +431,8 @@ fun NewCapTile(label: String, icon: ImageVector, onClick: () -> Unit, modifier: 
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
-        Column(
-            Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.Start,
-        ) {
+        // From the top, as a cap's tile beside it: its badge on the line of the other badges.
+        Column(Modifier.padding(horizontal = 16.dp, vertical = 20.dp), horizontalAlignment = Alignment.Start) {
             CapBadge(icon)
             Spacer(Modifier.height(12.dp))
             Text(label, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
@@ -457,18 +460,20 @@ fun CapBadge(icon: ImageVector, modifier: Modifier = Modifier) {
 }
 
 /**
- * The reserve, as a small chip in the tertiary container: a role that is amber in neither dress,
- * so the chip never reads as the attention ink of a bar ahead of the days (owner, 6 Nov 2026).
+ * The reserve, as a small chip on a quiet ground: it names what the cap's line adds ("of €20 +
+ * €4"), and stays behind the figure. Not a colour of its own: in the dark a tinted chip was the
+ * loudest thing on the tile, and amber would read as the attention ink of a bar ahead of the days.
+ * Its ink is the tile's quiet one, on a ground a step from the tile's.
  */
 @Composable
 private fun ReserveChip(text: String, modifier: Modifier = Modifier) {
     Text(
         text,
         style = MaterialTheme.typography.labelMedium.tabular(),
-        color = MaterialTheme.colorScheme.onTertiaryContainer,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.tertiaryContainer)
+            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
             .padding(horizontal = 8.dp, vertical = 4.dp),
     )
 }

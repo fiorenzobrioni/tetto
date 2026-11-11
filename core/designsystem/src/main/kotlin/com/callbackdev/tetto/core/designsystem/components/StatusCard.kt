@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.callbackdev.tetto.core.designsystem.theme.GroupShape
+import com.callbackdev.tetto.core.designsystem.theme.balanced
 
 /** How much a status card asks of the reader. */
 enum class StatusTone {
@@ -69,7 +70,11 @@ fun StatusCard(
                 Icon(icon, contentDescription = null, modifier = Modifier.size(24.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.weight(1f)) {
                     Text(title, style = MaterialTheme.typography.titleSmall)
-                    Text(body, style = MaterialTheme.typography.bodyMedium, color = content.copy(alpha = BODY_ALPHA))
+                    Text(
+                        body,
+                        style = MaterialTheme.typography.bodyMedium.balanced(),
+                        color = content.copy(alpha = BODY_ALPHA),
+                    )
                 }
             }
             if (action != null || dismiss != null) {

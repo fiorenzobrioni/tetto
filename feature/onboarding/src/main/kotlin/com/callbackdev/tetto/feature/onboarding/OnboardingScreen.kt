@@ -15,8 +15,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -32,12 +30,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -67,6 +63,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.callbackdev.tetto.core.designsystem.components.CapBadge
+import com.callbackdev.tetto.core.designsystem.components.ChoiceSegments
 import com.callbackdev.tetto.core.designsystem.components.CurrencyPickerDialog
 import com.callbackdev.tetto.core.designsystem.components.MoneyField
 import com.callbackdev.tetto.core.designsystem.components.ValueRow
@@ -78,6 +75,7 @@ import com.callbackdev.tetto.core.designsystem.icons.labelRes
 import com.callbackdev.tetto.core.designsystem.icons.symbol
 import com.callbackdev.tetto.core.designsystem.theme.GroupShape
 import com.callbackdev.tetto.core.designsystem.theme.TettoMotion
+import com.callbackdev.tetto.core.designsystem.theme.balanced
 import com.callbackdev.tetto.core.designsystem.theme.padding
 import com.callbackdev.tetto.core.designsystem.theme.pageGutter
 import com.callbackdev.tetto.core.designsystem.theme.reducedMotion
@@ -258,7 +256,7 @@ private fun BottomBar(step: OnboardingStep, picks: FirstRunPicks, finishing: Boo
         if (step == OnboardingStep.AMOUNTS && !picks.complete) {
             Text(
                 text = stringResource(R.string.onboarding_amounts_needed),
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodySmall.balanced(),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
@@ -300,7 +298,8 @@ private fun PageTitle(text: String, step: OnboardingStep) {
 private fun PageBody(text: String) {
     Text(
         text = text,
-        style = MaterialTheme.typography.bodyLarge,
+        // Centred, so balanced: a centred paragraph with one word on its last line reads as a slip.
+        style = MaterialTheme.typography.bodyLarge.balanced(),
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         textAlign = TextAlign.Center,
     )
@@ -344,7 +343,7 @@ private fun Promise(title: Int, body: Int) {
         Text(stringResource(title), style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
         Text(
             stringResource(body),
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodyMedium.balanced(),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
@@ -384,24 +383,20 @@ private const val MIN_COLUMNS = 2
 private const val MAX_COLUMNS = 4
 
 /**
- * One area, a choice among the others: its icon and its name; picked, it takes the accent's ground,
- * a firmer edge and a tick, so the choice is a shape as well as a colour. TalkBack says it as a
- * checkbox.
+ * One area, a choice among the others: its icon and its name, every one as tall as a name of two
+ * lines, so the rows of the grid are all one height. Picked, it takes the accent's ground and a
+ * tick: the choice is a shape as well as a colour, and no more than that (an edge and a badge
+ * turned over said it twice again). TalkBack says it as a checkbox.
  */
 @Composable
 private fun AreaChoice(area: CapIcon, picked: Boolean, onToggle: () -> Unit, modifier: Modifier) {
+    val colors = MaterialTheme.colorScheme
     Surface(
         shape = GroupShape,
-        color = if (picked) {
-            MaterialTheme.colorScheme.primaryContainer
-        } else {
-            MaterialTheme.colorScheme.surfaceContainerLow
-        },
-        border = if (picked) {
-            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-        } else {
-            BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-        },
+        color = if (picked) colors.primaryContainer else colors.surfaceContainerLow,
+        contentColor = if (picked) colors.onPrimaryContainer else colors.onSurface,
+        // The edge of an area not picked; a picked one's is its own ground, so no tile moves.
+        border = BorderStroke(1.dp, if (picked) colors.primaryContainer else colors.outlineVariant),
         modifier = modifier
             .clip(GroupShape)
             .toggleable(value = picked, role = Role.Checkbox, onValueChange = { onToggle() })
@@ -413,25 +408,31 @@ private fun AreaChoice(area: CapIcon, picked: Boolean, onToggle: () -> Unit, mod
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 16.dp),
             ) {
-                val colors = MaterialTheme.colorScheme
-                val (badge, ink) = if (picked) {
-                    colors.primary to colors.onPrimary
-                } else {
-                    colors.primaryContainer to colors.onPrimaryContainer
-                }
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.size(44.dp).clip(CircleShape).background(badge),
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(if (picked) colors.surface else colors.primaryContainer),
                 ) {
-                    Icon(area.symbol, contentDescription = null, tint = ink, modifier = Modifier.size(24.dp))
+                    Icon(
+                        area.symbol,
+                        contentDescription = null,
+                        tint = colors.onPrimaryContainer,
+                        modifier = Modifier.size(24.dp),
+                    )
                 }
-                Text(area.label(), style = MaterialTheme.typography.labelLarge, textAlign = TextAlign.Center)
+                Text(
+                    area.label(),
+                    style = MaterialTheme.typography.labelLarge.balanced(),
+                    textAlign = TextAlign.Center,
+                    minLines = 2,
+                )
             }
             if (picked) {
                 Icon(
                     TettoIcons.Check,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.align(Alignment.TopEnd).padding(10.dp).size(18.dp),
                 )
             }
@@ -443,7 +444,6 @@ private fun AreaChoice(area: CapIcon, picked: Boolean, onToggle: () -> Unit, mod
  * The amounts: the currency first (the phone's region's, changeable here), then one group per area
  * picked, each its amount and its period, a month by default.
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AmountsPage(
     picks: FirstRunPicks,
@@ -494,17 +494,13 @@ private fun AmountsPage(
                         modifier = Modifier.fillMaxWidth().testTag(OnboardingTags.amount(pick.area)),
                     )
                     Spacer(Modifier.height(8.dp))
-                    FlowRow(Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        // The periods that renew: a one-off's dates are the editor's, not a first run's.
-                        PeriodKind.entries.filter { it.renews }.forEach { kind ->
-                            FilterChip(
-                                selected = pick.kind == kind,
-                                onClick = { actions.kind(pick.area, kind) },
-                                label = { Text(kind.label()) },
-                                modifier = Modifier.heightIn(min = 48.dp).testTag(OnboardingTags.kind(pick.area, kind)),
-                            )
-                        }
-                    }
+                    // The periods that renew: a one-off's dates are the editor's, not a first run's.
+                    ChoiceSegments(
+                        options = PeriodKind.entries.filter { it.renews }.map { it to it.label() },
+                        selected = pick.kind,
+                        onSelect = { actions.kind(pick.area, it) },
+                        tag = { OnboardingTags.kind(pick.area, it) },
+                    )
                 }
             }
         }

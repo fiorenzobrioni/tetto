@@ -3,8 +3,11 @@ package com.callbackdev.tetto.feature.caps
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertContentDescriptionContains
 import androidx.compose.ui.test.assertContentDescriptionEquals
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -109,10 +112,14 @@ class CapSheetTest {
         // The tile's pace, which the list's rows leave out.
         compose.onNodeWithText("To stay under, about €4 a day").assertExists()
         compose.onNodeWithText("The last periods").performScrollTo()
+        // The last periods, each a row read as its sentence.
+        compose.onAllNodesWithContentDescription("to the reserve", substring = true).assertCountEquals(2)
+        compose.onNodeWithContentDescription("from the reserve", substring = true).assertExists()
         compose.onNodeWithText("Clear the reserve").performScrollTo().performClick()
-        compose.onNodeWithText("Edit").performScrollTo().performClick()
-        compose.onNodeWithText("Delete the cap").performScrollTo().performClick()
-        assertThat(listOf(cleared, edited, deletedCap)).containsExactly(1, 1, 1).inOrder()
+        // The cap's editor is behind the pencil at the sheet's head; deleting the cap is the editor's.
+        compose.onNodeWithContentDescription("Edit").performScrollTo().performClick()
+        compose.onNodeWithText("Delete the cap").assertDoesNotExist()
+        assertThat(listOf(cleared, edited, deletedCap)).containsExactly(1, 1, 0).inOrder()
         compose.assertAccessible()
         compose.writeScreenshot("cap-sheet")
     }

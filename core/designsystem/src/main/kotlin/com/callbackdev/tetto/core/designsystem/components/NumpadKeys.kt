@@ -21,7 +21,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.callbackdev.tetto.core.designsystem.R
 import com.callbackdev.tetto.core.designsystem.icons.TettoIcons
 import com.callbackdev.tetto.core.designsystem.theme.tabular
@@ -52,7 +54,9 @@ fun NumpadKeys(
                 // Named, not left to the character: TalkBack's punctuation setting can leave a
                 // lone "." or "," unspoken.
                 Key(onClick = onSeparator, label = stringResource(R.string.numpad_separator)) {
-                    Text(separator.toString(), style = keyStyle())
+                    // Heavier and larger than a digit: a point or a comma at a digit's size is a
+                    // speck at the foot of its key.
+                    Text(separator.toString(), style = keyStyle().copy(fontWeight = FontWeight.Bold, fontSize = 34.sp))
                 }
             } else {
                 Box(Modifier.weight(1f))

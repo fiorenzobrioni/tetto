@@ -69,7 +69,7 @@ class CapEditorTest {
         compose.onNodeWithText("Week").performClick()
         compose.onNodeWithContentDescription("Coffee and bars").performScrollTo().performClick()
         compose.onNodeWithContentDescription("Coffee and bars").assertIsSelected()
-        compose.onNodeWithTag(CapsTags.EDITOR_SAVE).performScrollTo().assertIsEnabled().performClick()
+        compose.onNodeWithTag(CapsTags.EDITOR_SAVE).assertIsEnabled().performClick()
         assertThat(draft).isEqualTo(CapDraft("Coffee", euros(20, 50), PeriodKind.WEEK, CapIcon.COFFEE))
         assertThat(saved).isEqualTo(1)
         compose.assertAccessible()
