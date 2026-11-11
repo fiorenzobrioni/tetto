@@ -31,6 +31,8 @@
     <!-- What is left: "€12 left", "€30 over"; the word alone, under a one-cell figure. -->
     <string name="widget_left">%s left</string>
     <string name="widget_over">%s over</string>
+    <!-- A cap over, beside its name on one line of a card: the shortest words that still say it. -->
+    <string name="widget_over_short">%s over</string>
     <string name="widget_word_left">left</string>
     <string name="widget_word_over">over</string>
     <!-- Whether the word stands over the figure ("ancora / 12 €") or under it ("€12 / left"). -->

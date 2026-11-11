@@ -43,6 +43,16 @@ internal class CardWords(
         else -> res.getString(R.string.widget_left, format.short(state.left))
     }
 
+    /**
+     * A grid item's figure, on one line with its name: what is left as the figure alone ("€12"),
+     * and over in the shortest words that say it ("€30 over", "6 € oltre"), so the name beside it
+     * keeps its room. Hidden, the short word for where the cap is.
+     */
+    fun besideName(state: CapState): String = when {
+        state.ended || hidden || !state.over -> amount(state)
+        else -> res.getString(R.string.widget_over_short, format.short(state.overBy))
+    }
+
     /** "€12", "€30": the figure alone, where the word stands on a line of its own ([word]). */
     fun amount(state: CapState): String = when {
         state.ended -> res.getString(R.string.widget_ended)
