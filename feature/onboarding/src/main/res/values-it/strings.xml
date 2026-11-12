@@ -8,13 +8,13 @@
     <string name="onboarding_kind_body">Quello che un periodo avanza va in una riserva. Lo sforamento che la riserva non copre è condonato quando il periodo finisce.</string>
     <string name="onboarding_private_title">Privato, sul tuo telefono</string>
     <string name="onboarding_private_body">Niente account, niente pubblicità, nessun permesso di accesso a internet: Tetto non invia nulla.</string>
-    <string name="onboarding_start">Inizia</string>
+    <string name="onboarding_start">Iniziamo</string>
     <string name="onboarding_progress">Passaggio %1$d di %2$d</string>
 
     <!-- Gli ambiti. -->
     <string name="onboarding_areas_title">Su cosa vuoi mettere un tetto?</string>
     <string name="onboarding_areas_body">Scegli i tuoi. Gli altri si aggiungono quando vuoi, dalla schermata dei tetti.</string>
-    <string name="onboarding_next">Avanti</string>
+    <string name="onboarding_next">Continua</string>
     <string name="onboarding_nothing">Parti da zero</string>
 
     <!-- Gli importi. -->

@@ -9,13 +9,13 @@
     <string name="onboarding_kind_body">What a period leaves over goes to a reserve. An overspend the reserve cannot cover is forgiven when the period ends.</string>
     <string name="onboarding_private_title">Private, on your phone</string>
     <string name="onboarding_private_body">No account, no ads, no internet permission at all: Tetto sends nothing.</string>
-    <string name="onboarding_start">Start</string>
+    <string name="onboarding_start">Get started</string>
     <string name="onboarding_progress">Step %1$d of %2$d</string>
 
     <!-- The areas. -->
     <string name="onboarding_areas_title">What do you want to put a cap on?</string>
     <string name="onboarding_areas_body">Pick yours. Any other can be added later, from the caps screen.</string>
-    <string name="onboarding_next">Next</string>
+    <string name="onboarding_next">Continue</string>
     <string name="onboarding_nothing">Start from nothing</string>
 
     <!-- The amounts. -->

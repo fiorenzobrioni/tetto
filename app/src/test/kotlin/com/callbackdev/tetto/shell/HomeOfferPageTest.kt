@@ -1,5 +1,7 @@
 package com.callbackdev.tetto.shell
 
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -84,7 +86,7 @@ class HomeOfferPageTest {
         compose.onNodeWithTag(HomeOfferTags.PREVIEW).assertExists()
         compose.onNodeWithText("Add the card").performClick()
         assertThat(pinned).isEqualTo(1)
-        compose.onNodeWithText("Not now").performClick()
+        compose.onNodeWithText("Later").performClick()
         assertThat(left).isEqualTo(1)
         compose.assertAccessible()
         compose.writeScreenshot("home-offer")
@@ -98,6 +100,26 @@ class HomeOfferPageTest {
         compose.onNodeWithText("Done").performClick()
         assertThat(left).isEqualTo(1)
         assertThat(pinned).isEqualTo(0)
+    }
+
+    @Test
+    fun `before the reminder's page, it says where the run stands and continues`() {
+        compose.setContent {
+            TettoTheme {
+                HomeOfferPage(
+                    state = state,
+                    placed = true,
+                    onPin = { pinned++ },
+                    onLeave = { left++ },
+                    where = "Step 4 of 5",
+                    last = false,
+                )
+            }
+        }
+        compose.onNode(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Step 4 of 5"))
+            .assertExists()
+        compose.onNodeWithText("Continue").performClick()
+        assertThat(left).isEqualTo(1)
     }
 
     @Test

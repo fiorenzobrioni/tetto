@@ -13,6 +13,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -187,6 +188,26 @@ class OnboardingScreenTest {
             TettoTheme { OnboardingScreen(step, picks, euro, OnboardingActions(), finishing = true) }
         }
         compose.onNodeWithTag(OnboardingTags.PRIMARY).assertIsNotEnabled()
+    }
+
+    @Test
+    fun `with the shell's pages to follow, they are counted, and the amounts' button continues`() {
+        step = OnboardingStep.AMOUNTS
+        picks = twoAreas.withAmount(CapIcon.GROCERIES, Money(1)).withAmount(CapIcon.COFFEE, Money(1))
+        compose.setContent {
+            TettoTheme { OnboardingScreen(step, picks, euro, OnboardingActions(), pagesAfter = 2) }
+        }
+        compose.onNode(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Step 3 of 5"))
+            .assertIsDisplayed()
+        compose.onNodeWithTag(OnboardingTags.PRIMARY).assertTextEquals("Continue")
+    }
+
+    @Test
+    fun `with nothing to follow, the amounts' button ends the run`() {
+        draw(OnboardingStep.AMOUNTS, twoAreas)
+        compose.onNode(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Step 3 of 3"))
+            .assertIsDisplayed()
+        compose.onNodeWithTag(OnboardingTags.PRIMARY).assertTextEquals("Done")
     }
 
     @Test

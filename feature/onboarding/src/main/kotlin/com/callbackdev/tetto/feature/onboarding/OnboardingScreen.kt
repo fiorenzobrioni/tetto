@@ -98,10 +98,15 @@ enum class OnboardingStep {
 
 /**
  * The first run. [onFinishing] hears, as the run ends, whether it made caps: the shell may then
- * offer the home screen's card before the caps screen (PLANNING.md §8).
+ * offer the home screen's card before the caps screen (PLANNING.md §8). [pagesAfter] counts the
+ * shell's pages that follow a run that makes caps, so the run's steps and its last button say so.
  */
 @Composable
-fun OnboardingRoute(onFinishing: (withCaps: Boolean) -> Unit = {}, viewModel: OnboardingViewModel = hiltViewModel()) {
+fun OnboardingRoute(
+    onFinishing: (withCaps: Boolean) -> Unit = {},
+    pagesAfter: Int = 0,
+    viewModel: OnboardingViewModel = hiltViewModel(),
+) {
     val started by viewModel.currency.collectAsStateWithLifecycle()
     val finishing by viewModel.isFinishing.collectAsStateWithLifecycle()
     // Until the settings are read the run has no currency to offer: nothing rather than a guess.
@@ -115,6 +120,7 @@ fun OnboardingRoute(onFinishing: (withCaps: Boolean) -> Unit = {}, viewModel: On
         picks = picks,
         currency = currency,
         finishing = finishing,
+        pagesAfter = pagesAfter,
         actions = OnboardingActions(
             next = { OnboardingStep.entries.getOrNull(step.ordinal + 1)?.let { step = it } },
             back = { OnboardingStep.entries.getOrNull(step.ordinal - 1)?.let { step = it } },
@@ -158,8 +164,10 @@ fun OnboardingScreen(
     actions: OnboardingActions,
     modifier: Modifier = Modifier,
     finishing: Boolean = false,
+    pagesAfter: Int = 0,
 ) {
     val reduced = reducedMotion()
+    val steps = OnboardingStep.entries.size + pagesAfter
     val gutter = pageGutter()
     var choosingCurrency by rememberSaveable { mutableStateOf(false) }
     BackHandler(enabled = step != OnboardingStep.WELCOME, onBack = actions.back)
@@ -197,15 +205,20 @@ fun OnboardingScreen(
                             .padding(horizontal = 24.dp, vertical = 24.dp)
                             .testTag(OnboardingTags.PAGE),
                     ) {
+                        val where = stringResource(R.string.onboarding_progress, page.ordinal + 1, steps)
                         when (page) {
-                            OnboardingStep.WELCOME -> WelcomePage()
-                            OnboardingStep.AREAS -> AreasPage(picks, actions.toggle)
-                            OnboardingStep.AMOUNTS -> AmountsPage(picks, currency, actions) { choosingCurrency = true }
+                            OnboardingStep.WELCOME -> WelcomePage(where)
+
+                            OnboardingStep.AREAS -> AreasPage(picks, actions.toggle, where)
+
+                            OnboardingStep.AMOUNTS -> AmountsPage(picks, currency, actions, where) {
+                                choosingCurrency = true
+                            }
                         }
                     }
                 }
             }
-            Box(Modifier.padding(gutter)) { BottomBar(step, picks, finishing, actions) }
+            Box(Modifier.padding(gutter)) { BottomBar(step, picks, finishing, pagesAfter > 0, actions) }
         }
     }
     if (choosingCurrency) {
@@ -227,10 +240,18 @@ private const val SLIDE_DIVISOR = 6
  * The buttons under every page (the family's frame): one wide button that moves on, in the same
  * place on every page, and the quiet way past under it. On the areas' page the wide button waits
  * for an area, and "Start from nothing" ends the run with no cap; on the amounts' page it waits
- * for every amount, and says so. Disabled, never relabelled. The way back is the system's.
+ * for every amount, and says so. Disabled, never relabelled. On the amounts' page it says "Done"
+ * when the run ends there, "Continue" when the shell's pages follow ([more]). The way back is the
+ * system's.
  */
 @Composable
-private fun BottomBar(step: OnboardingStep, picks: FirstRunPicks, finishing: Boolean, actions: OnboardingActions) {
+private fun BottomBar(
+    step: OnboardingStep,
+    picks: FirstRunPicks,
+    finishing: Boolean,
+    more: Boolean,
+    actions: OnboardingActions,
+) {
     Column(
         modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -239,7 +260,7 @@ private fun BottomBar(step: OnboardingStep, picks: FirstRunPicks, finishing: Boo
         val label = when (step) {
             OnboardingStep.WELCOME -> R.string.onboarding_start
             OnboardingStep.AREAS -> R.string.onboarding_next
-            OnboardingStep.AMOUNTS -> R.string.onboarding_done
+            OnboardingStep.AMOUNTS -> if (more) R.string.onboarding_next else R.string.onboarding_done
         }
         val enabled = when (step) {
             OnboardingStep.WELCOME -> true
@@ -273,23 +294,19 @@ private fun BottomBar(step: OnboardingStep, picks: FirstRunPicks, finishing: Boo
     }
 }
 
-/** A page's heading, which a screen reader announces with where the run stands. */
-@Composable
-private fun Modifier.stepHeading(step: OnboardingStep): Modifier {
-    val where = stringResource(R.string.onboarding_progress, step.ordinal + 1, OnboardingStep.entries.size)
-    return semantics {
-        heading()
-        stateDescription = where
-    }
+/** A page's heading, announced with where the run stands ([where]). */
+private fun Modifier.stepHeading(where: String): Modifier = semantics {
+    heading()
+    stateDescription = where
 }
 
 @Composable
-private fun PageTitle(text: String, step: OnboardingStep) {
+private fun PageTitle(text: String, where: String) {
     Text(
         text = text,
         style = MaterialTheme.typography.headlineMedium,
         textAlign = TextAlign.Center,
-        modifier = Modifier.stepHeading(step),
+        modifier = Modifier.stepHeading(where),
     )
     Spacer(Modifier.height(12.dp))
 }
@@ -311,12 +328,12 @@ private fun PageBody(text: String) {
  * onboarding frame).
  */
 @Composable
-private fun WelcomePage() {
+private fun WelcomePage(where: String) {
     Text(
         text = stringResource(R.string.onboarding_app_name),
         style = MaterialTheme.typography.displaySmall,
         textAlign = TextAlign.Center,
-        modifier = Modifier.stepHeading(OnboardingStep.WELCOME),
+        modifier = Modifier.stepHeading(where),
     )
     Spacer(Modifier.height(8.dp))
     Text(
@@ -352,8 +369,8 @@ private fun Promise(title: Int, body: Int) {
 
 /** "What do you want to put a cap on?": the twelve areas, the reader's own picked. */
 @Composable
-private fun AreasPage(picks: FirstRunPicks, toggle: (CapIcon) -> Unit) {
-    PageTitle(stringResource(R.string.onboarding_areas_title), OnboardingStep.AREAS)
+private fun AreasPage(picks: FirstRunPicks, toggle: (CapIcon) -> Unit, where: String) {
+    PageTitle(stringResource(R.string.onboarding_areas_title), where)
     PageBody(stringResource(R.string.onboarding_areas_body))
     Spacer(Modifier.height(24.dp))
     // Three to a row on a phone, four on an open foldable, two at large text sizes: each area
@@ -449,10 +466,11 @@ private fun AmountsPage(
     picks: FirstRunPicks,
     currency: AppCurrency,
     actions: OnboardingActions,
+    where: String,
     onChangeCurrency: () -> Unit,
 ) {
     val format = rememberMoneyFormat(currency)
-    PageTitle(stringResource(R.string.onboarding_amounts_title), OnboardingStep.AMOUNTS)
+    PageTitle(stringResource(R.string.onboarding_amounts_title), where)
     PageBody(stringResource(R.string.onboarding_amounts_body))
     Spacer(Modifier.height(24.dp))
     Surface(
