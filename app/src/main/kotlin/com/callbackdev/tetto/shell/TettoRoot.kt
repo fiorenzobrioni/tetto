@@ -1,6 +1,7 @@
 package com.callbackdev.tetto.shell
 
 import androidx.activity.compose.LocalActivity
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -13,12 +14,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -32,8 +37,10 @@ import com.callbackdev.tetto.feature.caps.CapEditorRoute
 import com.callbackdev.tetto.feature.caps.CapsRoute
 import com.callbackdev.tetto.feature.guide.GuideRoute
 import com.callbackdev.tetto.feature.onboarding.OnboardingRoute
+import com.callbackdev.tetto.feature.onboarding.OnboardingStep
 import com.callbackdev.tetto.feature.settings.SettingsRoute
 import kotlinx.serialization.Serializable
+import com.callbackdev.tetto.feature.onboarding.R as OnboardingR
 
 /*
  * The shell's pages as Navigation 3 keys, on one back stack: back is previewed under the finger
@@ -66,7 +73,8 @@ data object GuideKey : NavKey
  * made caps ends on the home screen's card, where the launcher can place one and none is there
  * yet (PLANNING.md §8), then on the evening reminder, where it can still be turned on (owner,
  * 7 Nov 2026); the caps are already made then, so a process ended on either page loses nothing
- * and makes nothing twice.
+ * and makes nothing twice. Those two pages are the run's own: they slide in as its pages do, and
+ * are counted in the step a screen reader hears on each heading, from the run's first page on.
  */
 @Composable
 fun TettoRoot(settings: UserSettings) {
@@ -75,26 +83,71 @@ fun TettoRoot(settings: UserSettings) {
     val activity = LocalActivity.current
     var offeringHome by rememberSaveable { mutableStateOf(false) }
     var offeringReminder by rememberSaveable { mutableStateOf(false) }
-    if (!settings.onboardingCompleted) {
-        OnboardingRoute(
-            onFinishing = { withCaps ->
-                offeringHome = withCaps && offer.worthOffering()
-                // No cap, no reminder: it has nothing to ask about.
-                offeringReminder = withCaps && reminderWorthOffering(context, activity, settings)
-            },
-        )
+    // The run's length as it ended, so its last pages keep the count the run said.
+    var runLength by rememberSaveable { mutableIntStateOf(OnboardingStep.entries.size) }
+    // The pages that would follow a run that makes caps, read again whenever the run is back in
+    // front: a card placed or the notifications allowed meanwhile take a page off.
+    var resumed by remember { mutableIntStateOf(0) }
+    LifecycleResumeEffect(Unit) {
+        resumed++
+        onPauseOrDispose { }
+    }
+    val pagesAfter = remember(settings, resumed) {
+        if (settings.onboardingCompleted) {
+            0
+        } else {
+            listOf(offer.worthOffering(), reminderWorthOffering(context, activity, settings)).count { it }
+        }
+    }
+    val stage = when {
+        !settings.onboardingCompleted -> FirstRun.STEPS
+        offeringHome -> FirstRun.HOME
+        offeringReminder -> FirstRun.REMINDER
+        else -> null
+    }
+    if (stage == null) {
+        MainPages()
         return
     }
-    if (offeringHome) {
-        HomeOfferRoute(onLeave = { offeringHome = false }, viewModel = offer)
-        return
+    val reduced = reducedMotion()
+    AnimatedContent(
+        targetState = stage,
+        transitionSpec = { forward(reduced) },
+        label = "first run",
+    ) { page ->
+        val run = OnboardingStep.entries.size
+        when (page) {
+            FirstRun.STEPS -> OnboardingRoute(
+                pagesAfter = pagesAfter,
+                onFinishing = { withCaps ->
+                    offeringHome = withCaps && offer.worthOffering()
+                    // No cap, no reminder: it has nothing to ask about.
+                    offeringReminder = withCaps && reminderWorthOffering(context, activity, settings)
+                    runLength = run + listOf(offeringHome, offeringReminder).count { it }
+                },
+            )
+
+            FirstRun.HOME -> HomeOfferRoute(
+                onLeave = { offeringHome = false },
+                where = stepOf(run + 1, runLength),
+                last = !offeringReminder,
+                viewModel = offer,
+            )
+
+            FirstRun.REMINDER -> ReminderOfferRoute(
+                onLeave = { offeringReminder = false },
+                where = stepOf(runLength, runLength),
+            )
+        }
     }
-    if (offeringReminder) {
-        ReminderOfferRoute(onLeave = { offeringReminder = false })
-        return
-    }
-    MainPages()
 }
+
+/** The first run's three stages: its own pages, then the two it may end on. */
+private enum class FirstRun { STEPS, HOME, REMINDER }
+
+/** Where the run stands, as its own pages say it on their headings. */
+@Composable
+private fun stepOf(step: Int, of: Int): String = stringResource(OnboardingR.string.onboarding_progress, step, of)
 
 /**
  * The pages, from the caps screen. The transitions: a short slide with a fade, the 300 ms

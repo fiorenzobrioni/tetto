@@ -47,8 +47,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -127,7 +125,11 @@ private fun notificationsAllowed(context: Context): Boolean =
         PackageManager.PERMISSION_GRANTED
 
 @Composable
-fun ReminderOfferRoute(onLeave: () -> Unit, viewModel: ReminderOfferViewModel = hiltViewModel()) {
+fun ReminderOfferRoute(
+    onLeave: () -> Unit,
+    where: String? = null,
+    viewModel: ReminderOfferViewModel = hiltViewModel(),
+) {
     val time by viewModel.time.collectAsStateWithLifecycle()
     val context = LocalContext.current
     // Android's own question; whatever the answer, the first run is over. Refused, the reminder
@@ -148,16 +150,18 @@ fun ReminderOfferRoute(onLeave: () -> Unit, viewModel: ReminderOfferViewModel = 
             }
         },
         onLeave = onLeave,
+        where = where,
     )
 }
 
 /**
  * «A word in the evening», in the first run's frame (no icon of the app's, one sentence, one wide
  * button and the quiet way past under it): what the reminder says, drawn as an example of the
- * notification, and when; the button turns it on, at its time.
+ * notification, and when; the button turns it on, at its time. [where] is the run's step, said on
+ * the heading as the run's pages say it.
  */
 @Composable
-fun ReminderOfferPage(time: LocalTime, onRemind: () -> Unit, onLeave: () -> Unit) {
+fun ReminderOfferPage(time: LocalTime, onRemind: () -> Unit, onLeave: () -> Unit, where: String? = null) {
     val gutter = pageGutter()
     val clock = clockTime(time)
     BackHandler(onBack = onLeave)
@@ -180,7 +184,7 @@ fun ReminderOfferPage(time: LocalTime, onRemind: () -> Unit, onLeave: () -> Unit
                         text = stringResource(R.string.reminder_offer_title),
                         style = MaterialTheme.typography.headlineMedium,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.semantics { heading() },
+                        modifier = Modifier.firstRunHeading(where),
                     )
                     Spacer(Modifier.height(12.dp))
                     Text(

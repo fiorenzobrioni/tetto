@@ -11,7 +11,7 @@
     <string name="home_offer_body">A card shows what is left of each cap at a glance, and a touch on one opens the numpad over the home screen: two touches and the amount.</string>
     <string name="home_offer_add">Add the card</string>
     <string name="home_offer_added">On your home screen</string>
-    <string name="home_offer_later">Not now</string>
+    <string name="home_offer_later">Later</string>
     <string name="home_offer_done">Done</string>
     <!-- The lock (owner, 6 Nov 2026): what stands in Tetto's place until the phone's own lock says yes. -->
     <string name="lock_title">Tetto is locked</string>

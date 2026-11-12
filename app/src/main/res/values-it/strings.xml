@@ -7,7 +7,7 @@
     <string name="home_offer_body">Una scheda mostra con un colpo d’occhio quanto resta di ogni tetto, e toccandone uno si apre il tastierino sopra la schermata Home: due tocchi e l’importo.</string>
     <string name="home_offer_add">Aggiungi la scheda</string>
     <string name="home_offer_added">Sulla tua schermata Home</string>
-    <string name="home_offer_later">Non ora</string>
+    <string name="home_offer_later">Più tardi</string>
     <string name="home_offer_done">Fatto</string>
     <!-- Il blocco (owner, 6 Nov 2026): cosa sta al posto di Tetto finché il blocco del telefono non dice sì. -->
     <string name="lock_title">Tetto è bloccato</string>

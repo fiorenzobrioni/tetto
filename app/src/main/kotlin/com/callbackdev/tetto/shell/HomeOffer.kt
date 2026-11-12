@@ -36,6 +36,7 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -64,6 +65,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import java.time.LocalDate
 import javax.inject.Inject
+import com.callbackdev.tetto.feature.onboarding.R as OnboardingR
 
 /** What the first run's last page shows: the reader's new caps, as a card will draw them. */
 data class HomeOfferState(
@@ -104,7 +106,12 @@ constructor(
 }
 
 @Composable
-fun HomeOfferRoute(onLeave: () -> Unit, viewModel: HomeOfferViewModel = hiltViewModel()) {
+fun HomeOfferRoute(
+    onLeave: () -> Unit,
+    where: String? = null,
+    last: Boolean = true,
+    viewModel: HomeOfferViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var placed by remember { mutableStateOf(viewModel.placed()) }
     // The launcher's own dialog decides; back from it, the page reads the home screen again.
@@ -117,6 +124,8 @@ fun HomeOfferRoute(onLeave: () -> Unit, viewModel: HomeOfferViewModel = hiltView
         placed = placed,
         onPin = { viewModel.pin() },
         onLeave = onLeave,
+        where = where,
+        last = last,
     )
 }
 
@@ -124,10 +133,18 @@ fun HomeOfferRoute(onLeave: () -> Unit, viewModel: HomeOfferViewModel = hiltView
  * «Your caps on the home screen», in the first run's frame (no icon, one sentence, one wide button
  * and the quiet way past under it): the card as it will stand, drawn from the reader's own caps;
  * «Add the card» hands the request to the launcher, whose dialog places it. Once a card is there
- * the page says so, and the wide button leaves.
+ * the page says so, and the wide button moves on: «Done» on the run's last page, «Continue» when
+ * the reminder's page follows. [where] is the run's step, said on the heading as the run's pages say it.
  */
 @Composable
-fun HomeOfferPage(state: HomeOfferState?, placed: Boolean, onPin: () -> Unit, onLeave: () -> Unit) {
+fun HomeOfferPage(
+    state: HomeOfferState?,
+    placed: Boolean,
+    onPin: () -> Unit,
+    onLeave: () -> Unit,
+    where: String? = null,
+    last: Boolean = true,
+) {
     val gutter = pageGutter()
     BackHandler(onBack = onLeave)
     Surface(Modifier.fillMaxSize().testTag(HomeOfferTags.PAGE)) {
@@ -148,7 +165,7 @@ fun HomeOfferPage(state: HomeOfferState?, placed: Boolean, onPin: () -> Unit, on
                         text = stringResource(R.string.home_offer_title),
                         style = MaterialTheme.typography.headlineMedium,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.semantics { heading() },
+                        modifier = Modifier.firstRunHeading(where),
                     )
                     Spacer(Modifier.height(12.dp))
                     Text(
@@ -205,7 +222,13 @@ fun HomeOfferPage(state: HomeOfferState?, placed: Boolean, onPin: () -> Unit, on
                     onClick = if (placed) onLeave else onPin,
                     modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp).testTag(HomeOfferTags.PRIMARY),
                 ) {
-                    Text(stringResource(if (placed) R.string.home_offer_done else R.string.home_offer_add))
+                    Text(
+                        when {
+                            !placed -> stringResource(R.string.home_offer_add)
+                            last -> stringResource(R.string.home_offer_done)
+                            else -> stringResource(OnboardingR.string.onboarding_next)
+                        },
+                    )
                 }
                 if (!placed) {
                     TextButton(
@@ -218,6 +241,12 @@ fun HomeOfferPage(state: HomeOfferState?, placed: Boolean, onPin: () -> Unit, on
             }
         }
     }
+}
+
+/** A first run's page heading, with where the run stands when it is known. */
+internal fun Modifier.firstRunHeading(where: String?): Modifier = semantics {
+    heading()
+    if (where != null) stateDescription = where
 }
 
 /** Tags for the tests. */
