@@ -75,6 +75,53 @@ class WidgetGalleryTest {
         board.draw().saveTo(out, "widget-words-no-sentence")
     }
 
+    /**
+     * «The other caps» (owner, 14 Nov 2026): every tall size, the card without them over the card
+     * with them, so the ring is seen to keep its size; then the row's own cases.
+     */
+    @Test
+    fun `in words, with the other caps`() {
+        val others = WidgetLook(showOthers = true)
+        val board = HomeBoard(context, widthDp = 380)
+        listOf(
+            Grants.TwoByTwo,
+            Grants.OwnersTwoByTwo,
+            Grants.ThreeByTwo,
+            Grants.FourByTwo,
+            Grants.TwoByThree,
+            Grants.ThreeByThree,
+            Grants.FourByThree,
+        ).forEach { size ->
+            board.row(size to renderCard(context, size) { WordsCardContent(sample(words = true)) })
+            board.row(size to renderCard(context, size) { WordsCardContent(sample(words = true, look = others)) })
+        }
+        board.draw().saveTo(out, "widget-words-others")
+    }
+
+    @Test
+    fun `in words, the other caps' cases`() {
+        val board = HomeBoard(context, widthDp = 380)
+        listOf(
+            // Over, on the closest: the card's own cap is the one over, never in the row too.
+            WidgetLook(showOthers = true),
+            // Two chosen, so the row stands in the first slots of four.
+            WidgetLook(showOthers = true, wordsCap = 1L, otherCaps = setOf(2L, 4L)),
+            // Without the sentence: the ring is the card's with it, the row takes the room.
+            WidgetLook(showOthers = true, wordsCap = 1L, showSentence = false),
+            // Hidden: the row says where each cap is, never a figure.
+            WidgetLook(showOthers = true, wordsCap = 1L, hideAmounts = true),
+            WidgetLook(showOthers = true, wordsCap = 1L, ground = WidgetGround.DARK),
+        ).forEach { look ->
+            board.row(
+                Grants.FourByTwo to renderCard(context, Grants.FourByTwo) {
+                    WordsCardContent(sample(look = look))
+                },
+            )
+            board.row(Grants.TwoByTwo to renderCard(context, Grants.TwoByTwo) { WordsCardContent(sample(look = look)) })
+        }
+        board.draw().saveTo(out, "widget-words-others-cases")
+    }
+
     /** The three states a cap's ring and bar say: at ease, ahead of the days, over (in words too). */
     @Test
     fun `in words, at ease, ahead and over`() {
@@ -185,6 +232,13 @@ class WidgetGalleryTest {
             board.row(size to renderCard(context, size) { WordsCardContent(sample(words = true)) })
             board.row(size to renderCard(context, size) { GlanceCardContent(sample()) })
         }
+        listOf(Grants.TwoByTwo, Grants.FourByTwo, Grants.FourByThree).forEach { size ->
+            board.row(
+                size to renderCard(context, size) {
+                    WordsCardContent(sample(words = true, look = WidgetLook(showOthers = true)))
+                },
+            )
+        }
         board.draw().saveTo(out, "widget-italian")
     }
 
@@ -195,6 +249,13 @@ class WidgetGalleryTest {
         listOf(Grants.TwoByOne, Grants.FourByOne, Grants.TwoByTwo, Grants.FourByTwo).forEach { size ->
             board.row(size to renderCard(context, size) { WordsCardContent(sample(words = true)) })
             board.row(size to renderCard(context, size) { GlanceCardContent(sample()) })
+        }
+        listOf(Grants.TwoByTwo, Grants.FourByTwo, Grants.FourByThree).forEach { size ->
+            board.row(
+                size to renderCard(context, size) {
+                    WordsCardContent(sample(words = true, look = WidgetLook(showOthers = true)))
+                },
+            )
         }
         board.draw().saveTo(out, "widget-large-text")
     }

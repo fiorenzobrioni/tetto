@@ -32,6 +32,20 @@ object WidgetCaps {
         states.firstOrNull { it.over }?.let { return it }
         return states.minWithOrNull(compareBy { Share(it.left.minor, (it.amount + it.cap.reserve).minor) })
     }
+
+    /**
+     * «In words»'s other caps (owner, 14 Nov 2026), the row under its own [shown] cap: none unless
+     * the reader turned them on ([show]); else the caps they [chosen], in the reader's order, or
+     * every one when they chose none (null), and again when every one they chose has been deleted
+     * since, as «At a glance» does. Never the card's own cap, which a card on the closest changes
+     * day by day, and never an ended one-off: a card says what is left now.
+     */
+    fun others(all: List<CapState>, shown: CapState?, show: Boolean, chosen: Set<Long>?): List<CapState> {
+        if (!show) return emptyList()
+        val states = all.filterNot { it.ended }
+        val alive = chosen?.filter { id -> states.any { it.cap.id == id } }?.toSet()?.takeIf { it.isNotEmpty() }
+        return states.filter { it.cap.id != shown?.cap?.id && (alive == null || it.cap.id in alive) }
+    }
 }
 
 /**

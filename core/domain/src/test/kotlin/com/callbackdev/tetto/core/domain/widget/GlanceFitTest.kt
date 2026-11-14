@@ -232,6 +232,116 @@ class GlanceFitTest {
         assertThat(widthOf(7f, plan.heroSp, 1f)).isAtMost(159f - GlanceFit.CARD_PADDING * 2)
     }
 
+    // --- «In words» with the other caps (owner, 14 Nov 2026) ----------------------------------------
+
+    @Test
+    fun `with the other caps the ring keeps the family's circle at every tall grant`() {
+        listOf(159f to 189f, 188f to 218f, 250f to 189f, 340f to 189f, 159f to 293f, 250f to 293f, 340f to 293f)
+            .forEach { (width, height) ->
+                val plan = GlanceFit.wordsPlan(others(width, height))
+                assertThat(plan.others).isNotNull()
+                assertThat(plan.circle).isEqualTo(circle(width, height))
+            }
+    }
+
+    @Test
+    fun `without the sentence, the row takes the room it leaves, not the ring`() {
+        val plan = GlanceFit.wordsPlan(others(340f, 189f, sentence = false))
+        assertThat(plan.circle).isEqualTo(73.75f)
+        assertThat(plan.sentence).isEqualTo(-1)
+    }
+
+    @Test
+    fun `the words go under the ring where it leaves them the room, beside it where not`() {
+        assertThat(GlanceFit.wordsPlan(others(340f, 189f)).layout).isEqualTo(WordsLayout.BESIDE)
+        assertThat(GlanceFit.wordsPlan(others(250f, 189f)).layout).isEqualTo(WordsLayout.BESIDE)
+        assertThat(GlanceFit.wordsPlan(others(159f, 189f)).layout).isEqualTo(WordsLayout.UNDER)
+        assertThat(GlanceFit.wordsPlan(others(250f, 293f)).layout).isEqualTo(WordsLayout.UNDER)
+        assertThat(GlanceFit.wordsPlan(others(340f, 293f)).layout).isEqualTo(WordsLayout.UNDER)
+        // Beside the ring, the name is in the last words, and the hero is never under its floor.
+        val beside = GlanceFit.wordsPlan(others(340f, 189f))
+        assertThat(beside.nameBeside).isFalse()
+        assertThat(beside.heroSp).isAtLeast(GlanceFit.BESIDE_HERO_MIN)
+        assertThat(beside.detail).isAtLeast(0)
+    }
+
+    @Test
+    fun `the row holds as many slots as the width, the last counting the rest`() {
+        val two = row(others(159f, 189f, count = 4))
+        assertThat(listOf(two.slots, two.shown, two.more)).containsExactly(2, 1, 3).inOrder()
+        val four = row(others(340f, 189f, count = 4))
+        assertThat(listOf(four.slots, four.shown, four.more)).containsExactly(4, 4, 0).inOrder()
+        val few = row(others(340f, 189f, count = 1))
+        assertThat(listOf(few.slots, few.shown, few.more)).containsExactly(4, 1, 0).inOrder()
+        val many = row(others(900f, 189f, count = 40))
+        assertThat(many.shown + if (many.more > 0) 1 else 0).isAtMost(GlanceFit.GROUP_MAX)
+    }
+
+    @Test
+    fun `the card keeps its last day before the row keeps its names`() {
+        // Two by two: under the ring, the hero and a line of the day only without the names' line.
+        val plan = GlanceFit.wordsPlan(others(159f, 189f, detailLines = listOf(Int.MAX_VALUE, 2, 1)))
+        assertThat(plan.detail).isEqualTo(2)
+        assertThat(plan.others?.names).isFalse()
+        // Four by two keeps both.
+        val wide = GlanceFit.wordsPlan(others(340f, 189f))
+        assertThat(wide.others?.names).isTrue()
+        assertThat(wide.detail).isAtLeast(0)
+    }
+
+    @Test
+    fun `a day that would be cut is not drawn, and does not count as one`() {
+        val plan = GlanceFit.wordsPlan(others(159f, 189f, detailLines = listOf(Int.MAX_VALUE, Int.MAX_VALUE, 3)))
+        assertThat(plan.detail).isEqualTo(-1)
+        assertThat(plan.nameBeside).isTrue()
+    }
+
+    @Test
+    fun `the words, the gap and the row fill the card's height and never more`() {
+        listOf(1f, 1.15f, 1.3f).forEach { scale ->
+            listOf(159f, 188f, 250f, 340f).forEach { width ->
+                listOf(189f, 218f, 293f, 397f).forEach { height ->
+                    listOf(true, false).forEach { sentence ->
+                        val plan = GlanceFit.wordsPlan(others(width, height, scale = scale, sentence = sentence))
+                        val row = plan.others ?: return@forEach
+                        val inner = height - GlanceFit.CARD_PADDING * 2
+                        assertThat(plan.zone + GlanceFit.OTHERS_GAP + row.height).isWithin(0.01f).of(inner)
+                        assertThat(plan.circle).isAtMost(plan.zone)
+                        val body = GlanceFit.bandLine(WidgetType.BODY, scale)
+                        val words = GlanceFit.bandLine(plan.heroSp, scale) + body * plan.detailLines +
+                            body * plan.sentenceLines
+                        when (plan.layout) {
+                            WordsLayout.UNDER -> assertThat(words + plan.circle).isAtMost(plan.zone + 0.01f)
+                            WordsLayout.BESIDE -> assertThat(words).isAtMost(plan.zone + 0.01f)
+                            WordsLayout.ALONE -> error("a row with no layout")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `a slot without its name keeps its icon, its figure yielding beside it`() {
+        val sp = GlanceFit.figureKeepingIcon(60f, 2.9f, 1f, GlanceFit.SLOT_FIGURE_SP, GlanceFit.SLOT_ICON)
+        assertThat(sp).isLessThan(GlanceFit.SLOT_FIGURE_MIN_SP)
+        assertThat(widthOf(2.9f, sp, 1f)).isAtMost(60f - GlanceFit.SLOT_ICON - GlanceFit.ICON_GAP)
+        assertThat(GlanceFit.figureKeepingIcon(80f, 2f, 1f, GlanceFit.SLOT_FIGURE_SP, GlanceFit.SLOT_ICON))
+            .isEqualTo(GlanceFit.SLOT_FIGURE_SP)
+    }
+
+    @Test
+    fun `where nothing stands with the row, the card is its cap's alone`() {
+        val plan = GlanceFit.wordsPlan(others(159f, 150f, scale = 1.3f))
+        assertThat(plan.others).isNull()
+        assertThat(plan.layout).isEqualTo(WordsLayout.ALONE)
+        // One slot wide, the row would only count them.
+        assertThat(GlanceFit.wordsPlan(others(140f, 293f, count = 3)).others).isNull()
+        assertThat(GlanceFit.wordsPlan(others(140f, 293f, count = 1)).others).isNotNull()
+        // And none asked for, none drawn.
+        assertThat(GlanceFit.wordsPlan(words(340f, 189f)).others).isNull()
+    }
+
     // --- «At a glance» -----------------------------------------------------------------------------
 
     @Test
@@ -347,5 +457,23 @@ class GlanceFitTest {
         paceTwoLineEms = listOf(3.2f, 2.4f),
         sentenceLines = sentenceLines,
         detailLines = detailLines,
+    )
+
+    private fun row(spec: WordsSpec): OthersPlan = checkNotNull(GlanceFit.wordsPlan(spec).others)
+
+    /** A tall card with [count] other caps, its words measured beside the ring as wide as it is. */
+    private fun others(
+        width: Float,
+        height: Float,
+        count: Int = 4,
+        scale: Float = 1f,
+        sentence: Boolean = true,
+        detailLines: List<Int> = listOf(1, 2, 1),
+    ) = words(width, height, scale = scale, sentence = sentence, detailLines = detailLines).copy(
+        others = count,
+        othersDetailLines = detailLines,
+        besideWidth = GlanceFit.othersBeside(width, height, scale),
+        besideDetailLines = listOf(1, 2, 1),
+        besideSentenceLines = listOf(2, 1),
     )
 }

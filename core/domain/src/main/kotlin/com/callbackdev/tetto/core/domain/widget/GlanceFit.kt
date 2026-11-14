@@ -21,6 +21,16 @@ import kotlin.math.floor
 enum class WordsForm { CELL, ROW, TALL }
 
 /**
+ * How a tall «In words» sets its words (PLANNING.md §7). [ALONE]: the card is its cap's alone.
+ * With the other caps in a row at its foot (owner, 14 Nov 2026), the ring keeps the family's
+ * circle in the top trailing corner and the words take what the row leaves them: [UNDER], the
+ * tall card's own arrangement in that room (the name beside the ring, the words under it); or
+ * [BESIDE], where under the ring is too low for the hero: the words in a column beside the ring,
+ * the name in their last words.
+ */
+enum class WordsLayout { ALONE, UNDER, BESIDE }
+
+/**
  * What «In words» is asked to hold, measured by the caller in the launcher's face.
  *
  * @property sentence the reader's «The sentence» switch: off, a tall card says the amount and its
@@ -43,6 +53,15 @@ enum class WordsForm { CELL, ROW, TALL }
  *   its separator ("of €20" over "until Sunday"), the day alone ("until Sunday"); with the name
  *   nowhere else ([GlanceFit.tallNameBeside] false), the name in the cap's place. A form that cannot
  *   take its lines (the one-line form over two, a broken form's line over two) is [Int.MAX_VALUE].
+ * @property others how many other caps the row at a tall card's foot is asked to hold (owner,
+ *   14 Nov 2026); none, the card is its cap's alone.
+ * @property othersDetailLines with [others], the last words' forms as [detailLines] counts them,
+ *   the name in them where [GlanceFit.othersNameBeside] is false.
+ * @property besideWidth with [others], the width of the column beside the ring
+ *   ([GlanceFit.othersBeside]), where [besideDetailLines] and [besideSentenceLines] were measured.
+ * @property besideDetailLines the last words with the name in them ("Coffee · until Sunday"),
+ *   measured across [besideWidth], as [detailLines] counts them.
+ * @property besideSentenceLines the sentence's forms across [besideWidth], as [sentenceLines].
  */
 data class WordsSpec(
     val width: Float,
@@ -58,6 +77,11 @@ data class WordsSpec(
     val paceTwoLineEms: List<Float> = paceEms,
     val sentenceLines: List<Int> = emptyList(),
     val detailLines: List<Int> = listOf(1),
+    val others: Int = 0,
+    val othersDetailLines: List<Int> = detailLines,
+    val besideWidth: Float = 0f,
+    val besideDetailLines: List<Int> = emptyList(),
+    val besideSentenceLines: List<Int> = emptyList(),
 )
 
 /**
@@ -68,7 +92,11 @@ data class WordsSpec(
  * circle over at most [nameLines] lines, or, [nameBeside] false, in the detail line with the cap's
  * last day; which sentence ([sentence] into [WordsSpec.sentenceLines], -1: none) over
  * [sentenceLines] lines; and which form of the last words ([detail] into [WordsSpec.detailLines],
- * -1: none) over [detailLines] lines.
+ * -1: none) over [detailLines] lines. With the other caps ([others] not null), the [layout] the
+ * words take in the [zone] the row leaves over it ([detail] then into [WordsSpec.othersDetailLines]
+ * under the ring, into [WordsSpec.besideDetailLines] beside it, as [sentence] into
+ * [WordsSpec.besideSentenceLines]), and the height of the words' column beside the ring
+ * ([besideHeight]).
  */
 data class WordsPlan(
     val form: WordsForm,
@@ -92,7 +120,19 @@ data class WordsPlan(
     val sentenceLines: Int = 0,
     val detail: Int = 0,
     val detailLines: Int = 1,
+    val layout: WordsLayout = WordsLayout.ALONE,
+    val zone: Float = 0f,
+    val besideHeight: Float = 0f,
+    val others: OthersPlan? = null,
 )
+
+/**
+ * The row of other caps at a tall «In words»'s foot (owner, 14 Nov 2026): [slots] of one width
+ * across the card, whatever the caps (so one cap stands where the first of four would), of which
+ * [shown] are caps and the last says [more] when they do not all fit; each its icon and figure,
+ * its name where [names], and its bar; [height] tall, [GlanceFit.OTHERS_GAP] under the words.
+ */
+data class OthersPlan(val slots: Int, val shown: Int, val more: Int, val names: Boolean, val height: Float)
 
 /** The three forms of «At a glance» (PLANNING.md §7). */
 enum class GlanceForm { CELL, ROW, GRID }
@@ -232,7 +272,7 @@ object GlanceFit {
     fun wordsPlan(spec: WordsSpec): WordsPlan = when (wordsForm(spec.width, spec.height)) {
         WordsForm.CELL -> wordsCell(spec)
         WordsForm.ROW -> wordsRow(spec)
-        WordsForm.TALL -> wordsTall(spec)
+        WordsForm.TALL -> spec.others.takeIf { it > 0 }?.let { wordsWithOthers(spec) } ?: wordsTall(spec)
     }
 
     /**
@@ -424,6 +464,198 @@ object GlanceFit {
         )
     }
 
+    // --- «In words» with the other caps (owner, 14 Nov 2026) --------------------------------------
+
+    /**
+     * The ring of a tall card with the other caps at its foot: the family's circle for the card's
+     * size, as the card has it with its sentence, so it stands as the sisters' rings of that size
+     * do and as the card's own does without the row (owner: "the ring keeps its size"). The room a
+     * hidden sentence leaves goes to the row, not to the ring.
+     */
+    fun othersCircle(width: Float, height: Float, fontScale: Float): Float =
+        tallCircle(width, height, fontScale, sentence = true)
+
+    /** The width of the column beside that ring: the card's inner width less the ring and its gap. */
+    fun othersBeside(width: Float, height: Float, fontScale: Float): Float =
+        width - CARD_PADDING * 2 - othersCircle(width, height, fontScale) - CIRCLE_GAP
+
+    /** Whether the name stands beside the ring when the words are under it ([WordsLayout.UNDER]). */
+    fun othersNameBeside(width: Float, height: Float, fontScale: Float): Boolean =
+        othersBeside(width, height, fontScale) >= NAME_BESIDE_MIN
+
+    /**
+     * The row's slots: as many as the card's inner width holds at [SLOT_MIN] each, [GROUP_MAX] at
+     * most (a Glance container drops its eleventh child, and a slot is two): two on two cells,
+     * three on three, four on four, as «At a glance»'s row.
+     */
+    fun othersSlots(width: Float): Int =
+        floor((width - CARD_PADDING * 2 + SLOT_GAP) / (SLOT_MIN + SLOT_GAP)).toInt().coerceIn(1, GROUP_MAX)
+
+    /**
+     * A slot's height: its icon and figure, its name where [names], its bar with the mark for
+     * today overhanging it.
+     */
+    fun slotHeight(names: Boolean, fontScale: Float): Float = maxOf(lineHeight(SLOT_FIGURE_SP, fontScale), SLOT_ICON) +
+        (if (names) lineHeight(SLOT_NAME_SP, fontScale) else 0f) +
+        BAR_GAP + BAR_HEIGHT + MARK_OVERHANG * 2
+
+    /**
+     * A tall card with the other caps (owner, 14 Nov 2026): the row at the foot, the ring the
+     * family's ([othersCircle]) in the top trailing corner of the room left over the row, and the
+     * words in the fullest layout that room has:
+     *
+     * 1. [WordsLayout.UNDER] at ease: the hero at its size and its last words under the ring, the
+     *    name beside it, the sentence where it fits: the tall card as it is, the row under it.
+     * 2. [WordsLayout.BESIDE]: under the ring too low for that, a column beside the ring as tall as
+     *    the room: the hero, as large as the column holds and never under [BESIDE_HERO_MIN], over
+     *    the name and its last day ("Coffee · until Sunday"), and the sentence where it fits.
+     * 3. [WordsLayout.UNDER], the hero a size smaller to fit under the ring, never under
+     *    [UNDER_HERO_MIN], its last words where a line is left: a narrow card, where the column
+     *    beside the ring is too narrow for a hero.
+     *
+     * The row keeps its names where one of these stands with them and with the card's last words
+     * (its day: "until when" is half of what a cap says), else it goes without them, as «At a
+     * glance»'s row does where its height is short; the day goes only where neither keeps it.
+     * Where none stands at all, or the row would hold only the count (one slot wide), the card is
+     * its cap's alone, as it would be without the row. The
+     * ring never yields to the row: the row takes the words' room, never the ring's.
+     */
+    private fun wordsWithOthers(spec: WordsSpec): WordsPlan? {
+        val scale = spec.fontScale
+        val inner = spec.height - CARD_PADDING * 2
+        val circle = othersCircle(spec.width, spec.height, scale)
+        val slots = othersSlots(spec.width)
+        val shown = if (spec.others > slots) slots - 1 else spec.others
+        // A row that would only count the caps opens nothing a touch on the card does not.
+        if (shown == 0) return null
+        // The card's own last day before the row's names: "until when" is half of what a cap says.
+        for (day in listOf(true, false)) {
+            for (names in listOf(true, false)) {
+                val row = slotHeight(names, scale)
+                val zone = inner - row - OTHERS_GAP
+                if (zone < circle) continue
+                val plan = (
+                    othersUnder(spec, circle, zone, ease = true)
+                        ?: othersBeside(spec, circle, zone)
+                        ?: othersUnder(spec, circle, zone, ease = false)
+                    )?.takeIf { !day || it.detail >= 0 } ?: continue
+                return plan.copy(zone = zone, others = OthersPlan(slots, shown, spec.others - shown, names, row))
+            }
+        }
+        return null
+    }
+
+    /**
+     * The words under the ring, the name beside it. At [ease], the hero at its size (smaller only
+     * where the width cannot hold it) and a line of last words under the ring, or nothing; else the
+     * hero steps down for the room, to [UNDER_HERO_MIN] at the least, a line of last words kept
+     * where the hero can give it the room, and the name beside the ring required, so the cap is
+     * named. The last words are whole or not drawn.
+     */
+    private fun othersUnder(spec: WordsSpec, circle: Float, zone: Float, ease: Boolean): WordsPlan? {
+        val scale = spec.fontScale
+        val innerWidth = spec.width - CARD_PADDING * 2
+        val room = zone - circle
+        val bodyLine = bandLine(WidgetType.BODY, scale)
+        val widest = quarterPoint(minOf(WidgetType.HERO, spThatFits(innerWidth, spec.heroEm, scale)))
+        val nameBeside = othersNameBeside(spec.width, spec.height, scale)
+        val heroSp = when {
+            ease -> widest.takeIf { bandLine(it, scale) + bodyLine <= room } ?: return null
+
+            !nameBeside -> return null
+
+            // A line of last words under the hero where the hero can step down for it.
+            bandLine(UNDER_HERO_MIN, scale) + bodyLine <= room ->
+                minOf(widest, quarterPoint((room - bodyLine) / (LINE_BOX_EM * scale)))
+
+            else -> minOf(widest, quarterPoint(room / (LINE_BOX_EM * scale)))
+        }
+        if (heroSp < UNDER_HERO_MIN && !ease) return null
+        var left = room - bandLine(heroSp, scale)
+        val allowed = floor(left / bodyLine).toInt().coerceIn(0, DETAIL_MAX_LINES)
+        // Whole or not at all: a day cut off reads as no day, and the row gives its names for it.
+        val detail = if (allowed > 0) spec.othersDetailLines.indexOfFirst { it <= allowed } else -1
+        val detailLines = if (detail >= 0) spec.othersDetailLines[detail] else 0
+        // Without the name beside the ring, the last words carry it: none, and the cap is unnamed.
+        if (!nameBeside && detail < 0) return null
+        left -= bodyLine * detailLines
+        val beside = spec.width - CARD_PADDING * 2 - circle - CIRCLE_GAP
+        val nameSp = NAME_SIZES.firstOrNull { widthOf(spec.nameWordEm, it, scale) <= beside } ?: NAME_SIZES.last()
+        val nameLines = if (nameBeside) {
+            floor(circle / lineHeight(nameSp, scale)).toInt().coerceIn(1, NAME_MAX_LINES)
+        } else {
+            0
+        }
+        val sentence = sentenceIn(spec, spec.sentenceLines, left)
+        return WordsPlan(
+            form = WordsForm.TALL,
+            circle = circle,
+            snug = false,
+            sidePadding = CARD_PADDING,
+            heroSp = heroSp,
+            nameBeside = nameBeside,
+            nameSp = nameSp,
+            nameLines = nameLines,
+            sentence = sentence,
+            sentenceLines = if (sentence >= 0) spec.sentenceLines[sentence] else 0,
+            detail = detail,
+            detailLines = detailLines,
+            layout = WordsLayout.UNDER,
+        )
+    }
+
+    /**
+     * The words in a column beside the ring, as tall as the room over the row: the hero as large as
+     * the column holds with a line under it, never under [BESIDE_HERO_MIN]; the name and its last day; the sentence
+     * where it fits. Centred on the ring where the column is the shorter.
+     */
+    private fun othersBeside(spec: WordsSpec, circle: Float, zone: Float): WordsPlan? {
+        val scale = spec.fontScale
+        if (spec.besideWidth <= 0f || spec.besideDetailLines.isEmpty()) return null
+        val bodyLine = bandLine(WidgetType.BODY, scale)
+        // As large as the column's width holds, and its height with a line of last words under it.
+        val heroSp = quarterPoint(
+            minOf(
+                WidgetType.HERO,
+                spThatFits(spec.besideWidth, spec.heroEm, scale),
+                (zone - bodyLine) / (LINE_BOX_EM * scale),
+            ),
+        )
+        val heroLine = bandLine(heroSp, scale)
+        if (heroSp < BESIDE_HERO_MIN || heroLine + bodyLine > zone) return null
+        var left = zone - heroLine
+        val allowed = floor(left / bodyLine).toInt().coerceIn(1, DETAIL_MAX_LINES)
+        val detail = spec.besideDetailLines.indexOfFirst { it <= allowed }.takeIf { it >= 0 } ?: return null
+        val detailLines = spec.besideDetailLines[detail]
+        left -= bodyLine * detailLines
+        val sentence = sentenceIn(spec, spec.besideSentenceLines, left)
+        val sentenceLines = if (sentence >= 0) spec.besideSentenceLines[sentence] else 0
+        return WordsPlan(
+            form = WordsForm.TALL,
+            circle = circle,
+            snug = false,
+            sidePadding = CARD_PADDING,
+            heroSp = heroSp,
+            nameBeside = false,
+            sentence = sentence,
+            sentenceLines = sentenceLines,
+            detail = detail,
+            detailLines = detailLines,
+            layout = WordsLayout.BESIDE,
+            besideHeight = heroLine + bodyLine * (detailLines + sentenceLines),
+        )
+    }
+
+    /**
+     * The fullest sentence that is whole in [left], up to two lines under [WIDE_BAND_MIN_WIDTH],
+     * one from it; -1 where the reader hides it or none fits.
+     */
+    private fun sentenceIn(spec: WordsSpec, lines: List<Int>, left: Float): Int {
+        if (!spec.sentence) return -1
+        val maxLines = if (spec.width < WIDE_BAND_MIN_WIDTH) SENTENCE_MAX_LINES else 1
+        return lines.indexOfFirst { it in 1..maxLines && bandLine(SENTENCE_SP, spec.fontScale) * it <= left }
+    }
+
     /**
      * Whether a tall card's name stands beside its circle: where the circle the card's size gives
      * leaves [NAME_BESIDE_MIN] beside it. The caller asks it before measuring the last words, which
@@ -477,6 +709,13 @@ object GlanceFit {
     const val NAME_BESIDE_MIN = 56f
     const val NAME_MAX_LINES = 3
     private val NAME_SIZES = listOf(WidgetType.BODY, 14f, WidgetType.LABEL)
+
+    /** The air between a tall card's words and the row of other caps at its foot. */
+    const val OTHERS_GAP = 12f
+
+    /** The smallest hero beside the ring, and under it where it steps down for the room. */
+    const val BESIDE_HERO_MIN = ROW_FIGURE_SP
+    const val UNDER_HERO_MIN = WidgetType.TITLE
 
     // --- «At a glance» ----------------------------------------------------------------------------
 
@@ -599,6 +838,14 @@ object GlanceFit {
         if (sp >= SLOT_FIGURE_MIN_SP) return sp to true
         return minOf(preferred, quarterPoint(spThatFits(width, em, fontScale))) to false
     }
+
+    /**
+     * A slot's figure beside an icon that must stay (a slot without its name, where the icon is
+     * all that says which cap it is): the [preferred] size where it fits [width] beside the icon,
+     * else as large as fits there, whatever the floor.
+     */
+    fun figureKeepingIcon(width: Float, em: Float, fontScale: Float, preferred: Float, icon: Float): Float =
+        minOf(preferred, quarterPoint(spThatFits(width - icon - ICON_GAP, em, fontScale)))
 
     const val ICON_GAP = 6f
     const val SLOT_FIGURE_MIN_SP = 12f

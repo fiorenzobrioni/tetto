@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -126,6 +128,37 @@ class WidgetConfigScreenTest {
         compose.onNodeWithTag(WidgetConfigTags.DONE).performClick()
         assertThat(done).isTrue()
         compose.writeScreenshot("widget-config-words")
+    }
+
+    @Test
+    fun `in words, the other caps are every one or those ticked, never the card's own`() {
+        look = WidgetLook(wordsCap = 1L)
+        show(WidgetKind.WORDS)
+        scrollTo(WidgetConfigTags.OTHERS)
+        compose.onNodeWithTag(WidgetConfigTags.OTHERS).performClick()
+        assertThat(look.showOthers).isTrue()
+        scrollTo(WidgetConfigTags.ALL_OTHERS)
+        compose.onNodeWithTag(WidgetConfigTags.ALL_OTHERS).performClick()
+        // The card's own cap is not among the others it could tick.
+        assertThat(look.otherCaps).containsExactly(2L, 3L, 4L, 5L)
+        compose.onNodeWithTag(WidgetConfigTags.other(1)).assertDoesNotExist()
+        scrollTo(WidgetConfigTags.other(4))
+        compose.onNodeWithTag(WidgetConfigTags.other(4)).performClick()
+        assertThat(look.otherCaps).containsExactly(2L, 3L, 5L)
+        compose.assertAccessible()
+        compose.writeScreenshot("widget-config-words-others")
+    }
+
+    @Test
+    fun `turning the other caps on shows them on a card two rows high`() {
+        show(WidgetKind.WORDS)
+        compose.onNodeWithTag(WidgetConfigTags.LIST).performScrollToNode(hasTestTag(WidgetConfigTags.OTHERS))
+        compose.onNodeWithTag(WidgetConfigTags.OTHERS).performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag(WidgetConfigTags.SIZES).performScrollToNode(hasText("4×2"))
+        compose.onNodeWithText("4×2").assertIsSelected()
+        compose.onNodeWithTag(WidgetConfigTags.LIST).performScrollToNode(hasTestTag(WidgetConfigTags.SIZES))
+        compose.writeScreenshot("widget-config-words-others-preview")
     }
 
     @Test

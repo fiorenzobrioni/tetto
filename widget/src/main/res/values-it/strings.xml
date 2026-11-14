@@ -106,7 +106,11 @@
     <string name="widget_config_closest">Il più vicino al suo tetto</string>
     <string name="widget_config_closest_note">Quello a cui oggi resta meno per il suo tetto, o il primo che è sotto.</string>
     <string name="widget_config_sentence">La frase</string>
-    <string name="widget_config_sentence_note">Sotto quanto resta, su una scheda alta due righe o più: circa quanto al giorno, o le spese in anticipo sui giorni. Spenta, la scheda dice quanto resta e fino a quando, e l’anello prende lo spazio.</string>
+    <string name="widget_config_sentence_note">Sotto quanto resta, su una scheda alta due righe o più: circa quanto al giorno, o le spese in anticipo sui giorni. Spenta, la scheda dice quanto resta e fino a quando, e l’anello prende lo spazio, se non lo occupano gli altri tetti.</string>
+    <string name="widget_config_others">Gli altri tetti</string>
+    <string name="widget_config_others_note">Sotto il tetto, su una scheda alta due righe o più: una riga con gli altri tuoi tetti, ciascuno con quanto resta. Toccandone uno aggiungi una spesa, e l’anello mantiene la sua misura.</string>
+    <string name="widget_config_all_others">Tutti gli altri tetti</string>
+    <string name="widget_config_all_others_note">Nel tuo ordine, quanti ne contiene la riga; gli altri contati.</string>
     <string name="widget_config_no_caps">Ancora nessun tetto: la scheda li mostrerà appena ne crei uno.</string>
     <string name="widget_config_reset">Ripristina questa scheda</string>
     <string name="widget_config_done">Fatto</string>

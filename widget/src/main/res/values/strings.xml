@@ -116,7 +116,11 @@
     <string name="widget_config_closest">The closest to its cap</string>
     <string name="widget_config_closest_note">Whichever has the least left for its cap today, or the first one over.</string>
     <string name="widget_config_sentence">The sentence</string>
-    <string name="widget_config_sentence_note">Under what is left, on a card two rows high or more: about how much a day, or spending ahead of the days. Off, the card says what is left and until when, and the ring takes the room.</string>
+    <string name="widget_config_sentence_note">Under what is left, on a card two rows high or more: about how much a day, or spending ahead of the days. Off, the card says what is left and until when, and the ring takes the room, unless the other caps have it.</string>
+    <string name="widget_config_others">The other caps</string>
+    <string name="widget_config_others_note">Under the cap, on a card two rows high or more: a row of your other caps, each with what is left. A touch on one adds a spend to it, and the ring keeps its size.</string>
+    <string name="widget_config_all_others">Every other cap</string>
+    <string name="widget_config_all_others_note">In your order, as many as the row holds; the rest counted.</string>
     <string name="widget_config_no_caps">No caps yet: the card will show them as soon as you make one.</string>
     <string name="widget_config_reset">Reset this card</string>
     <string name="widget_config_done">Done</string>

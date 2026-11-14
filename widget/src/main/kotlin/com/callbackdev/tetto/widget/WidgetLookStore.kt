@@ -47,6 +47,8 @@ class WidgetLookStore internal constructor(private val dataStore: DataStore<Pref
             glanceCaps = prefs[glanceCapsKey(appWidgetId)]?.let(::decodeIds),
             wordsCap = prefs[wordsCapKey(appWidgetId)],
             showSentence = prefs[sentenceKey(appWidgetId)] ?: default.showSentence,
+            showOthers = prefs[othersKey(appWidgetId)] ?: default.showOthers,
+            otherCaps = prefs[otherCapsKey(appWidgetId)]?.let(::decodeIds),
             hideAmounts = prefs[hiddenKey(appWidgetId)] ?: default.hideAmounts,
         )
     }
@@ -68,6 +70,15 @@ class WidgetLookStore internal constructor(private val dataStore: DataStore<Pref
             val cap = look.wordsCap
             if (cap == null) prefs.remove(wordsCapKey(appWidgetId)) else prefs[wordsCapKey(appWidgetId)] = cap
             prefs[sentenceKey(appWidgetId)] = look.showSentence
+            prefs[othersKey(appWidgetId)] = look.showOthers
+            val others = look.otherCaps
+            if (others ==
+                null
+            ) {
+                prefs.remove(otherCapsKey(appWidgetId))
+            } else {
+                prefs[otherCapsKey(appWidgetId)] = encodeIds(others)
+            }
             prefs[hiddenKey(appWidgetId)] = look.hideAmounts
         }
     }
@@ -83,6 +94,8 @@ class WidgetLookStore internal constructor(private val dataStore: DataStore<Pref
                     glanceCapsKey(id),
                     wordsCapKey(id),
                     sentenceKey(id),
+                    othersKey(id),
+                    otherCapsKey(id),
                     hiddenKey(id),
                 ).forEach { prefs.remove(it) }
             }
@@ -96,6 +109,8 @@ class WidgetLookStore internal constructor(private val dataStore: DataStore<Pref
     private fun wordsCapKey(id: Int) = longPreferencesKey("words_cap_$id")
     private fun sentenceKey(id: Int) = booleanPreferencesKey("sentence_$id")
     private fun hiddenKey(id: Int) = booleanPreferencesKey("hide_amounts_$id")
+    private fun othersKey(id: Int) = booleanPreferencesKey("words_others_$id")
+    private fun otherCapsKey(id: Int) = stringPreferencesKey("words_other_caps_$id")
 
     companion object {
         const val FILE_NAME: String = "widgets"
