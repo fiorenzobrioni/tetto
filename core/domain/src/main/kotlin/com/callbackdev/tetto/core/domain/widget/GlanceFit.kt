@@ -17,8 +17,12 @@ import kotlin.math.floor
  * with the owner, never Tetto's alone.
  */
 
-/** The three forms of «In words» (PLANNING.md §7). */
-enum class WordsForm { CELL, ROW, TALL }
+/**
+ * The forms of «In words» (PLANNING.md §7). [PANEL], two rows high and three cells wide or more
+ * (owner, 14 Nov 2026): the one-row card on top, its circle the tall card's, and under it the cap's
+ * period day by day or the other caps the reader picked.
+ */
+enum class WordsForm { CELL, ROW, TALL, PANEL }
 
 /**
  * What «In words» is asked to hold, measured by the caller in the launcher's face.
@@ -43,6 +47,10 @@ enum class WordsForm { CELL, ROW, TALL }
  *   its separator ("of €20" over "until Sunday"), the day alone ("until Sunday"); with the name
  *   nowhere else ([GlanceFit.tallNameBeside] false), the name in the cap's place. A form that cannot
  *   take its lines (the one-line form over two, a broken form's line over two) is [Int.MAX_VALUE].
+ * @property stripDays the boxes of the cap's period a wide card may draw under it ([PeriodStrip]);
+ *   0 for none.
+ * @property belowCaps the other caps the reader picked for under it, as many as there are; 0 for
+ *   none. With either, a card wide and tall enough is a [WordsForm.PANEL].
  */
 data class WordsSpec(
     val width: Float,
@@ -58,6 +66,8 @@ data class WordsSpec(
     val paceTwoLineEms: List<Float> = paceEms,
     val sentenceLines: List<Int> = emptyList(),
     val detailLines: List<Int> = listOf(1),
+    val stripDays: Int = 0,
+    val belowCaps: Int = 0,
 )
 
 /**
@@ -92,6 +102,11 @@ data class WordsPlan(
     val sentenceLines: Int = 0,
     val detail: Int = 0,
     val detailLines: Int = 1,
+    val header: Float = 0f,
+    val strip: Float = 0f,
+    val columns: Int = 0,
+    val shown: Int = 0,
+    val more: Int = 0,
 )
 
 /** The three forms of «At a glance» (PLANNING.md §7). */
@@ -232,33 +247,44 @@ object GlanceFit {
     fun wordsPlan(spec: WordsSpec): WordsPlan = when (wordsForm(spec.width, spec.height)) {
         WordsForm.CELL -> wordsCell(spec)
         WordsForm.ROW -> wordsRow(spec)
-        WordsForm.TALL -> wordsTall(spec)
+        WordsForm.TALL, WordsForm.PANEL -> wordsPanel(spec) ?: wordsTall(spec)
     }
 
     /**
-     * One cell: the cell's circle, centred, the cap's icon inside it; under it the fullest figure
-     * that fits whole at [CELL_FIGURE_SP], only where the cell's height holds it beside the circle,
-     * which is never made smaller for it.
+     * One cell: the cell's circle, centred, and inside it the fullest figure that fits the hole
+     * ([insideSp]), as every ring card of the family draws one cell (owner, 14 Nov 2026: it was the
+     * cap's icon inside and the figure under the ring, where the height held it). Where no figure
+     * fits the hole, the icon stays.
      */
     private fun wordsCell(spec: WordsSpec): WordsPlan {
         val snug = spec.height < TALL_MIN_HEIGHT
-        val inner = spec.height - (if (snug) CARD_PADDING_SNUG else CARD_PADDING) * 2
-        val width = spec.width - CELL_PADDING * 2
         val circle = cellCircle(spec.width, spec.height)
-        val line = lineHeight(CELL_FIGURE_SP, spec.fontScale) + CELL_GAP
-        val figure = if (inner - circle >= line) {
-            spec.cellFigureEms.indexOfFirst { widthOf(it, CELL_FIGURE_SP, spec.fontScale) <= width }
-        } else {
-            -1
-        }
+        val figure = spec.cellFigureEms.indexOfFirst { insideSp(circle, it, spec.fontScale) != null }
         return WordsPlan(
             form = WordsForm.CELL,
             circle = circle,
             snug = snug,
             sidePadding = CELL_PADDING,
             cellFigure = figure,
+            cellFigureSp = if (figure >= 0) insideSp(circle, spec.cellFigureEms[figure], spec.fontScale) ?: 0f else 0f,
         )
     }
+
+    /**
+     * A figure set inside a ring of side [circle]: as large as fits [INSIDE_FILL] of its hole, never
+     * over [CELL_INSIDE_MAX_SP]; null under [INSIDE_MIN_SP], which no one reads.
+     */
+    fun insideSp(circle: Float, em: Float, fontScale: Float): Float? {
+        val hole = circle * (1f - RING_STROKE_SHARE * 2)
+        val sp = quarterPoint(minOf(CELL_INSIDE_MAX_SP, hole * INSIDE_FILL / (em * fontScale.coerceAtLeast(0.1f))))
+        return sp.takeIf { it >= INSIDE_MIN_SP }
+    }
+
+    /** The ring's stroke, as a share of its side (the painter's): the hole is what it leaves. */
+    const val RING_STROKE_SHARE = 0.11f
+    const val INSIDE_FILL = 0.72f
+    const val INSIDE_MIN_SP = 10f
+    const val CELL_INSIDE_MAX_SP = 28f
 
     /**
      * One row: the row's circle at the leading edge, where the words beside it keep
@@ -267,11 +293,11 @@ object GlanceFit {
      * edge where those words stay whole beside it, over two lines when one would be wider than
      * [PACE_ONE_LINE]. The words step down before they are ever cut.
      */
-    private fun wordsRow(spec: WordsSpec): WordsPlan {
+    private fun wordsRow(spec: WordsSpec, circleOf: Float? = null): WordsPlan {
         val scale = spec.fontScale
         val inner = spec.height - CARD_PADDING_SNUG * 2
         val width = spec.width - CARD_PADDING * 2
-        val circle = if (width - CIRCLE_GAP - ROW_CIRCLE_MIN >=
+        val circle = circleOf ?: if (width - CIRCLE_GAP - ROW_CIRCLE_MIN >=
             ROW_WORDS_MIN
         ) {
             rowCircle(spec.width, spec.height)
@@ -285,52 +311,65 @@ object GlanceFit {
         var figureSp = figureSizes.firstOrNull { widthOf(spec.rowFigureEm, it, scale) <= words }
             ?: quarterPoint(spThatFits(words, spec.rowFigureEm, scale))
         // The fullest second line that fits whole at one of the sizes; else the last, at the smallest.
-        var line = spec.rowLineEms.lastIndex.coerceAtLeast(0)
-        var lineSp = lineSizes.last()
-        run search@{
-            spec.rowLineEms.forEachIndexed { index, em ->
-                lineSizes.firstOrNull { widthOf(em, it, scale) <= words }?.let { sp ->
-                    line = index
-                    lineSp = sp
-                    return@search
-                }
-            }
+        val fitting = spec.rowLineEms.indices.mapNotNull { index ->
+            lineSizes.firstOrNull { widthOf(spec.rowLineEms[index], it, scale) <= words }?.let { index to it }
         }
-        val lineEm = spec.rowLineEms.getOrElse(line) { 0f }
+        fun lineHeightsFit(fig: Float, sp: Float) = lineHeight(fig, scale) + lineHeight(sp, scale) <= inner
+
         // Both lines in the row's height, the second line yielding first: what is left is the card.
-        while (lineHeight(figureSp, scale) + lineHeight(lineSp, scale) > inner && lineSp > ROW_LINE_MIN_SP) {
-            lineSp -= 1f
-        }
-        if (lineHeight(figureSp, scale) + lineHeight(lineSp, scale) > inner) {
-            figureSp = minOf(figureSp, quarterPoint(sizeForLine(inner - lineHeight(lineSp, scale), scale)))
-        }
-        val figureWidth = widthOf(spec.rowFigureEm, figureSp, scale)
-        // The pace only beside words that stay whole: a day cut off for it would say less.
-        val need = maxOf(figureWidth, widthOf(lineEm, lineSp, scale))
-        val paceRoom = words - need - PACE_GAP
-        var pace = -1
-        var paceLines = 0
-        var paceWidth = 0f
-        if (paceRoom >= PACE_COLUMN_MIN) {
-            run search@{
-                spec.paceEms.indices.forEach { i ->
-                    val one = widthOf(spec.paceEms[i], PACE_SP, scale)
-                    if (one <= minOf(paceRoom, PACE_ONE_LINE) && lineHeight(PACE_SP, scale) <= inner) {
-                        pace = i
-                        paceLines = 1
-                        paceWidth = one
-                        return@search
-                    }
-                    val two = widthOf(spec.paceTwoLineEms[i], PACE_SP, scale)
-                    if (two <= paceRoom && linesHeight(PACE_SP, 2, scale) <= inner) {
-                        pace = i
-                        paceLines = 2
-                        paceWidth = two
-                        return@search
-                    }
-                }
+        fun sized(start: Float): Pair<Float, Float> {
+            var sp = start
+            var fig = figureSp
+            while (!lineHeightsFit(fig, sp) && sp > ROW_LINE_MIN_SP) sp -= 1f
+            if (!lineHeightsFit(fig, sp)) {
+                fig =
+                    minOf(fig, quarterPoint(sizeForLine(inner - lineHeight(sp, scale), scale)))
             }
+            return fig to sp
         }
+
+        // The pace only beside words that stay whole: a day cut off for it would say less.
+        data class PacePick(val index: Int, val lines: Int, val width: Float)
+
+        fun paceBeside(need: Float): PacePick? {
+            val paceRoom = words - need - PACE_GAP
+            if (paceRoom < PACE_COLUMN_MIN) return null
+            spec.paceEms.indices.forEach { i ->
+                val one = widthOf(spec.paceEms[i], PACE_SP, scale)
+                if (one <= minOf(paceRoom, PACE_ONE_LINE) && lineHeight(PACE_SP, scale) <= inner) {
+                    return PacePick(i, 1, one)
+                }
+                val two = widthOf(spec.paceTwoLineEms[i], PACE_SP, scale)
+                if (two <= paceRoom && linesHeight(PACE_SP, 2, scale) <= inner) return PacePick(i, 2, two)
+            }
+            return null
+        }
+
+        // The fullest line that leaves the pace its column, where the cap has a pace (since the line
+        // opens with its word, 14 Nov 2026, the fullest one can take the whole row); else the
+        // fullest line alone.
+        val choices = fitting.ifEmpty { listOf(spec.rowLineEms.lastIndex.coerceAtLeast(0) to lineSizes.last()) }
+        val picked = choices.firstNotNullOfOrNull { (index, sp) ->
+            val (fig, lsp) = sized(sp)
+            val need =
+                maxOf(
+                    widthOf(spec.rowFigureEm, fig, scale),
+                    widthOf(
+                        spec.rowLineEms.getOrElse(index) {
+                            0f
+                        },
+                        lsp,
+                        scale,
+                    ),
+                )
+            paceBeside(need)?.let { Triple(index, fig to lsp, it) }
+        }
+        val line = picked?.first ?: choices.first().first
+        val (sizedFigure, lineSp) = picked?.second ?: sized(choices.first().second)
+        figureSp = sizedFigure
+        val pace = picked?.third?.index ?: -1
+        val paceLines = picked?.third?.lines ?: 0
+        val paceWidth = picked?.third?.width ?: 0f
         return WordsPlan(
             form = WordsForm.ROW,
             circle = circle,
@@ -425,6 +464,69 @@ object GlanceFit {
     }
 
     /**
+     * Two rows high and from [WIDE_BAND_MIN_WIDTH] wide, with something to stand under the cap
+     * (owner, 14 Nov 2026): the one-row card on top at the height its tallest column needs (the
+     * tall card's circle, [tallCircle], or the hero over its line), and under it, after
+     * [PANEL_GAP], the strip: the cap's period ([WordsSpec.stripDays] boxes over their labels), or
+     * the other caps side by side, as many as [panelColumns] holds, the last counting the rest. None
+     * where the strip would be shorter than it needs: the card keeps its tall form.
+     */
+    private fun wordsPanel(spec: WordsSpec): WordsPlan? {
+        if (spec.width < WIDE_BAND_MIN_WIDTH || spec.height < TALL_MIN_HEIGHT) return null
+        if (spec.stripDays <= 0 && spec.belowCaps <= 0) return null
+        val scale = spec.fontScale
+        val innerHeight = spec.height - CARD_PADDING * 2
+        val circle = tallCircle(spec.width, spec.height, scale, spec.sentence)
+        val words = bandLine(WidgetType.HERO, scale) + bandLine(ROW_LINE_SP, scale)
+        val header = maxOf(circle, words)
+        val strip = innerHeight - header - PANEL_GAP
+        val need = if (spec.belowCaps > 0) slotHeight(scale) else stripDaysMin(scale)
+        if (strip < need) return null
+        val row = wordsRow(spec.copy(height = header + CARD_PADDING_SNUG * 2), circleOf = circle)
+        val columns = panelColumns(spec.width)
+        val shown = if (spec.belowCaps > columns) columns - 1 else spec.belowCaps
+        return row.copy(
+            form = WordsForm.PANEL,
+            snug = false,
+            header = header,
+            strip = strip,
+            columns = if (spec.belowCaps > 0) columns else 0,
+            shown = shown.coerceAtLeast(0),
+            more = (spec.belowCaps - shown).coerceAtLeast(0),
+        )
+    }
+
+    /**
+     * How many caps a wide card holds side by side under its own: each at least [PANEL_SLOT_MIN],
+     * never more than [GROUP_MAX] (a container's children, with the gaps between them).
+     */
+    fun panelColumns(width: Float): Int =
+        ((width - CARD_PADDING * 2 + SLOT_GAP) / (PANEL_SLOT_MIN + SLOT_GAP)).toInt().coerceIn(1, GROUP_MAX)
+
+    /** A cap under the panel's own, as «At a glance»'s row draws it: figure, name, the bar. */
+    fun slotHeight(fontScale: Float): Float = lineHeight(SLOT_FIGURE_SP, fontScale) +
+        lineHeight(SLOT_NAME_SP, fontScale) + BAR_GAP + BAR_HEIGHT + MARK_OVERHANG * 2
+
+    /** The period's boxes at their floor, over a line of labels. */
+    fun stripDaysMin(fontScale: Float): Float = STRIP_BOXES_MIN + stripLabelHeight(fontScale)
+
+    /** The labels under the period's boxes, and the air over them. */
+    fun stripLabelHeight(fontScale: Float): Float = lineHeight(STRIP_LABEL_SP, fontScale) + STRIP_LABEL_GAP
+
+    const val PANEL_GAP = 12f
+    const val PANEL_SLOT_MIN = 64f
+    const val STRIP_BOXES_MIN = 28f
+
+    /**
+     * The period's boxes stand no taller than this: past it a week reads as seven slabs, and the
+     * air goes between the header and the strip instead, as under a ring card's bars.
+     */
+    const val STRIP_BOXES_MAX = 32f
+    const val STRIP_LABEL_SP = WidgetType.CAPTION
+    const val STRIP_LABEL_GAP = 2f
+    const val STRIP_GAP = 3f
+
+    /**
      * Whether a tall card's name stands beside its circle: where the circle the card's size gives
      * leaves [NAME_BESIDE_MIN] beside it. The caller asks it before measuring the last words, which
      * carry the name where it is not beside the circle.
@@ -448,10 +550,14 @@ object GlanceFit {
     const val CELL_FIGURE_SP = WidgetType.LABEL
     const val CELL_GAP = 4f
 
-    /** The row's figure: 20 sp at ease, a size smaller on a narrow row, down to 14. */
-    const val ROW_FIGURE_SP = 20f
-    private val FIGURE_SIZES = listOf(ROW_FIGURE_SP, 18f, WidgetType.BODY)
-    private val NARROW_FIGURE_SIZES = listOf(WidgetType.BODY, 15f, 14f)
+    /**
+     * The row's figure: the family's hero, Bold, the amount alone (owner, 14 Nov 2026: it was
+     * "€12 left" at 20 sp Medium; the word went to the line under it), stepping down the scale on a
+     * row too narrow for it, and past the last step to the size it fits.
+     */
+    const val ROW_FIGURE_SP = WidgetType.HERO
+    private val FIGURE_SIZES = listOf(ROW_FIGURE_SP, WidgetType.DISPLAY, 26f, WidgetType.TITLE)
+    private val NARROW_FIGURE_SIZES = listOf(28f, 24f, WidgetType.TITLE, 20f)
 
     /** The row's second line: the scale's body at ease, 14 to 12 on a narrow row. */
     const val ROW_LINE_SP = WidgetType.BODY

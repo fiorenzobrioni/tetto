@@ -134,4 +134,15 @@
     <string name="widget_config_privacy">Riservatezza</string>
     <string name="widget_config_hide_amounts">Nascondi gli importi</string>
     <string name="widget_config_hide_amounts_note">Per una schermata Home che vedono anche altri: nessuna cifra sulla scheda. Restano le barre, l’anello, i nomi e i giorni, e un tetto superato lo dice ancora a parole.</string>
+
+    <!-- «In words» as the family's ring card (owner, 14 Nov 2026): the figure alone, the word opening the line under it; what stands under the cap on a wide card. -->
+    <string name="widget_line_word_over">oltre</string>
+    <string name="widget_line_with_word">%1$s · %2$s</string>
+    <string name="widget_left_of">ancora, su %s</string>
+    <string name="widget_over_of">oltre, su %s</string>
+    <string name="widget_config_below">Sotto, su una scheda larga</string>
+    <string name="widget_config_below_days">I giorni del periodo</string>
+    <string name="widget_config_below_days_note">Ogni giorno del periodo del tetto, oggi segnato: quanti ne restano, a colpo d’occhio. Un tetto di un giorno non ne ha.</string>
+    <string name="widget_config_below_caps">Altri tetti</string>
+    <string name="widget_config_below_caps_note">Fino a %1$d affiancati su questa scheda, ognuno apre il suo tastierino. Spunta quelli da mostrare.</string>
 </resources>

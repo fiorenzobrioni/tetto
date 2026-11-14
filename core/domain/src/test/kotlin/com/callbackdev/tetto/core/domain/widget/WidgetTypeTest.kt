@@ -22,11 +22,12 @@ class WidgetTypeTest {
             GlanceFit.SLOT_NAME_SP,
             GlanceFit.ITEM_FIGURE_SP,
             GlanceFit.ITEM_NAME_SP,
+            GlanceFit.STRIP_LABEL_SP,
         ).forEach { assertThat(WidgetType.steps).contains(it) }
     }
 
     @Test
-    fun `the row's figure starts where the family's row title does`() {
-        assertThat(GlanceFit.ROW_FIGURE_SP).isEqualTo(20f)
+    fun `the row's figure is the family's hero, a figure's size on every ring card`() {
+        assertThat(GlanceFit.ROW_FIGURE_SP).isEqualTo(WidgetType.HERO)
     }
 }

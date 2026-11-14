@@ -137,6 +137,60 @@ internal class CardWords(
         res.getString(R.string.widget_of, format.short(state.amount))
     }
 
+    /**
+     * The family's ring card (owner, 14 Nov 2026): the figure alone is the hero ("€12"), and the
+     * word that says what it is opens the line under it. Hidden and ended caps have no figure to
+     * qualify: their hero is already words, and their lines stay as they were.
+     */
+    private fun qualified(state: CapState): Boolean = !hidden && !state.ended
+
+    /** The word a line under the figure opens with: "left", "over" ("ancora", "oltre"). */
+    fun lineWord(state: CapState): String =
+        res.getString(if (state.over) R.string.widget_line_word_over else R.string.widget_word_left)
+
+    private fun withWord(state: CapState, rest: String): String =
+        res.getString(R.string.widget_line_with_word, lineWord(state), rest)
+
+    /**
+     * A row's second line under the figure alone, fullest first: "left · Coffee · until Sunday",
+     * "left · until Sunday", "left · Coffee", "left"; over, "over · …". Hidden or ended, [rowLines].
+     */
+    fun rowLinesWithWord(state: CapState): List<String> = if (qualified(state)) {
+        rowLines(state).map { withWord(state, it) } + lineWord(state)
+    } else {
+        rowLines(state)
+    }
+
+    /**
+     * A tall card's last words under the figure alone, fullest first: "left of €20 · until Sunday",
+     * "left of €20" over "until Sunday", "left · until Sunday", "left"; over, "over its €30 · starts again
+     * on Monday". Hidden or ended, [lastWords] without the name.
+     */
+    fun lastWordsWithWord(state: CapState): List<String> {
+        if (!qualified(state)) return lastWords(state, withName = false)
+        val cap = format.short(state.amount)
+        val day = day(state)
+        val head = res.getString(if (state.over) R.string.widget_over_of else R.string.widget_left_of, cap)
+        return listOf(
+            res.getString(R.string.widget_line_with_word, head, day),
+            head + "\n" + day,
+            withWord(state, day),
+            // The word alone, where nothing longer fits: over is still said in words.
+            lineWord(state),
+        )
+    }
+
+    /**
+     * What a one-cell card writes inside its ring, fullest first: the figure alone ("€12"); over,
+     * "€30 over", then the word alone ("over"), never the figure without the word. Hidden, where
+     * the cap is; ended, the word.
+     */
+    fun insideForms(state: CapState): List<String> = when {
+        state.ended || hidden -> listOf(amount(state))
+        state.over -> listOf(res.getString(R.string.widget_over_short, format.short(state.overBy)), lineWord(state))
+        else -> listOf(amount(state))
+    }
+
     /** A row's second line, fullest first: "Coffee · until Sunday", "until Sunday", "Coffee". */
     fun rowLines(state: CapState): List<String> = listOf(line(state), day(state), state.cap.name)
 

@@ -144,4 +144,15 @@
     <string name="widget_config_privacy">Privacy</string>
     <string name="widget_config_hide_amounts">Hide the amounts</string>
     <string name="widget_config_hide_amounts_note">For a home screen others can see: no figure on the card. The bars, the ring, the names and the days stay, and a cap over is still said in words.</string>
+
+    <!-- «In words» as the family's ring card (owner, 14 Nov 2026): the figure alone, the word opening the line under it; what stands under the cap on a wide card. -->
+    <string name="widget_line_word_over">over</string>
+    <string name="widget_line_with_word">%1$s · %2$s</string>
+    <string name="widget_left_of">left of %s</string>
+    <string name="widget_over_of">over its %s</string>
+    <string name="widget_config_below">Under it, on a wide card</string>
+    <string name="widget_config_below_days">The period\'s days</string>
+    <string name="widget_config_below_days_note">Each day of the cap\'s period, today marked: how many are left, at a glance. A day\'s cap has none.</string>
+    <string name="widget_config_below_caps">Other caps</string>
+    <string name="widget_config_below_caps_note">Up to %1$d beside each other on this card, each opening its own numpad. Tick the ones to show.</string>
 </resources>

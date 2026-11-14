@@ -7,6 +7,7 @@ import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.WidgetCardColor
 import com.callbackdev.tetto.core.model.WidgetGround
 import com.callbackdev.tetto.core.model.WidgetLook
+import com.callbackdev.tetto.core.model.WordsBelow
 import com.callbackdev.tetto.widget.glance.GlanceCardContent
 import com.callbackdev.tetto.widget.words.WordsCardContent
 import org.junit.Test
@@ -73,6 +74,34 @@ class WidgetGalleryTest {
             board.row(size to renderCard(context, size) { WordsCardContent(sample(words = true, look = look)) })
         }
         board.draw().saveTo(out, "widget-words-no-sentence")
+    }
+
+    /**
+     * A wide card's strip (owner, 14 Nov 2026): the cap's period day by day, a month's days, and
+     * the other caps the reader picked, as many as fit and then counted; at the largest text the
+     * caps leave the four-by-two tall again.
+     */
+    @Test
+    fun `in words, a wide card's days and other caps`() {
+        val board = HomeBoard(context, widthDp = 380)
+        val week = WidgetLook(wordsCap = 1L)
+        val month = WidgetLook(wordsCap = 2L)
+        val caps = WidgetLook(wordsCap = 1L, wordsBelow = WordsBelow.CAPS, wordsBelowCaps = setOf(2L, 3L, 5L))
+        val many = WidgetLook(wordsCap = 1L, wordsBelow = WordsBelow.CAPS, wordsBelowCaps = setOf(2L, 3L, 4L, 5L))
+        listOf(week, month, caps, many).forEach { look ->
+            board.row(
+                Grants.FourByTwo to renderCard(context, Grants.FourByTwo) {
+                    WordsCardContent(sample(look = look))
+                },
+            )
+        }
+        board.row(Grants.ThreeByTwo to renderCard(context, Grants.ThreeByTwo) { WordsCardContent(sample(look = caps)) })
+        board.row(
+            Grants.FourByThree to renderCard(context, Grants.FourByThree) {
+                WordsCardContent(sample(look = week))
+            },
+        )
+        board.draw().saveTo(out, "widget-words-panel")
     }
 
     /** The three states a cap's ring and bar say: at ease, ahead of the days, over (in words too). */

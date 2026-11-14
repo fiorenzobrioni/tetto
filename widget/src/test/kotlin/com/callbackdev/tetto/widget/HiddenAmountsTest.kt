@@ -69,6 +69,7 @@ class HiddenAmountsTest {
 
     private companion object {
         val DATE = Regex("\\d{1,2}[\\s\\u00A0][A-Z][a-z]{2}")
+        val DAY_OF_MONTH = Regex("[1-9]|[12]\\d|3[01]")
     }
 
     @Test
@@ -91,7 +92,10 @@ class HiddenAmountsTest {
                 val look = WidgetLook(wordsCap = cap, showSentence = sentence, hideAmounts = true)
                 val model = WidgetSamples.model(context, currency = euro, look = look)
                 sizes.forEach { size ->
-                    assertNoFigure(everything(size) { WordsCardContent(model) }, "In words, cap $cap, ${size.width}")
+                    // A wide card's strip labels a month's days by their numbers ("1", "8", "15"):
+                    // dates, which stay, as "until 30 Nov" does; never an amount.
+                    val texts = everything(size) { WordsCardContent(model) }.filterNot { DAY_OF_MONTH.matches(it) }
+                    assertNoFigure(texts, "In words, cap $cap, ${size.width}")
                 }
             }
         }

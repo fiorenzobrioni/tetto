@@ -87,19 +87,23 @@ class GlanceFitTest {
     }
 
     @Test
-    fun `one cell says the figure under the ring where it fits, and never shrinks the ring for it`() {
+    fun `one cell says the figure inside the ring, as the family's ring cards do, and never shrinks the ring for it`() {
         val square = GlanceFit.wordsPlan(words(85f, 85f))
         assertThat(square.circle).isEqualTo(69f)
-        assertThat(square.cellFigure).isEqualTo(-1)
+        assertThat(square.cellFigure).isEqualTo(0)
+        // The hole (69 less two strokes of 11%) at 72%, over a figure 2.2 em wide.
+        assertThat(square.cellFigureSp).isEqualTo(17.5f)
         val tall = GlanceFit.wordsPlan(words(85f, 189f))
         assertThat(tall.circle).isEqualTo(69f)
         assertThat(tall.cellFigure).isEqualTo(0)
     }
 
     @Test
-    fun `one cell takes the shorter figure when the fuller is too wide`() {
-        val plan = GlanceFit.wordsPlan(words(85f, 189f, cellFigureEms = listOf(9f, 2f)))
+    fun `one cell takes the shorter figure when the fuller is too wide, and none under the readable floor`() {
+        val plan = GlanceFit.wordsPlan(words(85f, 85f, cellFigureEms = listOf(9f, 2f)))
         assertThat(plan.cellFigure).isEqualTo(1)
+        assertThat(GlanceFit.wordsPlan(words(85f, 85f, cellFigureEms = listOf(9f))).cellFigure).isEqualTo(-1)
+        assertThat(GlanceFit.insideSp(69f, 2.2f, 1f)).isAtMost(GlanceFit.CELL_INSIDE_MAX_SP)
     }
 
     @Test
@@ -107,7 +111,7 @@ class GlanceFitTest {
         val plan = GlanceFit.wordsPlan(words(340f, 85f))
         assertThat(plan.form).isEqualTo(WordsForm.ROW)
         assertThat(plan.circle).isEqualTo(56f)
-        assertThat(plan.figureSp).isEqualTo(20f)
+        assertThat(plan.figureSp).isEqualTo(WidgetType.HERO)
         assertThat(plan.lineSp).isEqualTo(16f)
         assertThat(plan.pace).isEqualTo(0)
     }
@@ -116,7 +120,8 @@ class GlanceFitTest {
     fun `a narrow row sets its words a size smaller and has no pace`() {
         val plan = GlanceFit.wordsPlan(words(159f, 85f))
         assertThat(plan.circle).isEqualTo(44f)
-        assertThat(plan.figureSp).isEqualTo(16f)
+        assertThat(plan.figureSp).isLessThan(WidgetType.HERO)
+        assertThat(widthOf(3.4f, plan.figureSp, 1f)).isAtMost(159f - 28f - 44f - 12f)
         assertThat(plan.lineSp).isAtMost(14f)
         assertThat(plan.pace).isEqualTo(-1)
     }
@@ -223,6 +228,67 @@ class GlanceFitTest {
                 }
             }
         }
+    }
+
+    // --- «In words» on a wide card: the panel ------------------------------------------------------
+
+    @Test
+    fun `a wide tall card with the period's days is a panel, its circle the tall card's`() {
+        val plan = GlanceFit.wordsPlan(words(340f, 189f, stripDays = 7))
+        assertThat(plan.form).isEqualTo(WordsForm.PANEL)
+        assertThat(plan.circle).isEqualTo(73.75f)
+        assertThat(plan.header).isEqualTo(73.75f)
+        assertThat(plan.strip).isWithin(0.01f).of(189f - 28f - 73.75f - GlanceFit.PANEL_GAP)
+        assertThat(plan.figureSp).isEqualTo(WidgetType.HERO)
+        assertThat(GlanceFit.wordsPlan(words(250f, 189f, stripDays = 31)).form).isEqualTo(WordsForm.PANEL)
+    }
+
+    @Test
+    fun `two cells wide, or nothing to stand under the cap, keep the tall card`() {
+        assertThat(GlanceFit.wordsPlan(words(159f, 189f, stripDays = 7)).form).isEqualTo(WordsForm.TALL)
+        assertThat(GlanceFit.wordsPlan(words(340f, 189f)).form).isEqualTo(WordsForm.TALL)
+    }
+
+    @Test
+    fun `the other caps stand side by side, as many as fit, the last counting the rest`() {
+        assertThat(GlanceFit.panelColumns(340f)).isEqualTo(4)
+        assertThat(GlanceFit.panelColumns(250f)).isEqualTo(3)
+        val three = GlanceFit.wordsPlan(words(340f, 189f, belowCaps = 3))
+        assertThat(three.form).isEqualTo(WordsForm.PANEL)
+        assertThat(three.columns).isEqualTo(4)
+        assertThat(three.shown).isEqualTo(3)
+        assertThat(three.more).isEqualTo(0)
+        val six = GlanceFit.wordsPlan(words(340f, 189f, belowCaps = 6))
+        assertThat(six.shown).isEqualTo(3)
+        assertThat(six.more).isEqualTo(3)
+    }
+
+    @Test
+    fun `a panel's header and strip fit its height at every text size, else the card stays tall`() {
+        listOf(1f, 1.15f, 1.3f).forEach { scale ->
+            listOf(250f, 340f).forEach { width ->
+                listOf(189f, 218f, 293f).forEach { height ->
+                    listOf(words(width, height, scale, stripDays = 7), words(width, height, scale, belowCaps = 2))
+                        .forEach { spec ->
+                            val plan = GlanceFit.wordsPlan(spec)
+                            if (plan.form == WordsForm.PANEL) {
+                                val need = if (spec.belowCaps > 0) {
+                                    GlanceFit.slotHeight(scale)
+                                } else {
+                                    GlanceFit.stripDaysMin(scale)
+                                }
+                                assertThat(plan.strip).isAtLeast(need)
+                                assertThat(plan.header + GlanceFit.PANEL_GAP + plan.strip)
+                                    .isWithin(0.01f).of(height - GlanceFit.CARD_PADDING * 2)
+                                assertThat(lineHeight(plan.figureSp, scale) + lineHeight(plan.lineSp, scale))
+                                    .isAtMost(plan.header + 0.01f)
+                            }
+                        }
+                }
+            }
+        }
+        // At the largest text size a four-by-two's header leaves the caps no room: tall again.
+        assertThat(GlanceFit.wordsPlan(words(340f, 189f, 1.3f, belowCaps = 2)).form).isEqualTo(WordsForm.TALL)
     }
 
     @Test
@@ -333,6 +399,8 @@ class GlanceFitTest {
         detailLines: List<Int> = listOf(1),
         rowLineEms: List<Float> = listOf(9f, 4.5f, 3f),
         nameWordEm: Float = 3f,
+        stripDays: Int = 0,
+        belowCaps: Int = 0,
     ) = WordsSpec(
         width = width,
         height = height,
@@ -347,5 +415,7 @@ class GlanceFitTest {
         paceTwoLineEms = listOf(3.2f, 2.4f),
         sentenceLines = sentenceLines,
         detailLines = detailLines,
+        stripDays = stripDays,
+        belowCaps = belowCaps,
     )
 }

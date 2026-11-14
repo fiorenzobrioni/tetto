@@ -157,7 +157,7 @@ fun GlanceCardContent(model: WidgetModel) {
 }
 
 /** What every form draws from. */
-private class GlanceParts(val context: Context, val model: WidgetModel, val palette: WidgetPalette) {
+internal class GlanceParts(val context: Context, val model: WidgetModel, val palette: WidgetPalette) {
     val words = CardWords(context, model.currency, model.today, hidden = model.look.hideAmounts)
     val scale = fontScale(context)
     val density = context.resources.displayMetrics.density
@@ -171,7 +171,7 @@ private class GlanceParts(val context: Context, val model: WidgetModel, val pale
 }
 
 @Composable
-private fun Icon(parts: GlanceParts, state: CapState, side: Dp) {
+internal fun Icon(parts: GlanceParts, state: CapState, side: Dp) {
     val color = parts.palette.primary
     val bitmap = remember(state.cap.icon, side, parts.density, color) {
         iconBitmap(state.cap.icon, side, parts.density, color)
@@ -186,7 +186,7 @@ private fun Icon(parts: GlanceParts, state: CapState, side: Dp) {
  * bitmap: a bar is what a card can build from boxes.
  */
 @Composable
-private fun Bar(parts: GlanceParts, state: CapState, width: Dp) {
+internal fun Bar(parts: GlanceParts, state: CapState, width: Dp) {
     val palette = parts.palette
     val spec = RingSpec.of(state)
     val ink = when {
@@ -308,7 +308,7 @@ private fun RowContent(parts: GlanceParts, plan: GlancePlan, states: List<CapSta
 }
 
 @Composable
-private fun Slot(parts: GlanceParts, plan: GlancePlan, state: CapState, width: Dp) {
+internal fun Slot(parts: GlanceParts, plan: GlancePlan, state: CapState, width: Dp) {
     // Without a line for the name, an over cap says it in its figure: "€30 over". Hidden, the
     // figure's place says where the cap is ("Over"), and the name keeps its line.
     val hidden = parts.words.hidden
@@ -353,7 +353,7 @@ private fun Slot(parts: GlanceParts, plan: GlancePlan, state: CapState, width: D
 
 /** The caps that do not fit, counted: "3 more", or "+3" in a row's narrow slot. */
 @Composable
-private fun More(parts: GlanceParts, count: Int, width: Dp, short: Boolean) {
+internal fun More(parts: GlanceParts, count: Int, width: Dp, short: Boolean) {
     Box(modifier = GlanceModifier.width(width), contentAlignment = Alignment.CenterStart) {
         Text(
             text = parts.words.more(count, short),

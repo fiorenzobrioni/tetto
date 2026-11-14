@@ -115,4 +115,13 @@ class WidgetCapsTest {
             CapNote.Pace(euros(1), date(2026, 11, 15), ahead = true, lessThan = true),
         )
     }
+
+    @Test
+    fun `in words's other caps are the chosen ones in the reader's order, never its own`() {
+        val all = listOf(coffee, dinners, groceries)
+        assertThat(WidgetCaps.below(all, coffee, setOf(3L, 1L, 2L))).containsExactly(dinners, groceries).inOrder()
+        assertThat(WidgetCaps.below(all, coffee, setOf(3L, 2L), most = 1)).containsExactly(dinners)
+        assertThat(WidgetCaps.below(all, coffee, emptySet())).isEmpty()
+        assertThat(WidgetCaps.below(all, null, setOf(9L))).isEmpty()
+    }
 }

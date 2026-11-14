@@ -12,6 +12,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.callbackdev.tetto.core.model.WidgetCardColor
 import com.callbackdev.tetto.core.model.WidgetGround
 import com.callbackdev.tetto.core.model.WidgetLook
+import com.callbackdev.tetto.core.model.WordsBelow
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
@@ -47,6 +48,10 @@ class WidgetLookStore internal constructor(private val dataStore: DataStore<Pref
             glanceCaps = prefs[glanceCapsKey(appWidgetId)]?.let(::decodeIds),
             wordsCap = prefs[wordsCapKey(appWidgetId)],
             showSentence = prefs[sentenceKey(appWidgetId)] ?: default.showSentence,
+            wordsBelow = prefs[belowKey(appWidgetId)]
+                ?.let { name -> WordsBelow.entries.firstOrNull { it.name == name } }
+                ?: default.wordsBelow,
+            wordsBelowCaps = prefs[belowCapsKey(appWidgetId)]?.let(::decodeIds) ?: default.wordsBelowCaps,
             hideAmounts = prefs[hiddenKey(appWidgetId)] ?: default.hideAmounts,
         )
     }
@@ -68,6 +73,8 @@ class WidgetLookStore internal constructor(private val dataStore: DataStore<Pref
             val cap = look.wordsCap
             if (cap == null) prefs.remove(wordsCapKey(appWidgetId)) else prefs[wordsCapKey(appWidgetId)] = cap
             prefs[sentenceKey(appWidgetId)] = look.showSentence
+            prefs[belowKey(appWidgetId)] = look.wordsBelow.name
+            prefs[belowCapsKey(appWidgetId)] = encodeIds(look.wordsBelowCaps)
             prefs[hiddenKey(appWidgetId)] = look.hideAmounts
         }
     }
@@ -83,6 +90,8 @@ class WidgetLookStore internal constructor(private val dataStore: DataStore<Pref
                     glanceCapsKey(id),
                     wordsCapKey(id),
                     sentenceKey(id),
+                    belowKey(id),
+                    belowCapsKey(id),
                     hiddenKey(id),
                 ).forEach { prefs.remove(it) }
             }
@@ -96,6 +105,8 @@ class WidgetLookStore internal constructor(private val dataStore: DataStore<Pref
     private fun wordsCapKey(id: Int) = longPreferencesKey("words_cap_$id")
     private fun sentenceKey(id: Int) = booleanPreferencesKey("sentence_$id")
     private fun hiddenKey(id: Int) = booleanPreferencesKey("hide_amounts_$id")
+    private fun belowKey(id: Int) = stringPreferencesKey("words_below_$id")
+    private fun belowCapsKey(id: Int) = stringPreferencesKey("words_below_caps_$id")
 
     companion object {
         const val FILE_NAME: String = "widgets"

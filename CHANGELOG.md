@@ -10,6 +10,17 @@ All notable changes to Tetto are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- **«In words» looks like its sisters.** The amount is the large figure, with what it means on
+  the line under it («ancora, su 20 € · fino a domenica»); on a single cell the figure sits inside
+  the ring.
+
+### Added
+
+- **«In words» on a wide card** shows, under its cap, the days of its period with today marked, or
+  other caps you pick in the widget's settings, each one touch away from its numpad.
+
 ### Added
 
 - The rules behind every cap: a cap's own period (a day, a week, a month from
