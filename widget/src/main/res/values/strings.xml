@@ -35,6 +35,8 @@
     <string name="widget_over_short">%s over</string>
     <string name="widget_word_left">left</string>
     <string name="widget_word_over">over</string>
+    <!-- Over, the word on a line of its own, never before a figure: under a slot's figure ("€30" over "over"), or alone inside a one-cell ring. -->
+    <string name="widget_word_over_alone">over</string>
     <!-- Whether the word stands over the figure ("ancora / 12 €") or under it ("€12 / left"). -->
     <bool name="widget_word_above">false</bool>
 

@@ -157,7 +157,7 @@ internal fun CapSlot(parts: SlotParts, state: CapState, width: Dp, names: Boolea
         }
         if (names) {
             Text(
-                text = if (state.over && !hidden) parts.words.word(state) else state.cap.name,
+                text = if (state.over && !hidden) parts.words.overAlone() else state.cap.name,
                 style = TextStyle(
                     color = if (state.over && !hidden) parts.palette.overInk else parts.palette.secondaryInk,
                     fontSize = GlanceFit.SLOT_NAME_SP.sp,

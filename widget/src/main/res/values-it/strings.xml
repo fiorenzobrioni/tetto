@@ -30,6 +30,7 @@
     <string name="widget_over_short">%s oltre</string>
     <string name="widget_word_left">ancora</string>
     <string name="widget_word_over">sotto di</string>
+    <string name="widget_word_over_alone">oltre</string>
     <bool name="widget_word_above">true</bool>
 
     <string name="widget_detail">su %1$s · %2$s</string>

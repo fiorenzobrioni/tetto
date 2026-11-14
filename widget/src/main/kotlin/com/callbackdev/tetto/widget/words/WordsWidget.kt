@@ -311,7 +311,7 @@ private fun CellContent(parts: WordsParts, plan: WordsPlan) {
         Box(modifier = GlanceModifier.size(side), contentAlignment = Alignment.Center) {
             Ring(parts, side, withIcon = !overInside)
             if (overInside) {
-                val word = parts.words.word(parts.state)
+                val word = parts.words.overAlone()
                 val hole = side.value * (1f - RingPainter.STROKE_SHARE * 2) * INSIDE_FILL
                 val sp = quarterPoint(
                     minOf(
