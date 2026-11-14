@@ -56,11 +56,13 @@ import com.callbackdev.tetto.core.designsystem.icons.symbol
 import com.callbackdev.tetto.core.designsystem.theme.padding
 import com.callbackdev.tetto.core.designsystem.theme.pageGutter
 import com.callbackdev.tetto.core.designsystem.theme.widgetCardContainer
+import com.callbackdev.tetto.core.domain.widget.GlanceFit
 import com.callbackdev.tetto.core.model.CapState
 import com.callbackdev.tetto.core.model.UserSettings
 import com.callbackdev.tetto.core.model.WidgetCardColor
 import com.callbackdev.tetto.core.model.WidgetGround
 import com.callbackdev.tetto.core.model.WidgetLook
+import com.callbackdev.tetto.core.model.WordsBelow
 import com.callbackdev.tetto.widget.R
 import com.callbackdev.tetto.widget.WidgetKind
 import com.callbackdev.tetto.widget.WidgetModel
@@ -77,6 +79,8 @@ object WidgetConfigTags {
     const val SENTENCE = "widget_config_sentence"
     const val HIDE_AMOUNTS = "widget_config_hide_amounts"
     const val CLOSEST = "widget_config_closest"
+    const val BELOW_DAYS = "widget_config_below_days"
+    const val BELOW_CAPS = "widget_config_below_caps"
     const val DONE = "widget_config_done"
 
     fun cap(id: Long) = "widget_config_cap_$id"
@@ -154,6 +158,8 @@ fun WidgetConfigScreen(
                             modifier = Modifier.testTag(WidgetConfigTags.SENTENCE),
                         )
                     }
+                    GroupHeader(stringResource(R.string.widget_config_below))
+                    SettingsGroup { WordsBelowChoice(look, caps, placed, onLook) }
                 }
             }
 
@@ -276,6 +282,73 @@ private fun WordsCapChoice(look: WidgetLook, caps: List<CapState>, onLook: (Widg
         }
     }
 }
+
+/**
+ * What stands under «In words»'s cap on a wide card (owner, 14 Nov 2026): the period's days, or
+ * other caps the reader ticks, at most as many as this card holds side by side (its placed width,
+ * else the reference four cells), its own cap never among them.
+ */
+@Composable
+private fun WordsBelowChoice(look: WidgetLook, caps: List<CapState>, placed: DpSize?, onLook: (WidgetLook) -> Unit) {
+    val most = GlanceFit.panelColumns(placed?.width?.value ?: REFERENCE_WIDE_WIDTH)
+    val others = caps.filter { !it.ended && it.cap.id != look.wordsCap }
+    val chosen = look.wordsBelowCaps.filter { id -> others.any { it.cap.id == id } }.toSet()
+    Column(Modifier.selectableGroup()) {
+        listOf(
+            Triple(WordsBelow.DAYS, R.string.widget_config_below_days, WidgetConfigTags.BELOW_DAYS),
+            Triple(WordsBelow.CAPS, R.string.widget_config_below_caps, WidgetConfigTags.BELOW_CAPS),
+        ).forEachIndexed { index, (below, label, tag) ->
+            if (index > 0) GroupDivider()
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .selectable(selected = look.wordsBelow == below, onClick = {
+                        onLook(look.copy(wordsBelow = below))
+                    }, role = Role.RadioButton)
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .testTag(tag),
+            ) {
+                RadioButton(selected = look.wordsBelow == below, onClick = null)
+                Column(Modifier.weight(1f).padding(start = 12.dp)) {
+                    Text(stringResource(label), style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        text = if (below == WordsBelow.DAYS) {
+                            stringResource(R.string.widget_config_below_days_note)
+                        } else {
+                            stringResource(R.string.widget_config_below_caps_note, most)
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+    }
+    if (look.wordsBelow != WordsBelow.CAPS) return
+    if (others.isEmpty()) {
+        GroupDivider()
+        NoCapsNote()
+        return
+    }
+    others.forEach { state ->
+        GroupDivider()
+        val ticked = state.cap.id in chosen
+        CapRow(
+            state = state,
+            selected = ticked,
+            role = Role.Checkbox,
+            enabled = ticked || chosen.size < most,
+            onPick = {
+                val next = if (ticked) chosen - state.cap.id else chosen + state.cap.id
+                onLook(look.copy(wordsBelowCaps = next))
+            },
+        ) { enabled -> Checkbox(checked = ticked, onCheckedChange = null, enabled = enabled) }
+    }
+}
+
+/** A card placed nowhere yet is reckoned four cells wide, the family's reference wide card. */
+private const val REFERENCE_WIDE_WIDTH = 340f
 
 @Composable
 private fun NoCapsNote() {

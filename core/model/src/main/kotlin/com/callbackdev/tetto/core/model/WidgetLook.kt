@@ -24,6 +24,11 @@ enum class WidgetGround { LIGHT, DARK, SYSTEM, COLOR }
  * @property wordsCap «In words»: its cap; null for the one closest to its cap.
  * @property showSentence «In words»: «The sentence» under the figure on a tall card (owner,
  *   5 Nov 2026); off, the circle takes the band it leaves.
+ * @property wordsBelow «In words», on a card two rows high and three cells wide or more: what stands
+ *   under its cap (owner, 14 Nov 2026): the days of the cap's period, or the other caps the reader
+ *   picks ([wordsBelowCaps]), so the card opens more than one cap.
+ * @property wordsBelowCaps «In words»'s other caps, under its own on a wide card, at most as many as
+ *   the card holds side by side; empty, the period's days stay.
  * @property hideAmounts no figure on the card (owner, 6 Nov 2026), for a home screen others see:
  *   the bars, the ring, the names, the dates and the words stay, over said in words; the amounts
  *   are absent, never blurred, TalkBack's description included.
@@ -35,10 +40,21 @@ data class WidgetLook(
     val glanceCaps: Set<Long>? = null,
     val wordsCap: Long? = null,
     val showSentence: Boolean = true,
+    val wordsBelow: WordsBelow = WordsBelow.DAYS,
+    val wordsBelowCaps: Set<Long> = emptySet(),
     val hideAmounts: Boolean = false,
 ) {
     companion object {
         /** Solid: below half, the ink has to ask the wallpaper, a different conversation. */
         const val DEFAULT_OPACITY: Int = 100
     }
+}
+
+/** What «In words» shows under its cap on a wide card (owner, 14 Nov 2026). */
+enum class WordsBelow {
+    /** The days of the cap's period, today marked: how many are left, at a glance. */
+    DAYS,
+
+    /** Other caps the reader picks, side by side, each a door to its own numpad. */
+    CAPS,
 }

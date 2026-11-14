@@ -32,6 +32,14 @@ object WidgetCaps {
         states.firstOrNull { it.over }?.let { return it }
         return states.minWithOrNull(compareBy { Share(it.left.minor, (it.amount + it.cap.reserve).minor) })
     }
+
+    /**
+     * «In words»'s other caps, under its own on a wide card (owner, 14 Nov 2026): the ones the
+     * reader [chosen], in the reader's order, never the card's own [main] nor an ended one-off; a
+     * cap deleted since is simply gone. At most [most], the most the card holds side by side.
+     */
+    fun below(all: List<CapState>, main: CapState?, chosen: Set<Long>, most: Int = Int.MAX_VALUE): List<CapState> =
+        all.filter { it.cap.id in chosen && !it.ended && it.cap.id != main?.cap?.id }.take(most.coerceAtLeast(0))
 }
 
 /**
