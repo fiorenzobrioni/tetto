@@ -429,7 +429,7 @@ At 115% and 130% text the two-by-two's band grows and its circle stands at 44 dp
   - in Settings, with the reminder on and its notifications blocked, a card over the group says why and holds the one button that fixes it: "Allow" while Android will still ask (`asked_notifications` tells "askable" from "denied for good"), else the system's page, the app's notifications or the reminder's channel.
 - **No other notification**: no threshold alerts, no "over" alerts (VISION).
 - **Launcher shortcuts** (dynamic: a static one names its package, and the debug build's is another): the first four caps in the reader's order that have not ended (an ended one-off takes no spend), each its icon and name, opening `QuickAddActivity` on that cap. Published again when the caps, their order or their names change, and when the app's language changes (Tempo's lesson of 30 Oct 2026).
-- **Pin request**: the first run's last page and Settings offer "Add a widget to the home screen" through `AppWidgetManager.requestPinAppWidget`, where the launcher supports it.
+- **Pin request**: the first run's last page and Settings offer "Add a widget to the home screen" through `AppWidgetManager.requestPinAppWidget`, where the launcher supports it. The first run's page offers both cards, «At a glance» first, each with its line, its real card drawn from the reader's new caps (`HomeCardPreview`) and its «Add», then «Done» or «Continue» (owner, 15 Nov 2026).
 
 ---
 
@@ -643,4 +643,28 @@ from the six, in their style, no shade of violet.
 gallery, fit), `:core:domain`'s, Settings' and the guide's, spotless. `widgets.png` (the
 one-row «At a glance» on top, a pair in ochre and terracotta, «List» at the bottom) regenerated
 and looked at.
+
+### 15 Nov 2026 — The first run offers both cards (owner)
+
+**Where it comes from.** The owner, after the entry above kept the first run on «List» alone:
+"couldn't it be done as in Tempo's onboarding, which offers both widgets, keeping the same style
+and type as the sister apps?". Asked whether the page should keep the card drawn from the
+reader's own caps (the most persuasive thing on it) or be text alone as Tempo's is, the owner
+chose the card.
+
+**Decided and built.** «Your caps on the home screen» keeps its title, and its sentence becomes
+«Two cards. A touch on a cap opens the numpad over the home screen: two touches and the amount.».
+Under it, the family's choice groups (`surfaceContainerLow`, `GroupShape`, the name in
+`titleMedium`, the line in `bodyMedium`, a tonal «Add» whose spoken label names the card),
+«At a glance» first as in the launcher's list, each with its real card at its default size on
+the default look (`HomeCardPreview(card, …)`, the stage without side room inside the group):
+the ring at 4×1 on the cap closest to its cap, the list at 4×2 with every cap. The wide button
+is «Done», or «Continue» before the reminder's page; «Later» went, the cards being a choice and
+not a request. `HomeOfferViewModel.pin(card)`; the note says «a card». On a phone the page now
+scrolls (the list's «Add» under the fold), as Tempo's does at a large text size. This changes
+the entry above for the page: the first run no longer offers «List» alone.
+
+**Checked.** `HomeOfferPageTest` (both cards, «At a glance» above, each request, «Done» without
+a card, a placed card, twice the text size, an open foldable), the widget module's tests,
+spotless; `home-offer.png` looked at.
 

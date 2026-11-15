@@ -2,12 +2,16 @@ package com.callbackdev.tetto.shell
 
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.callbackdev.tetto.core.data.widget.HomeCard
 import com.callbackdev.tetto.core.designsystem.theme.TettoTheme
 import com.callbackdev.tetto.core.domain.cap.CapChanges
 import com.callbackdev.tetto.core.domain.cap.CapStates
@@ -39,7 +43,7 @@ class HomeOfferPageTest {
 
     private val today = LocalDate.of(2026, 11, 5)
     private val euro = AppCurrency("EUR", 2)
-    private var pinned = 0
+    private val pinned = mutableListOf<HomeCard>()
     private var left = 0
 
     private val state = HomeOfferState(
@@ -74,32 +78,42 @@ class HomeOfferPageTest {
     private fun draw(placed: Boolean) {
         compose.setContent {
             TettoTheme {
-                HomeOfferPage(state = state, placed = placed, onPin = { pinned++ }, onLeave = { left++ })
+                HomeOfferPage(state = state, placed = placed, onPin = { pinned += it }, onLeave = { left++ })
             }
         }
     }
 
     @Test
-    fun `the card as it will stand, the request, and the quiet way past`() {
+    fun `both cards as they will stand, at a glance first, each with its request`() {
         draw(placed = false)
         compose.onNodeWithText("Your caps on the home screen").assertExists()
-        compose.onNodeWithTag(HomeOfferTags.PREVIEW).assertExists()
-        compose.onNodeWithText("Add the card").performClick()
-        assertThat(pinned).isEqualTo(1)
-        compose.onNodeWithText("Later").performClick()
-        assertThat(left).isEqualTo(1)
+        val glance = compose.onNodeWithTag(HomeOfferTags.choice(HomeCard.AT_A_GLANCE)).getUnclippedBoundsInRoot()
+        val list = compose.onNodeWithTag(HomeOfferTags.choice(HomeCard.LIST)).getUnclippedBoundsInRoot()
+        assertThat(glance.top).isLessThan(list.top)
+        compose.onNodeWithTag(HomeOfferTags.preview(HomeCard.AT_A_GLANCE)).assertExists()
+        compose.onNodeWithTag(HomeOfferTags.preview(HomeCard.LIST)).assertExists()
+        compose.onNodeWithContentDescription("Add At a glance to the home screen").performClick()
+        assertThat(pinned).containsExactly(HomeCard.AT_A_GLANCE)
         compose.assertAccessible()
         compose.writeScreenshot("home-offer")
+    }
+
+    @Test
+    fun `the list's request, and done without a card`() {
+        draw(placed = false)
+        compose.onNodeWithTag(HomeOfferTags.pin(HomeCard.LIST)).performScrollTo().performClick()
+        assertThat(pinned).containsExactly(HomeCard.LIST)
+        compose.onNodeWithText("Done").performClick()
+        assertThat(left).isEqualTo(1)
     }
 
     @Test
     fun `once the card is there, it says so and the wide button leaves`() {
         draw(placed = true)
         compose.onNodeWithTag(HomeOfferTags.PLACED).assertExists()
-        compose.onNodeWithTag(HomeOfferTags.LATER).assertDoesNotExist()
         compose.onNodeWithText("Done").performClick()
         assertThat(left).isEqualTo(1)
-        assertThat(pinned).isEqualTo(0)
+        assertThat(pinned).isEmpty()
     }
 
     @Test
@@ -109,7 +123,7 @@ class HomeOfferPageTest {
                 HomeOfferPage(
                     state = state,
                     placed = true,
-                    onPin = { pinned++ },
+                    onPin = { pinned += it },
                     onLeave = { left++ },
                     where = "Step 4 of 5",
                     last = false,

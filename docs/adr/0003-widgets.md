@@ -117,7 +117,9 @@ money, a ring per cap, and a numpad that opens over the home screen.
 11. **The pin request** (§8): Settings' «Home screen» group, where the launcher takes the
     request; and the first run's last page, after a run that made caps, where the launcher takes
     it and no card is there yet: «Your caps on the home screen», the real card drawn from the
-    reader's new caps, «Add the card» and «Not now». The caps are written before the page shows,
+    reader's new caps, «Add the card» and «Not now» (since 15 Nov 2026, owner: both cards, «At a
+    glance» first, each in a choice group with its line, its real card drawn from the reader's new
+    caps and its own «Add», then «Done», as the family's first runs offer theirs). The caps are written before the page shows,
     so a process ended on it loses nothing and makes nothing twice. The feature modules reach
     `:widget` through `HomeScreenCards` (`:core:data`), bound by Hilt.
 

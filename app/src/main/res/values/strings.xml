@@ -8,8 +8,11 @@
 
     <!-- The first run's last page, where the launcher can place a card (PLANNING.md §8). -->
     <string name="home_offer_title">Your caps on the home screen</string>
-    <string name="home_offer_body">A card shows what is left of each cap at a glance, and a touch on one opens the numpad over the home screen: two touches and the amount.</string>
-    <string name="home_offer_add">Add the card</string>
+    <string name="home_offer_body">Two cards. A touch on a cap opens the numpad over the home screen: two touches and the amount.</string>
+    <string name="home_offer_glance_body">One cap in a ring, the one closest to its cap, and what is left in words.</string>
+    <string name="home_offer_list_body">Your caps, each with what is left and a slim bar, as many as the card holds.</string>
+    <string name="home_offer_add">Add</string>
+    <string name="home_offer_add_a11y">Add %1$s to the home screen</string>
     <string name="home_offer_added">On your home screen</string>
     <string name="home_offer_later">Later</string>
     <string name="home_offer_done">Done</string>
@@ -18,7 +21,7 @@
     <string name="lock_body">Your fingerprint, your face or the phone’s screen lock opens it.</string>
     <string name="lock_unlock">Unlock</string>
     <string name="lock_prompt_title">Unlock Tetto</string>
-    <string name="home_offer_note">Hold the card on the home screen to choose its colour and its caps, or to make it larger.</string>
+    <string name="home_offer_note">Hold a card on the home screen to choose its colour and its caps, or to make it larger.</string>
     <!-- The first run's evening reminder (owner, 7 Nov 2026): offered, never asked unless chosen. -->
     <string name="reminder_offer_title">A word in the evening</string>
     <string name="reminder_offer_body">If you like, one notification in the evening asks whether there is anything to add, and only on a day you added nothing. It is the only notification Tetto has.</string>
