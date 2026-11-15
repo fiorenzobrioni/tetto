@@ -76,6 +76,14 @@ internal class CardWords(
     fun word(state: CapState): String =
         res.getString(if (state.over) R.string.widget_word_over else R.string.widget_word_left)
 
+    /**
+     * Over, the word on a line of its own, with no figure after it: under a slot's figure ("€30"
+     * over "over", "6 €" over "oltre"), so the slots' figures stay on one line across the row
+     * whatever the language's order; and alone inside a one-cell ring. Never "sotto di", which
+     * reads before its figure.
+     */
+    fun overAlone(): String = res.getString(R.string.widget_word_over_alone)
+
     /** Whether the language puts the word over the figure ("ancora / 12 €") or under it ("€12 / left"). */
     val wordAbove: Boolean get() = res.getBoolean(R.bool.widget_word_above)
 

@@ -24,6 +24,11 @@ enum class WidgetGround { LIGHT, DARK, SYSTEM, COLOR }
  * @property wordsCap «In words»: its cap; null for the one closest to its cap.
  * @property showSentence «In words»: «The sentence» under the figure on a tall card (owner,
  *   5 Nov 2026); off, the circle takes the band it leaves.
+ * @property showOthers «In words»: «The other caps» (owner, 14 Nov 2026): on a card two rows high
+ *   or more, one row of the other caps under the card's own, each a door to its numpad; the ring
+ *   keeps the family's size.
+ * @property otherCaps «In words»: the other caps that row shows, in the reader's order; null for
+ *   every one.
  * @property hideAmounts no figure on the card (owner, 6 Nov 2026), for a home screen others see:
  *   the bars, the ring, the names, the dates and the words stay, over said in words; the amounts
  *   are absent, never blurred, TalkBack's description included.
@@ -35,6 +40,8 @@ data class WidgetLook(
     val glanceCaps: Set<Long>? = null,
     val wordsCap: Long? = null,
     val showSentence: Boolean = true,
+    val showOthers: Boolean = false,
+    val otherCaps: Set<Long>? = null,
     val hideAmounts: Boolean = false,
 ) {
     companion object {

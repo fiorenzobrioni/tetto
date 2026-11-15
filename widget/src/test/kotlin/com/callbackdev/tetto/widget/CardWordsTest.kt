@@ -57,6 +57,7 @@ class CardWordsTest {
         val over = caps[4]
         assertThat(words.figure(over)).isEqualTo("€6 over")
         assertThat(words.word(over)).isEqualTo("over")
+        assertThat(words.overAlone()).isEqualTo("over")
         assertThat(words.detail(over)).isEqualTo("of €40 · starts again on Monday")
         assertThat(words.line(over)).isEqualTo("Fun · starts again on Monday")
         assertThat(words.noteForms(over)).containsExactly("forgiven when it starts again")
@@ -82,6 +83,8 @@ class CardWordsTest {
         assertThat(words.figure(over).plain()).isEqualTo("sotto di 6 €")
         assertThat(words.detail(over).plain()).isEqualTo("su 40 € · riparte lunedì")
         assertThat(words.wordAbove).isTrue()
+        // Under a slot's "6 €", or alone in a ring: a word that reads after its figure, or alone.
+        assertThat(words.overAlone()).isEqualTo("oltre")
         assertThat(words.more(1)).isEqualTo("altro 1")
         assertThat(words.more(3)).isEqualTo("altri 3")
     }

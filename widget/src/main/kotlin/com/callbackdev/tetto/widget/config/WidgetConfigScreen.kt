@@ -75,17 +75,21 @@ object WidgetConfigTags {
     const val SIZES = "widget_config_sizes"
     const val ALL_CAPS = "widget_config_all_caps"
     const val SENTENCE = "widget_config_sentence"
+    const val OTHERS = "widget_config_others"
+    const val ALL_OTHERS = "widget_config_all_others"
     const val HIDE_AMOUNTS = "widget_config_hide_amounts"
     const val CLOSEST = "widget_config_closest"
     const val DONE = "widget_config_done"
 
     fun cap(id: Long) = "widget_config_cap_$id"
+
+    fun other(id: Long) = "widget_config_other_$id"
 }
 
 /**
  * One card's settings (PLANNING.md §7), reached when it is placed and from the launcher's long
  * press: the card at the top, at the sizes it can be given; then what it is painted on, and which
- * caps it shows (and, on «In words», its sentence), and whether it shows any amount at all (owner,
+ * caps it shows (and, on «In words», its sentence and the other caps), and whether it shows any amount at all (owner,
  * 6 Nov 2026: the real card above says what hiding them leaves). Every choice is saved as it is made and redraws
  * this one card; «Reset this card» puts it back as it was placed, «Done» only closes the door.
  *
@@ -127,7 +131,13 @@ fun WidgetConfigScreen(
                 .padding(bottom = 24.dp)
                 .testTag(WidgetConfigTags.LIST),
         ) {
-            PreviewSection(kind, preview?.copy(look = look), placed, sample)
+            PreviewSection(
+                kind,
+                preview?.copy(look = look),
+                placed,
+                sample,
+                tall = kind == WidgetKind.WORDS && look.showOthers,
+            )
 
             GroupHeader(stringResource(R.string.widget_config_background))
             SettingsGroup {
@@ -154,6 +164,7 @@ fun WidgetConfigScreen(
                             modifier = Modifier.testTag(WidgetConfigTags.SENTENCE),
                         )
                     }
+                    SettingsGroup(Modifier.padding(top = 12.dp)) { OtherCapsChoice(look, caps, onLook) }
                 }
             }
 
@@ -196,40 +207,83 @@ fun WidgetConfigScreen(
  */
 @Composable
 private fun GlanceCapsChoice(look: WidgetLook, caps: List<CapState>, onLook: (WidgetLook) -> Unit) {
-    val chosen = look.glanceCaps?.filter { id -> caps.any { it.cap.id == id } }?.toSet()?.takeIf { it.isNotEmpty() }
+    CapsChoice(
+        chosen = look.glanceCaps,
+        caps = caps,
+        allLabel = stringResource(R.string.widget_config_all_caps),
+        allNote = stringResource(R.string.widget_config_all_caps_note),
+        allTag = WidgetConfigTags.ALL_CAPS,
+        capTag = WidgetConfigTags::cap,
+        onChosen = { onLook(look.copy(glanceCaps = it)) },
+    )
+}
+
+/**
+ * «The other caps» on «In words» (owner, 14 Nov 2026): the switch, and once on, which of them, as
+ * «At a glance» chooses its caps; the card's own cap, where the reader named one, is not among
+ * them. The real card above takes a size two rows high, where the row is drawn, if it was on one
+ * that has no room for it.
+ */
+@Composable
+private fun OtherCapsChoice(look: WidgetLook, caps: List<CapState>, onLook: (WidgetLook) -> Unit) {
     SwitchRow(
-        label = stringResource(R.string.widget_config_all_caps),
-        note = stringResource(
-            if (chosen ==
-                null
-            ) {
-                R.string.widget_config_all_caps_note
-            } else {
-                R.string.widget_config_chosen_caps_note
-            },
-        ),
-        checked = chosen == null,
-        onChange = { all ->
-            onLook(look.copy(glanceCaps = if (all) null else caps.map { it.cap.id }.toSet()))
-        },
-        modifier = Modifier.testTag(WidgetConfigTags.ALL_CAPS),
+        label = stringResource(R.string.widget_config_others),
+        note = stringResource(R.string.widget_config_others_note),
+        checked = look.showOthers,
+        onChange = { onLook(look.copy(showOthers = it)) },
+        modifier = Modifier.testTag(WidgetConfigTags.OTHERS),
+    )
+    if (look.showOthers) {
+        GroupDivider()
+        CapsChoice(
+            chosen = look.otherCaps,
+            caps = caps.filter { !it.ended && it.cap.id != look.wordsCap },
+            allLabel = stringResource(R.string.widget_config_all_others),
+            allNote = stringResource(R.string.widget_config_all_others_note),
+            allTag = WidgetConfigTags.ALL_OTHERS,
+            capTag = WidgetConfigTags::other,
+            onChosen = { onLook(look.copy(otherCaps = it)) },
+        )
+    }
+}
+
+/**
+ * Every cap, or the ones ticked ([chosen] null for every one). Unticking the switch starts from
+ * all of them ticked, so nothing disappears from the card at once; the last one ticked cannot be
+ * unticked (a card with no cap chosen would show them all, which is not what unticking says).
+ */
+@Composable
+private fun CapsChoice(
+    chosen: Set<Long>?,
+    caps: List<CapState>,
+    allLabel: String,
+    allNote: String,
+    allTag: String,
+    capTag: (Long) -> String,
+    onChosen: (Set<Long>?) -> Unit,
+) {
+    val alive = chosen?.filter { id -> caps.any { it.cap.id == id } }?.toSet()?.takeIf { it.isNotEmpty() }
+    SwitchRow(
+        label = allLabel,
+        note = if (alive == null) allNote else stringResource(R.string.widget_config_chosen_caps_note),
+        checked = alive == null,
+        onChange = { all -> onChosen(if (all) null else caps.map { it.cap.id }.toSet()) },
+        modifier = Modifier.testTag(allTag),
     )
     if (caps.isEmpty()) {
         GroupDivider()
         NoCapsNote()
-    } else if (chosen != null) {
+    } else if (alive != null) {
         caps.forEach { state ->
             GroupDivider()
-            val ticked = state.cap.id in chosen
+            val ticked = state.cap.id in alive
             CapRow(
                 state = state,
                 selected = ticked,
                 role = Role.Checkbox,
-                enabled = !ticked || chosen.size > 1,
-                onPick = {
-                    val next = if (ticked) chosen - state.cap.id else chosen + state.cap.id
-                    onLook(look.copy(glanceCaps = next))
-                },
+                enabled = !ticked || alive.size > 1,
+                tag = capTag(state.cap.id),
+                onPick = { onChosen(if (ticked) alive - state.cap.id else alive + state.cap.id) },
             ) { enabled -> Checkbox(checked = ticked, onCheckedChange = null, enabled = enabled) }
         }
     }
@@ -295,6 +349,7 @@ private fun CapRow(
     role: Role,
     enabled: Boolean,
     onPick: () -> Unit,
+    tag: String = WidgetConfigTags.cap(state.cap.id),
     control: @Composable (Boolean) -> Unit,
 ) {
     val modifier = if (role == Role.Checkbox) {
@@ -308,7 +363,7 @@ private fun CapRow(
             .fillMaxWidth()
             .then(modifier)
             .padding(horizontal = 16.dp, vertical = 8.dp)
-            .testTag(WidgetConfigTags.cap(state.cap.id)),
+            .testTag(tag),
     ) {
         control(enabled)
         CapBadge(state.cap.icon.symbol, modifier = Modifier.padding(start = 12.dp))

@@ -65,6 +65,44 @@ class WidgetCapsTest {
     }
 
     @Test
+    fun `in words shows no other caps unless the reader turns them on`() {
+        val all = listOf(coffee, dinners, groceries)
+        assertThat(WidgetCaps.others(all, coffee, show = false, chosen = null)).isEmpty()
+    }
+
+    @Test
+    fun `in words' other caps are every cap but its own, in the reader's order`() {
+        val all = listOf(coffee, dinners, groceries)
+        assertThat(WidgetCaps.others(all, dinners, show = true, chosen = null))
+            .containsExactly(coffee, groceries).inOrder()
+        assertThat(WidgetCaps.others(all, null, show = true, chosen = null)).isEqualTo(all)
+    }
+
+    @Test
+    fun `in words' other caps are the reader's choice, never its own cap`() {
+        val all = listOf(coffee, dinners, groceries)
+        assertThat(WidgetCaps.others(all, coffee, show = true, chosen = setOf(3L, 2L)))
+            .containsExactly(dinners, groceries).inOrder()
+        // On the closest, the card's own cap changes day by day: chosen, it is still never twice.
+        assertThat(WidgetCaps.others(all, dinners, show = true, chosen = setOf(2L, 3L))).containsExactly(groceries)
+        assertThat(WidgetCaps.others(all, dinners, show = true, chosen = setOf(2L))).isEmpty()
+    }
+
+    @Test
+    fun `in words' other caps whose chosen are all gone are every other cap`() {
+        val all = listOf(coffee, dinners, groceries)
+        assertThat(WidgetCaps.others(all, coffee, show = true, chosen = setOf(9L)))
+            .containsExactly(dinners, groceries).inOrder()
+    }
+
+    @Test
+    fun `in words' other caps leave an ended one-off out`() {
+        val ended = state(6, euros(20), euros(5)).copy(ended = true)
+        assertThat(WidgetCaps.others(listOf(coffee, ended, groceries), coffee, show = true, chosen = null))
+            .containsExactly(groceries)
+    }
+
+    @Test
     fun `in words with no choice shows the closest to its cap`() {
         assertThat(WidgetCaps.words(listOf(coffee, dinners, groceries), null)).isEqualTo(dinners)
     }

@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.glance.appwidget.ExperimentalGlanceRemoteViewsApi
 import androidx.glance.appwidget.GlanceRemoteViews
+import com.callbackdev.tetto.core.domain.widget.GlanceFit
 import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.CapState
 import com.callbackdev.tetto.core.model.UserSettings
@@ -91,11 +92,22 @@ internal fun placedWidgetSize(context: Context, appWidgetId: Int): DpSize? {
 /**
  * The card as it will look, on a ground that stands in for a wallpaper, with the sizes it can be
  * given underneath. It opens on the size the card really has when the launcher has said it: the
- * reader's own card first.
+ * reader's own card first. [tall]: a choice is on that only a card two rows high draws.
  */
 @Composable
-internal fun PreviewSection(kind: WidgetKind, model: WidgetModel?, placed: DpSize?, sample: Boolean) {
+internal fun PreviewSection(
+    kind: WidgetKind,
+    model: WidgetModel?,
+    placed: DpSize?,
+    sample: Boolean,
+    tall: Boolean = false,
+) {
     var size by remember { mutableStateOf(placed ?: defaultPreviewSize(kind).size) }
+    // A choice drawn only two rows high (the other caps) shows itself: the card takes such a size
+    // if it was on one that has no room for it, the reader's own first.
+    LaunchedEffect(tall) {
+        if (tall && !size.isTall()) size = placed?.takeIf { it.isTall() } ?: PreviewSize.FOUR_BY_TWO.size
+    }
     PreviewStage { CardPreview(kind, model, size) }
     Row(
         modifier = Modifier
@@ -134,6 +146,10 @@ internal fun PreviewSection(kind: WidgetKind, model: WidgetModel?, placed: DpSiz
         modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp),
     )
 }
+
+/** Two rows high and two cells wide: where «In words» draws its tall form. */
+private fun DpSize.isTall(): Boolean =
+    width.value >= GlanceFit.CELL_MAX_WIDTH && height.value >= GlanceFit.TALL_MIN_HEIGHT
 
 /** The ground a preview stands on: the theme's containers, standing in for a wallpaper. */
 @Composable

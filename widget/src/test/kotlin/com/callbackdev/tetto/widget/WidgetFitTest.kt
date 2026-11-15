@@ -78,6 +78,24 @@ class WidgetFitTest {
                             }
                     }
                 }
+                // «The other caps» (owner, 14 Nov 2026): the card's words and the row under them.
+                listOf(1L, 5L, null).forEach { cap ->
+                    listOf(true, false).forEach { sentence ->
+                        val look = WidgetLook(
+                            wordsCap = cap,
+                            showSentence = sentence,
+                            hideAmounts = hidden,
+                            showOthers = true,
+                        )
+                        val model = WidgetSamples.model(context, currency = euro, look = look)
+                        val mayEllipsize = { text: String -> names(model).any { it in text } }
+                        cutTexts(context, size, STRETCH, mayEllipsize) { WordsCardContent(model) }
+                            .forEach {
+                                cut += "In words with the others, cap $cap, sentence $sentence, hidden $hidden, " +
+                                    "${size.width}×${size.height} at $scale: $it"
+                            }
+                    }
+                }
                 val model = WidgetSamples.model(context, currency = euro, look = WidgetLook(hideAmounts = hidden))
                 val mayEllipsize = { text: String -> names(model).any { it in text } }
                 cutTexts(context, size, STRETCH, mayEllipsize) { GlanceCardContent(model) }
@@ -141,6 +159,40 @@ class WidgetFitTest {
         }
         assertThat(sides.toSet()).hasSize(1)
         assertThat(sides.first()).isWithin(0.5f).of(GlanceFit.tallCircle(159f, 189f, 1f))
+    }
+
+    @Test
+    fun `with the other caps, the ring keeps the family's circle at every tall grant`() {
+        val tall = listOf(
+            Grants.TwoByTwo,
+            Grants.OwnersTwoByTwo,
+            Grants.ThreeByTwo,
+            Grants.FourByTwo,
+            Grants.TwoByThree,
+            Grants.ThreeByThree,
+            Grants.FourByThree,
+        )
+        tall.forEach { size ->
+            val alone = WidgetSamples.model(context, words = true, currency = euro)
+            val others = WidgetSamples.model(
+                context,
+                words = true,
+                currency = euro,
+                look = WidgetLook(showOthers = true),
+            )
+            assertWithMessage("${size.width}×${size.height}")
+                .that(ringSide(size) { WordsCardContent(others) })
+                .isWithin(0.5f)
+                .of(ringSide(size) { WordsCardContent(alone) })
+        }
+        // Without the sentence, the room it leaves is the row's: the ring is the card's with it.
+        val bare = WidgetSamples.model(
+            context,
+            words = true,
+            currency = euro,
+            look = WidgetLook(showOthers = true, showSentence = false),
+        )
+        assertThat(ringSide(Grants.FourByTwo) { WordsCardContent(bare) }).isWithin(0.5f).of(73.75f)
     }
 
     /**

@@ -25,6 +25,7 @@ import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
+import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.size
 import androidx.glance.layout.width
@@ -38,17 +39,21 @@ import com.callbackdev.tetto.core.domain.widget.GlanceFit
 import com.callbackdev.tetto.core.domain.widget.WidgetCaps
 import com.callbackdev.tetto.core.domain.widget.WidgetType
 import com.callbackdev.tetto.core.domain.widget.WordsForm
+import com.callbackdev.tetto.core.domain.widget.WordsLayout
 import com.callbackdev.tetto.core.domain.widget.WordsPlan
 import com.callbackdev.tetto.core.domain.widget.WordsSpec
 import com.callbackdev.tetto.core.domain.widget.quarterPoint
 import com.callbackdev.tetto.core.model.CapState
+import com.callbackdev.tetto.widget.CapSlot
 import com.callbackdev.tetto.widget.CardModels
 import com.callbackdev.tetto.widget.CardWords
 import com.callbackdev.tetto.widget.MessageContent
+import com.callbackdev.tetto.widget.MoreCaps
 import com.callbackdev.tetto.widget.R
 import com.callbackdev.tetto.widget.RingInks
 import com.callbackdev.tetto.widget.RingPainter
 import com.callbackdev.tetto.widget.RingSpec
+import com.callbackdev.tetto.widget.SlotParts
 import com.callbackdev.tetto.widget.TettoWidgetReceiver
 import com.callbackdev.tetto.widget.TextWeight
 import com.callbackdev.tetto.widget.WidgetCard
@@ -68,6 +73,8 @@ import com.callbackdev.tetto.widget.widgetDressFor
  * «In words», the family's ring card (PLANNING.md §7): one cap, its ring the family's circle for
  * the card's size, the cap's icon inside it, and the words. The forms and their arithmetic are
  * [GlanceFit]'s; this file draws them. The whole card is the cap: a touch adds a spend to it.
+ * Two rows high and up, where the reader asks for them (owner, 14 Nov 2026), the other caps stand
+ * in a row at its foot, each a door to its own numpad; the ring keeps the family's size.
  *
  * | rank | what | size | weight | ink |
  * |---|---|---|---|---|
@@ -147,8 +154,13 @@ fun WordsCardContent(model: WidgetModel) {
             )
 
             else -> {
-                val parts = WordsParts(context, model, state, palette)
+                val others = WidgetCaps.others(model.caps, state, model.look.showOthers, model.look.otherCaps)
+                val parts = WordsParts(context, model, state, palette, others)
                 val plan = GlanceFit.wordsPlan(parts.spec(size))
+                if (plan.others != null) {
+                    OthersContent(parts, plan, size)
+                    return@WidgetCard
+                }
                 Box(
                     modifier = GlanceModifier
                         .fillMaxSize()
@@ -158,7 +170,7 @@ fun WordsCardContent(model: WidgetModel) {
                     when (plan.form) {
                         WordsForm.CELL -> CellContent(parts, plan)
                         WordsForm.ROW -> RowContent(parts, plan)
-                        WordsForm.TALL -> TallContent(parts, plan, size)
+                        WordsForm.TALL -> TallContent(parts, plan, size, parts.lastWords)
                     }
                 }
             }
@@ -172,6 +184,7 @@ private class WordsParts(
     val model: WidgetModel,
     val state: CapState,
     val palette: WidgetPalette,
+    val others: List<CapState> = emptyList(),
 ) {
     val words = CardWords(context, model.currency, model.today, hidden = model.look.hideAmounts)
     val scale = fontScale(context)
@@ -193,6 +206,15 @@ private class WordsParts(
     var lastWords: List<String> = emptyList()
         private set
 
+    /** With the other caps: the last words under the ring, and those in the column beside it. */
+    var othersLastWords: List<String> = emptyList()
+        private set
+    var besideLastWords: List<String> = emptyList()
+        private set
+
+    /** The other caps' row: drawn as «At a glance» draws a row's caps. */
+    val slots by lazy { SlotParts(context, model, palette) }
+
     fun spec(size: DpSize): WordsSpec {
         val inner = (size.width.value - GlanceFit.CARD_PADDING * 2).dp
         val base = WordsSpec(
@@ -206,6 +228,19 @@ private class WordsParts(
             rowLineEms = emptyList(),
         )
         lastWords = words.lastWords(state, withName = !GlanceFit.tallNameBeside(base))
+        // With the other caps, the words are measured for both places they may take by the ring.
+        val withOthers = others.isNotEmpty() && GlanceFit.wordsForm(size.width.value, size.height.value) ==
+            WordsForm.TALL
+        val beside = if (withOthers) GlanceFit.othersBeside(size.width.value, size.height.value, scale).dp else 0.dp
+        othersLastWords = if (withOthers) {
+            words.lastWords(
+                state,
+                withName = !GlanceFit.othersNameBeside(size.width.value, size.height.value, scale),
+            )
+        } else {
+            emptyList()
+        }
+        besideLastWords = if (withOthers && beside.value > 0f) words.lastWords(state, withName = true) else emptyList()
         return WordsSpec(
             width = size.width.value,
             height = size.height.value,
@@ -221,18 +256,30 @@ private class WordsParts(
             sentenceLines = noteForms.map {
                 measureWidgetLines(context, it, GlanceFit.SENTENCE_SP, inner, TextWeight.REGULAR)
             },
-            detailLines = lastWords.mapIndexed { index, text ->
-                val lines = measureWidgetLines(context, text, WidgetType.BODY, inner, TextWeight.REGULAR)
-                when (index) {
-                    // On one line, or not this form; broken at its separator, each part on its own line.
-                    0 -> if (lines == 1) 1 else Int.MAX_VALUE
-
-                    1 -> if (lines == 2) 2 else Int.MAX_VALUE
-
-                    else -> lines
-                }
+            detailLines = detailCounts(lastWords, inner),
+            others = if (withOthers) others.size else 0,
+            othersDetailLines = detailCounts(othersLastWords, inner),
+            besideWidth = beside.value,
+            besideDetailLines = detailCounts(besideLastWords, beside),
+            besideSentenceLines = if (withOthers && beside.value > 0f) {
+                noteForms.map { measureWidgetLines(context, it, GlanceFit.SENTENCE_SP, beside, TextWeight.REGULAR) }
+            } else {
+                emptyList()
             },
         )
+    }
+
+    /**
+     * The lines each form of the last words takes across [width]: on one line, or not this form;
+     * broken at its separator, each part on its own line; the day alone, the lines it takes.
+     */
+    private fun detailCounts(forms: List<String>, width: Dp): List<Int> = forms.mapIndexed { index, text ->
+        val lines = measureWidgetLines(context, text, WidgetType.BODY, width, TextWeight.REGULAR)
+        when (index) {
+            0 -> if (lines == 1) 1 else Int.MAX_VALUE
+            1 -> if (lines == 2) 2 else Int.MAX_VALUE
+            else -> lines
+        }
     }
 }
 
@@ -264,7 +311,7 @@ private fun CellContent(parts: WordsParts, plan: WordsPlan) {
         Box(modifier = GlanceModifier.size(side), contentAlignment = Alignment.Center) {
             Ring(parts, side, withIcon = !overInside)
             if (overInside) {
-                val word = parts.words.word(parts.state)
+                val word = parts.words.overAlone()
                 val hole = side.value * (1f - RingPainter.STROKE_SHARE * 2) * INSIDE_FILL
                 val sp = quarterPoint(
                     minOf(
@@ -341,7 +388,7 @@ private fun RowContent(parts: WordsParts, plan: WordsPlan) {
  * Sunday"), broken at the separator, or the day alone, where the card is narrow.
  */
 @Composable
-private fun TallContent(parts: WordsParts, plan: WordsPlan, size: DpSize) {
+private fun TallContent(parts: WordsParts, plan: WordsPlan, size: DpSize, lastWords: List<String>) {
     val inner = size.width.value - GlanceFit.CARD_PADDING * 2
     Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.TopEnd) {
         if (plan.circle > 0f) Ring(parts, plan.circle.dp)
@@ -374,12 +421,95 @@ private fun TallContent(parts: WordsParts, plan: WordsPlan, size: DpSize) {
             }
             if (plan.detail >= 0) {
                 Text(
-                    text = parts.lastWords[plan.detail],
+                    text = lastWords[plan.detail],
                     style = TextStyle(color = parts.palette.secondaryInk, fontSize = WidgetType.BODY.sp),
                     maxLines = plan.detailLines,
                 )
             }
         }
+    }
+}
+
+/**
+ * Two rows and up, with the other caps (owner, 14 Nov 2026): the card's own cap in the room the row
+ * leaves, its ring the family's circle in the top trailing corner and its words under it or beside
+ * it ([WordsLayout]), the whole of that room its door; [GlanceFit.OTHERS_GAP] of air; then the row,
+ * each cap a door to its own numpad, the last slot counting the caps that do not fit. The air and
+ * the count open Tetto, as the card's own ground does.
+ */
+@Composable
+private fun OthersContent(parts: WordsParts, plan: WordsPlan, size: DpSize) {
+    val others = plan.others ?: return
+    val inner = size.width.value - GlanceFit.CARD_PADDING * 2
+    val slot = ((inner - GlanceFit.SLOT_GAP * (others.slots - 1)) / others.slots).dp
+    Column(modifier = GlanceModifier.fillMaxSize()) {
+        Box(
+            modifier = GlanceModifier
+                .fillMaxWidth()
+                .height(plan.zone.dp)
+                .clickable(actionStartActivity(WidgetIntents.quickAdd(parts.context, parts.state.cap.id)))
+                .semantics { contentDescription = parts.words.description(parts.state) },
+        ) {
+            when (plan.layout) {
+                WordsLayout.BESIDE -> BesideContent(parts, plan, size)
+                else -> TallContent(parts, plan, size, parts.othersLastWords)
+            }
+        }
+        Spacer(modifier = GlanceModifier.height(GlanceFit.OTHERS_GAP.dp))
+        Row(
+            modifier = GlanceModifier.fillMaxWidth().height(others.height.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            parts.others.take(others.shown).forEachIndexed { index, state ->
+                if (index > 0) Spacer(modifier = GlanceModifier.width(GlanceFit.SLOT_GAP.dp))
+                CapSlot(parts.slots, state, slot, others.names)
+            }
+            if (others.more > 0) {
+                Spacer(modifier = GlanceModifier.width(GlanceFit.SLOT_GAP.dp))
+                MoreCaps(parts.slots, others.more, slot, short = true)
+            }
+        }
+    }
+}
+
+/**
+ * The words in a column beside the ring, where under it is too low for the hero: what is left, the
+ * cap's name and its last day ("Coffee · until Sunday"), the sentence where it fits; centred on the
+ * ring where the column is the shorter, so the two read as one line of sight.
+ */
+@Composable
+private fun BesideContent(parts: WordsParts, plan: WordsPlan, size: DpSize) {
+    val beside = size.width.value - GlanceFit.CARD_PADDING * 2 - plan.circle - GlanceFit.CIRCLE_GAP
+    // Centred on the ring where the words are clearly the shorter; else from its top, with all the
+    // room over the row, since a launcher's lines are a little taller than the band counts them.
+    val centred = plan.besideHeight + BESIDE_SLACK <= plan.circle
+    Row(modifier = GlanceModifier.fillMaxSize(), verticalAlignment = Alignment.Top) {
+        Column(
+            modifier = GlanceModifier.width(beside.dp).height((if (centred) plan.circle else plan.zone).dp),
+            verticalAlignment = if (centred) Alignment.CenterVertically else Alignment.Top,
+        ) {
+            Text(
+                text = parts.figure,
+                style = TextStyle(color = parts.figureInk, fontSize = plan.heroSp.sp, fontWeight = FontWeight.Bold),
+                maxLines = 1,
+            )
+            if (plan.detail >= 0) {
+                Text(
+                    text = parts.besideLastWords[plan.detail],
+                    style = TextStyle(color = parts.palette.secondaryInk, fontSize = WidgetType.BODY.sp),
+                    maxLines = plan.detailLines,
+                )
+            }
+            if (plan.sentence >= 0) {
+                Text(
+                    text = parts.noteForms[plan.sentence],
+                    style = TextStyle(color = parts.palette.primaryInk, fontSize = GlanceFit.SENTENCE_SP.sp),
+                    maxLines = plan.sentenceLines,
+                )
+            }
+        }
+        Spacer(modifier = GlanceModifier.width(GlanceFit.CIRCLE_GAP.dp))
+        Ring(parts, plan.circle.dp)
     }
 }
 
@@ -400,3 +530,6 @@ internal fun twoLineEm(context: Context, text: String): Float {
 
 /** How much of the ring's hole the word inside it may fill. */
 private const val INSIDE_FILL = 0.8f
+
+/** What a column's lines take beyond the band's count of them: a launcher's font padding. */
+private const val BESIDE_SLACK = 4f

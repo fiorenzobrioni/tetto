@@ -45,6 +45,8 @@ class WidgetLookStoreTest {
         assertThat(look.glanceCaps).isNull()
         assertThat(look.wordsCap).isNull()
         assertThat(look.showSentence).isTrue()
+        assertThat(look.showOthers).isFalse()
+        assertThat(look.otherCaps).isNull()
     }
 
     @Test
@@ -56,6 +58,8 @@ class WidgetLookStoreTest {
             glanceCaps = setOf(3L, 12L),
             wordsCap = 12L,
             showSentence = false,
+            showOthers = true,
+            otherCaps = setOf(3L, 5L),
         )
         store.set(7, chosen)
         assertThat(store.lookFor(7)).isEqualTo(chosen)
@@ -64,7 +68,7 @@ class WidgetLookStoreTest {
 
     @Test
     fun `back to every cap and the closest, the choice is dropped`() = runTest {
-        store.set(7, WidgetLook(glanceCaps = setOf(3L), wordsCap = 3L))
+        store.set(7, WidgetLook(glanceCaps = setOf(3L), wordsCap = 3L, otherCaps = setOf(4L)))
         store.set(7, WidgetLook())
         assertThat(store.lookFor(7)).isEqualTo(WidgetLook())
     }
