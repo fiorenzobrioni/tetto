@@ -40,7 +40,7 @@ class WidgetLookStoreTest {
         val look = store.lookFor(7)
         assertThat(look).isEqualTo(WidgetLook())
         assertThat(look.ground).isEqualTo(WidgetGround.COLOR)
-        assertThat(look.cardColor).isEqualTo(WidgetCardColor.BLUE)
+        assertThat(look.cardColor).isEqualTo(WidgetCardColor.PLUM)
         assertThat(look.opacityPct).isEqualTo(100)
         assertThat(look.glanceCaps).isNull()
         assertThat(look.wordsCap).isNull()

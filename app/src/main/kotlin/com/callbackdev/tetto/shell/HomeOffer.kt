@@ -18,11 +18,11 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
@@ -51,6 +52,7 @@ import com.callbackdev.tetto.core.data.time.TodaySource
 import com.callbackdev.tetto.core.data.widget.HomeCard
 import com.callbackdev.tetto.core.data.widget.HomeScreenCards
 import com.callbackdev.tetto.core.designsystem.icons.TettoIcons
+import com.callbackdev.tetto.core.designsystem.theme.GroupShape
 import com.callbackdev.tetto.core.designsystem.theme.balanced
 import com.callbackdev.tetto.core.designsystem.theme.padding
 import com.callbackdev.tetto.core.designsystem.theme.pageGutter
@@ -66,6 +68,7 @@ import kotlinx.coroutines.flow.stateIn
 import java.time.LocalDate
 import javax.inject.Inject
 import com.callbackdev.tetto.feature.onboarding.R as OnboardingR
+import com.callbackdev.tetto.widget.R as WidgetR
 
 /** What the first run's last page shows: the reader's new caps, as a card will draw them. */
 data class HomeOfferState(
@@ -96,7 +99,7 @@ constructor(
     /** Whether the page has anything to offer: a launcher that takes the request, and no card yet. */
     fun worthOffering(): Boolean = cards.canPin() && !cards.placed()
 
-    fun pin(): Boolean = cards.pin(HomeCard.AT_A_GLANCE)
+    fun pin(card: HomeCard): Boolean = cards.pin(card)
 
     fun placed(): Boolean = cards.placed()
 
@@ -122,7 +125,7 @@ fun HomeOfferRoute(
     HomeOfferPage(
         state = state,
         placed = placed,
-        onPin = { viewModel.pin() },
+        onPin = { card -> viewModel.pin(card) },
         onLeave = onLeave,
         where = where,
         last = last,
@@ -130,17 +133,19 @@ fun HomeOfferRoute(
 }
 
 /**
- * «Your caps on the home screen», in the first run's frame (no icon, one sentence, one wide button
- * and the quiet way past under it): the card as it will stand, drawn from the reader's own caps;
- * «Add the card» hands the request to the launcher, whose dialog places it. Once a card is there
- * the page says so, and the wide button moves on: «Done» on the run's last page, «Continue» when
- * the reminder's page follows. [where] is the run's step, said on the heading as the run's pages say it.
+ * «Your caps on the home screen», in the first run's frame (no icon, one sentence, one wide button):
+ * the two cards to choose from, as the family's first runs offer theirs (owner, 15 Nov 2026), «At a
+ * glance» first as in the launcher's list, each drawn from the reader's own caps, with its line and
+ * an «Add» that hands the request to the launcher, whose dialog places it. A new reader sees one cap
+ * on the first and every cap on the second, and picks. Once a card is there the page says so. The
+ * wide button moves on: «Done» on the run's last page, «Continue» when the reminder's page follows.
+ * [where] is the run's step, said on the heading as the run's pages say it.
  */
 @Composable
 fun HomeOfferPage(
     state: HomeOfferState?,
     placed: Boolean,
-    onPin: () -> Unit,
+    onPin: (HomeCard) -> Unit,
     onLeave: () -> Unit,
     where: String? = null,
     last: Boolean = true,
@@ -175,10 +180,21 @@ fun HomeOfferPage(
                         textAlign = TextAlign.Center,
                     )
                     Spacer(Modifier.height(24.dp))
-                    if (state != null) {
-                        Box(Modifier.testTag(HomeOfferTags.PREVIEW)) {
-                            HomeCardPreview(state.caps, state.currency, state.settings, state.today)
-                        }
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        CardChoice(
+                            card = HomeCard.AT_A_GLANCE,
+                            title = stringResource(WidgetR.string.widget_words_label),
+                            body = stringResource(R.string.home_offer_glance_body),
+                            state = state,
+                            onPin = onPin,
+                        )
+                        CardChoice(
+                            card = HomeCard.LIST,
+                            title = stringResource(WidgetR.string.widget_glance_label),
+                            body = stringResource(R.string.home_offer_list_body),
+                            state = state,
+                            onPin = onPin,
+                        )
                     }
                     Spacer(Modifier.height(12.dp))
                     Text(
@@ -219,25 +235,63 @@ fun HomeOfferPage(
                     }
                 }
                 Button(
-                    onClick = if (placed) onLeave else onPin,
+                    onClick = onLeave,
                     modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp).testTag(HomeOfferTags.PRIMARY),
                 ) {
                     Text(
-                        when {
-                            !placed -> stringResource(R.string.home_offer_add)
-                            last -> stringResource(R.string.home_offer_done)
-                            else -> stringResource(OnboardingR.string.onboarding_next)
+                        if (last) {
+                            stringResource(R.string.home_offer_done)
+                        } else {
+                            stringResource(OnboardingR.string.onboarding_next)
                         },
                     )
                 }
-                if (!placed) {
-                    TextButton(
-                        onClick = onLeave,
-                        modifier = Modifier.heightIn(min = 48.dp).testTag(HomeOfferTags.LATER),
-                    ) {
-                        Text(stringResource(R.string.home_offer_later))
-                    }
+            }
+        }
+    }
+}
+
+/**
+ * One card to choose, in the family's choice group: its name, its line, the card as the reader's
+ * caps will stand on it (once they are read), and «Add», whose spoken label names the card.
+ */
+@Composable
+private fun CardChoice(
+    card: HomeCard,
+    title: String,
+    body: String,
+    state: HomeOfferState?,
+    onPin: (HomeCard) -> Unit,
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = GroupShape,
+        modifier = Modifier.fillMaxWidth().testTag(HomeOfferTags.choice(card)),
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+        ) {
+            Text(title, style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = body,
+                style = MaterialTheme.typography.bodyMedium.balanced(),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (state != null) {
+                Box(Modifier.padding(top = 6.dp).testTag(HomeOfferTags.preview(card))) {
+                    HomeCardPreview(card, state.caps, state.currency, state.settings, state.today)
                 }
+            }
+            val label = stringResource(R.string.home_offer_add_a11y, title)
+            FilledTonalButton(
+                onClick = { onPin(card) },
+                modifier = Modifier
+                    .padding(top = 6.dp)
+                    .semantics { contentDescription = label }
+                    .testTag(HomeOfferTags.pin(card)),
+            ) {
+                Text(stringResource(R.string.home_offer_add))
             }
         }
     }
@@ -252,8 +306,12 @@ internal fun Modifier.firstRunHeading(where: String?): Modifier = semantics {
 /** Tags for the tests. */
 object HomeOfferTags {
     const val PAGE = "home_offer"
-    const val PREVIEW = "home_offer_preview"
     const val PRIMARY = "home_offer_primary"
-    const val LATER = "home_offer_later"
     const val PLACED = "home_offer_placed"
+
+    fun choice(card: HomeCard) = "home_offer_choice_${card.name.lowercase()}"
+
+    fun preview(card: HomeCard) = "home_offer_preview_${card.name.lowercase()}"
+
+    fun pin(card: HomeCard) = "home_offer_pin_${card.name.lowercase()}"
 }

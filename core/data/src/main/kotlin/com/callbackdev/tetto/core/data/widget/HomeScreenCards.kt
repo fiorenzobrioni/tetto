@@ -2,11 +2,11 @@ package com.callbackdev.tetto.core.data.widget
 
 /** The two cards, as a screen outside the widgets' module names them (PLANNING.md §7). */
 enum class HomeCard {
-    /** «At a glance»: the caps, each its icon, what is left and a slim bar. */
+    /** «At a glance»: one cap in the family's ring, and the words. */
     AT_A_GLANCE,
 
-    /** «In words»: one cap in the family's ring, and the words. */
-    IN_WORDS,
+    /** «List»: the caps, each its icon, what is left and a slim bar. */
+    LIST,
 }
 
 /**

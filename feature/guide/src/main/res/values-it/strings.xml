@@ -55,7 +55,7 @@
     <!-- Nella schermata Home -->
     <string name="guide_home_title">Nella schermata Home</string>
     <string name="guide_home_two_title">Due widget</string>
-    <string name="guide_home_two_body">«Colpo d’occhio» tiene i tuoi tetti, quanti ne permette la sua misura, ciascuno con quanto resta e una barra sottile. «In parole» tiene un tetto in un anello, con quanto resta a parole: il tetto che scegli tu, o quello più vicino al suo tetto, e, alto due righe, gli altri tuoi tetti sotto, se li vuoi. Nessuno dei due scorre mai: quello che non ci sta viene contato. Tieni premuto un widget per le sue impostazioni: lo sfondo e il colore, l’opacità, i tetti.</string>
+    <string name="guide_home_two_body">«A colpo d’occhio» tiene un tetto in un anello, con quanto resta a parole: il tetto che scegli tu, o quello più vicino al suo tetto, e, alto due righe, gli altri tuoi tetti sotto, se li vuoi. «Elenco» tiene i tuoi tetti, quanti ne permette la sua misura, ciascuno con quanto resta e una barra sottile. Nessuno dei due scorre mai: quello che non ci sta viene contato. Tieni premuto un widget per le sue impostazioni: lo sfondo e il colore, l’opacità, i tetti.</string>
     <string name="guide_home_add_title">Una spesa senza aprire l’app</string>
     <string name="guide_home_add_body">Un tocco su un tetto in un widget apre il tastierino sopra la schermata Home: due tocchi e l’importo, e sei di nuovo dov’eri. Una pressione prolungata sull’icona di Tetto offre allo stesso modo i tuoi primi quattro tetti.</string>
     <string name="guide_home_dates_title">Giorni, non conti alla rovescia</string>

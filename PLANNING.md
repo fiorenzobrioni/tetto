@@ -244,7 +244,7 @@ From a cap, its open period's spends and today (`CapStates.of`):
 - `daysLeft = openEnd − today`, today counted, at least 1.
 - **The bar**: `spentShare = spent / (cap + reserve)`, held to `[0, 1]`, with an over state beyond.
 - **The mark for today**, for a week, a month or a year: `daysShare = (today − openStart + 1) / length`, today counted.
-- **Ahead of the days**: not over, and `spentShare > daysShare + slack / length × daysLeft / length`: spending runs ahead of the period (the bar takes the *attention* ink). The slack is one step of the period, a day of a week, seven days of a month, thirty of a year, fading to nothing by its last day (owner, 6 Nov 2026, replacing `spentShare > daysShare`, which lit three caps of five on the 5th of a month, and a week's shop on a month's first day for a week): on a week's first day the line is two sevenths, the mark and the day the reader approved; a month nearly spent with a week to go is still ahead. No fixed threshold. The shares are kept as whole numbers (`Share`, `CapStates.aheadLine`) and compared exactly; the screen turns them into lengths. Said in words too (owner, 7 Nov 2026): «ahead of the days» under the bar, in the attention ink, on a tile and on a row of the list, for an eye that does not know what the mark means; «At a glance» keeps the ink and the mark, its rows too small for a line more, and «In words» says it in its note as before.
+- **Ahead of the days**: not over, and `spentShare > daysShare + slack / length × daysLeft / length`: spending runs ahead of the period (the bar takes the *attention* ink). The slack is one step of the period, a day of a week, seven days of a month, thirty of a year, fading to nothing by its last day (owner, 6 Nov 2026, replacing `spentShare > daysShare`, which lit three caps of five on the 5th of a month, and a week's shop on a month's first day for a week): on a week's first day the line is two sevenths, the mark and the day the reader approved; a month nearly spent with a week to go is still ahead. No fixed threshold. The shares are kept as whole numbers (`Share`, `CapStates.aheadLine`) and compared exactly; the screen turns them into lengths. Said in words too (owner, 7 Nov 2026): «ahead of the days» under the bar, in the attention ink, on a tile and on a row of the list, for an eye that does not know what the mark means; «List» keeps the ink and the mark, its rows too small for a line more, and «At a glance» says it in its note as before.
 - **The cap's habits** (`RecentAmounts`, owner, 6 Nov 2026): the numpad offers the most frequent amounts of the cap's last twenty spends, of any period, at most three, ties to the one used last, shown smallest first; each is added in one touch. Amounts only.
 - **The pace**, for a week, a month or a year, while something is left and `daysLeft ≥ 2`: `left / daysLeft`, rounded down to a whole unit of the currency; under one unit, «less than €1 a day» (`Pace.lessThan`; owner, 7 Nov 2026, replacing "not shown under one unit": a cap nearly spent with days to go said nothing at the moment it mattered).
 - **The renewal** (owner, 5 Nov 2026): "until" names the open period's **last day**, included ("€12 until Sunday", "until 30 Nov"); a cap over says when it **starts again**, the next period's first day ("it starts again on Monday"). Each date is said by how near it is (`Days.near`): today, tomorrow, a weekday from two to six days ahead, else a date (a week ahead would be today's own weekday). The words are Phase 2's.
@@ -315,7 +315,7 @@ From a cap, its open period's spends and today (`CapStates.of`):
 
 ### DataStore, file `widgets` (not backed up)
 
-One `WidgetLook` per `appWidgetId`: the card's ground (light, dark, system, one of the six colours), its opacity, which caps («At a glance»: all, or a chosen set in the reader's order; «In words»: one cap, or the closest to its cap, and «The sentence», on by default; «The other caps», `words_others_<id>`, off by default, and which of them, `words_other_caps_<id>`, all when absent: owner, 14 Nov 2026), and whether it hides its amounts (`hide_amounts_<id>`, off by default; Phase 6b). Removed in `onDeleted`.
+One `WidgetLook` per `appWidgetId`: the card's ground (light, dark, system, one of the seven colours; violet by default), its opacity, which caps («List»: all, or a chosen set in the reader's order; «At a glance»: one cap, or the closest to its cap, and «The sentence», on by default; «The other caps», `words_others_<id>`, off by default, and which of them, `words_other_caps_<id>`, all when absent: owner, 14 Nov 2026), and whether it hides its amounts (`hide_amounts_<id>`, off by default; Phase 6b). Removed in `onDeleted`.
 
 ### Backup
 
@@ -334,35 +334,35 @@ One `WidgetLook` per `appWidgetId`: the card's ground (light, dark, system, one 
 - **`CapState`**, **`Pace`** (about so much a day, or less than one unit): §4.6. **`PeriodAmount`** (owner, 7 Nov 2026): what a cap gives its open period, the whole cap or, for a period a change cut short, its share of the days (§4.5).
 - **`SpendSplits`** (owner, 7 Nov 2026): an open period's spends divided where a change keeps the days before the new period, by their instants, a refund following what it gave back (§4.5).
 - **`SpendPreview`** (`ofRefund` for money back) and **`MoneyInput`**: the numpad's arithmetic (§4.1, §4.6); **`Renewals`**, how a period that renewed today ended (§4.6); **`RecentAmounts`**, the cap's habits above its keys (§4.6).
-- **`CapsSentence`**: the caps screen's sentence, and «In words»'s (§4.6).
+- **`CapsSentence`**: the caps screen's sentence, and «At a glance»'s (§4.6).
 - **`MonthSums`**, **`YourMonth`** (owner, 6 Nov 2026): the reader's month (from the month start day, the salary's for a reader who sets it so) and the one before; what the caps are worth in it, about (a month's cap its amount, a day's for each of its days, a week's for its days over seven, a year's a twelfth; the reserves left out; exact in 84ths, rounded once to the whole unit). What was added to the caps in each month is the repository's sum of the spends added between the months' first instants in the zone of asking (`Days.instantsOf`), closed periods' spends included. Shown last on the caps screen; never a sum of what is left, no month before the last, no choice of period.
 - **`LockSchedule`** (Phase 6b): whether Tetto is unlocked, from its pages' comings and goings on the time since boot: locked at start and after a minute away; a turn of the phone, the step from the caps to the numpad over the home screen, and the phone's own lock screen over Tetto are not away; it asks by itself once per lock.
 - **`ReminderSchedule`**: the next moment the reminder fires, from the time, today and now; across a daylight-saving change (as Passo's `EveningReminder`).
 - **`BackupCodec`**, **`CsvExport`**: §5.
 - **`GlanceFit`** (pure arithmetic, as the family's `GlanceLayout` / `AgendaFit`): given a card's granted size in dp and the text sizes measured in the system face, which form the card takes and how many caps fit; pinned by tests at the family's reference grants (one row ≈ 85 dp tall, two ≈ 189; widths 2 cells ≈ 159 dp, 3 ≈ 250, 4 ≈ 340), with the family's widget scale (`WidgetType`) and its text metrics.
-- **`WidgetCaps`**, **`CapNote`**: an ended one-off is on no card but an «In words» that chose it, and never the closest (Phase 6b); `CapNote.Ended`, and `Forgiven.renews` false for a one-off ("forgiven when it ends"). Which caps a card shows (the reader's choice, or every cap; «In words»'s chosen cap, or the one closest to its cap: the first over, else the lowest share left), and what «In words» says of its cap under the figure (the pace, ahead of the days, the reserve, forgiven when it starts again), a structure, never a string.
+- **`WidgetCaps`**, **`CapNote`**: an ended one-off is on no card but an «At a glance» that chose it, and never the closest (Phase 6b); `CapNote.Ended`, and `Forgiven.renews` false for a one-off ("forgiven when it ends"). Which caps a card shows (the reader's choice, or every cap; «At a glance»'s chosen cap, or the one closest to its cap: the first over, else the lowest share left), and what «At a glance» says of its cap under the figure (the pace, ahead of the days, the reserve, forgiven when it starts again), a structure, never a string.
 
 ---
 
 ## 7. Widgets (Glance)
 
-The family's pair (owner, 5 Nov 2026), on the family's card (Passo's ADR 0005, from Chiaro): its corner, insets, grounds, Chiaro's six colours (`WidgetPalette.kt`), opacity and ink rule. The details of each form are settled in Phase 5 with their ADR (`docs/adr/0003-widgets.md`); what follows binds them.
+The family's pair (owner, 5 Nov 2026), on the family's card (Passo's ADR 0005, from Chiaro): its corner, insets, grounds, the family's seven colours (`WidgetPalette.kt`; the app's violet, `PLUM`, by default, owner, 15 Nov 2026), opacity and ink rule. The names are the family's since 15 Nov 2026 (owner, §15): «At a glance» / «A colpo d'occhio» is the ring card (`WordsWidget`, «In words» until then), first in the manifest and in the launcher's list; «List» / «Elenco» is the caps' list (`GlanceWidget`, «At a glance» until then). The code keeps its names: a placed card is bound to its receiver's class name. The details of each form are settled in Phase 5 with their ADR (`docs/adr/0003-widgets.md`); what follows binds them.
 
 ### Configuration
 
 - `SizeMode.Exact`: every form is read off the size the launcher really granted.
-- Default placement 4×2 for «At a glance», 4×1 for «In words»; minimum one cell; `resizeMode="horizontal|vertical"`; **no maximum** (Passo's ADR 0005).
+- Default placement 4×2 for «List», 4×1 for «At a glance»; minimum one cell; `resizeMode="horizontal|vertical"`; **no maximum** (Passo's ADR 0005).
 - `updatePeriodMillis = 0`. `configure` is the per-widget settings screen, `reconfigurable|configuration_optional`: the card is placed at once with sensible defaults.
 - `widgetCategory="home_screen"`.
 - Reference grants the layout tests measure against (the family's): one row ≈ 85 dp tall, two ≈ 189; two cells ≈ 159 dp wide, three ≈ 250, four ≈ 340.
 
-| «At a glance» form | When | Content |
+| «List» form | When | Content |
 |---|---|---|
 | CELL | one cell | One cap: its icon and what is left |
 | ROW | one row | The caps side by side, as many as the width holds, each its icon, its left and a slim bar; the rest counted |
 | GRID | two rows and up | The caps in rows, each its icon, name, left and bar; "3 more" where they do not all fit |
 
-### «In words»: the family's ring card
+### «At a glance»: the family's ring card
 
 The owner asked (5 Nov 2026) that this card have **the ring of Passo's and Tempo's ring cards, at the same sizes for every size of card and every line of text**, so the three stand on a home screen as one set. So its ring is not designed again: it is **the family's circle**, the three functions both sisters draw their circle with since 4 Nov 2026 (Tempo's `WordsFit.cellCircle`, `rowCircle`, `tallCircle`; Passo's `dotRingSize`, `rowRingSize`, `tallCircle`, the same arithmetic), **copied constant for constant** into Tetto's `GlanceFit`. Its rule, the sisters': a circle is the size the card's size gives, **whatever the day's words say**, so two cards of one size side by side show one circle, and a card's own does not grow when its words are short; it grows with the card, and yields only to the reader's text size. Only the words are Tetto's, set in the family's widget scale (`WidgetType`: hero 34 sp, title 22, body 16, label 13), copied with it.
 
@@ -387,11 +387,11 @@ At 115% and 130% text the two-by-two's band grows and its circle stands at 44 dp
 | ROW | one row | The row's circle at the leading edge, 12 dp from the words | What is left ("€12 left", 20 sp, Medium; 16 sp on a narrow row, down to 14) over the cap's name and its renewal ("Coffee · until Monday", 16 sp; 14, 13, 12 on a narrow row; else "until Monday", else "Coffee", the fullest that stays whole); the pace at the far edge where those words stay whole beside it |
 | TALL | two rows and up | The tall circle in the top trailing corner | From the bottom leading corner, the band the circle budgets: what is left (34 sp, the hero, smaller only where the width cannot hold it; "€12 left", "€30 over"), the cap's sentence (16 sp, up to two lines under three cells wide, one from three: the pace, "about €4 a day", "ahead of the days", the reserve, or, over, "forgiven when it starts again"), and the last words (16 sp: "of €20 · until Monday" on one line, else broken at its separator over two, else the day alone); the cap's name beside the circle where 56 dp are left (16 sp, 14 or 13 before a word of it breaks), else in the last words in the amount's place ("Coffee · until Monday"), so the circle never yields to a name |
 
-- **«The sentence»** («La frase»), a switch on «In words»'s settings, on by default, as Passo's card hides its sentence and Tempo's its «day's note»: off, a tall card says the amount and "of €20 · until Monday" alone, and its circle takes the band they leave (95 dp two rows high), the size the sisters' circles take without theirs. One cell and one row are unchanged: they never show the sentence.
-- **«The other caps»** («Gli altri tetti», owner, 14 Nov 2026), a switch on «In words»'s settings, off by default, and once on «Every other cap» or those ticked (as «At a glance» chooses; never the card's own cap, which on the closest changes by the day, nor an ended one-off). On a TALL card, a row of them at the foot, `OTHERS_GAP` (12 dp) under the words: «At a glance»'s row slots (`CapSlot`, shared), as many as the width holds (two, three, four, five at most), of one width whatever the caps, the last counting the rest ("+3"); each cap's touch its own numpad over the home screen, the air and the count the app's. **The ring keeps the family's circle** (owner: "the ring stays the same size, so it stays coherent with the family's cards"): `othersCircle` is `tallCircle` for the card's size with its sentence, the size the card has without the row; a hidden sentence's room goes to the row, not the ring. The words take what the row leaves (`WordsLayout`): **under** the ring, the tall card's own arrangement, where the hero at its size and a line of last words fit (3×3, 4×3, and 2×2 with the hero a size smaller, never under 22 sp); else **beside** it, a column of the hero (as large as the column holds, never under 20 sp), "Coffee · until Sunday" and the sentence where it fits (3×2, 4×2). The card's last day before the row's names: where the two do not stand together (two cells wide), the row drops its names (icon, figure and bar, as «At a glance»'s short row); a day that would be cut is not drawn. Where nothing stands with the row (a two-row card at the largest text), the card is its cap's alone. One cell and one row are unchanged. `GlanceFitTest` pins the plan at every reference grant and text size; `WidgetFitTest` the ring's side with and without the row, and that nothing is cut; the gallery draws `widget-words-others` and `widget-words-others-cases`.
+- **«The sentence»** («La frase»), a switch on «At a glance»'s settings, on by default, as Passo's card hides its sentence and Tempo's its «day's note»: off, a tall card says the amount and "of €20 · until Monday" alone, and its circle takes the band they leave (95 dp two rows high), the size the sisters' circles take without theirs. One cell and one row are unchanged: they never show the sentence.
+- **«The other caps»** («Gli altri tetti», owner, 14 Nov 2026), a switch on «At a glance»'s settings, off by default, and once on «Every other cap» or those ticked (as «List» chooses; never the card's own cap, which on the closest changes by the day, nor an ended one-off). On a TALL card, a row of them at the foot, `OTHERS_GAP` (12 dp) under the words: «List»'s row slots (`CapSlot`, shared), as many as the width holds (two, three, four, five at most), of one width whatever the caps, the last counting the rest ("+3"); each cap's touch its own numpad over the home screen, the air and the count the app's. **The ring keeps the family's circle** (owner: "the ring stays the same size, so it stays coherent with the family's cards"): `othersCircle` is `tallCircle` for the card's size with its sentence, the size the card has without the row; a hidden sentence's room goes to the row, not the ring. The words take what the row leaves (`WordsLayout`): **under** the ring, the tall card's own arrangement, where the hero at its size and a line of last words fit (3×3, 4×3, and 2×2 with the hero a size smaller, never under 22 sp); else **beside** it, a column of the hero (as large as the column holds, never under 20 sp), "Coffee · until Sunday" and the sentence where it fits (3×2, 4×2). The card's last day before the row's names: where the two do not stand together (two cells wide), the row drops its names (icon, figure and bar, as «List»'s short row); a day that would be cut is not drawn. Where nothing stands with the row (a two-row card at the largest text), the card is its cap's alone. One cell and one row are unchanged. `GlanceFitTest` pins the plan at every reference grant and text size; `WidgetFitTest` the ring's side with and without the row, and that nothing is cut; the gallery draws `widget-words-others` and `widget-words-others-cases`.
 - **The ring** is what was spent of the cap and its reserve: its track, and the arc in the accent; in the *attention* ink when spending runs ahead of the days; full past the cap, with "over" in the words ("€30 over"). It is a bitmap painted at the size shown, capped at 416 px a side, one per card (Passo's rule), with the cap's icon drawn in its middle.
 - Without a cap to show (the chosen one deleted, no caps at all) the card says so in the words' place and opens the app.
-- A gallery test draws «In words» at every reference grant, with the sentence and without, and `WidgetFitTest` pins the circle at each (the table above) and every type step to the family's scale, and finds nothing cut at 100, 115 and 130% text: a change to them is a change to the family's, decided with the owner, never alone.
+- A gallery test draws «At a glance» at every reference grant, with the sentence and without, and `WidgetFitTest` pins the circle at each (the table above) and every type step to the family's scale, and finds nothing cut at 100, 115 and 130% text: a change to them is a change to the family's, decided with the owner, never alone.
 
 ### Rendering
 
@@ -399,7 +399,7 @@ At 115% and 130% text the two-by-two's band grows and its circle stands at 44 dp
 - Inks resolved against the ground the card really has (`widgetInk`, Chiaro's rule), never left to the launcher's day/night resolution. Figures as the launcher's face draws them: Glance cannot ask a `TextView` for tabular figures.
 - A cap over its cap says "over" in words on the card too; never a colour alone.
 - **The amounts hidden** (Phase 6b, a switch per card under «Privacy» in its settings, the real card above as its preview): `CardWords(hidden)` writes no figure anywhere, TalkBack's description included; where a figure stood, where the cap is ("Under its cap", "Ahead of the days", "Over its cap"; "Under", "Ahead", "Over" in a cell's or a slot's room); the names, the dates, the bars and the ring stay. The forms are measured from the words really drawn, so `GlanceFit` is unchanged and the family's ring never retuned; `WidgetFitTest` checks both, `HiddenAmountsTest` finds no amount, the gallery draws `widget-hidden-amounts`.
-- **A one-off** says until when it runs, over too ("forgiven when it ends"); **ended** and chosen for «In words», "Ended", "€720 of €800 · on 20 Nov", and what it left or how far over it went; a touch on it opens the numpad over the home screen, which says it has ended and opens Tetto.
+- **A one-off** says until when it runs, over too ("forgiven when it ends"); **ended** and chosen for «At a glance», "Ended", "€720 of €800 · on 20 Nov", and what it left or how far over it went; a touch on it opens the numpad over the home screen, which says it has ended and opens Tetto.
 - A drawing that throws (`onCompositionError`) is never Glance's blank "Can't show content" box: the reason goes to the log under `TettoWidget` with the sizes the launcher gave the card, and the card says "This card could not be drawn · Touch to open Tetto" in the default dress (`WidgetFailure`, `widget_failure.xml`) until its next redraw (owner, 6 Nov 2026).
 - Previews: a static `previewLayout`, and generated previews on Android 15+ (`providePreview`) from sample caps, once per version, as Tempo's.
 
@@ -429,7 +429,7 @@ At 115% and 130% text the two-by-two's band grows and its circle stands at 44 dp
   - in Settings, with the reminder on and its notifications blocked, a card over the group says why and holds the one button that fixes it: "Allow" while Android will still ask (`asked_notifications` tells "askable" from "denied for good"), else the system's page, the app's notifications or the reminder's channel.
 - **No other notification**: no threshold alerts, no "over" alerts (VISION).
 - **Launcher shortcuts** (dynamic: a static one names its package, and the debug build's is another): the first four caps in the reader's order that have not ended (an ended one-off takes no spend), each its icon and name, opening `QuickAddActivity` on that cap. Published again when the caps, their order or their names change, and when the app's language changes (Tempo's lesson of 30 Oct 2026).
-- **Pin request**: the first run's last page and Settings offer "Add a widget to the home screen" through `AppWidgetManager.requestPinAppWidget`, where the launcher supports it.
+- **Pin request**: the first run's last page and Settings offer "Add a widget to the home screen" through `AppWidgetManager.requestPinAppWidget`, where the launcher supports it. The first run's page offers both cards, «At a glance» first, each with its line, its real card drawn from the reader's new caps (`HomeCardPreview`) and its «Add», then «Done» or «Continue» (owner, 15 Nov 2026).
 
 ---
 
@@ -599,3 +599,77 @@ The log of 5 to 14 Nov 2026, with Phases 0 to 6b, is archived in [`docs/planning
 ### 14 Nov 2026 — The first archive (owner: "archivia planning")
 
 The log had passed 80 KB (112 KB), the size How it is made archives at. Moved, unchanged, to `docs/planning/01-5-to-14-nov-2026.md`: §11's Phases 0 to 6b (every box ticked), §15's log from the repository's first day through «Over, the word under a slot's figure in Italian», and the boxes of «Open» it had closed, with the note that nothing was open on 5 Nov 2026. Here: §11 keeps Phase 7, Phase 8 and «Later — Erasing older spends»; «Open» keeps its open boxes, which name entries now in the archive; «State» says where the closed phases went. `tools/planning_index.py` written again: the index lists every heading of the archive file. Nothing in the code changed: its references by section and date («§11 Phase 3», «§15, 5 Nov 2026») resolve through the index (CLAUDE.md).
+
+### 15 Nov 2026 — The family's widgets in order: «At a glance», «List», violet, a seventh colour (owner)
+
+**Where it comes from.** The owner, putting the family's widgets in order: «A colpo d'occhio» /
+«At a glance» is, in every app, the card with a picture (the weather app's glyph card, the ring
+cards, the clock's dial), and Tetto's ring card was «In parole»: it takes the name, and the
+other card a name of Tetto's choosing. Every «A colpo d'occhio» comes first in the launcher's
+list and opens at 4×1. Every widget wears its app's colour by default: for Tetto the violet
+already among the colours (the owner, rather than a new indigo). Then a seventh colour, apart
+from the six, in their style, no shade of violet.
+
+**Decided and built.**
+
+1. **The ring card is «At a glance» / «A colpo d'occhio»; the caps' list is «List» / «Elenco».**
+   «List» says the card's form, as «In words» and «Agenda» do in the family, and sorts after «At
+   a glance» in both languages. Changed: the labels, Settings' rows (now «At a glance» first),
+   the guide's «Two widgets» (the ring card first), the comments and test names, `HomeCard`
+   (`AT_A_GLANCE` is the ring now, `LIST` the list), README, VISION, CLAUDE.md, §5-§7, ADR 0003
+   (amended). The entries above keep the names of their time. The code keeps `GlanceWidget` /
+   `WordsWidget`, `WidgetKind.GLANCE` / `WORDS` and `widget_glance_*` / `widget_words_*`, now the
+   other way round from the cards' names (`WidgetKind`'s comment says so): a placed card is bound
+   to its receiver's class name, and the owner's phone has cards placed.
+2. **First in the list, at 4×1.** The ring card's receiver is declared first; it already opened
+   at 4×1. The first run's «On your home screen» page keeps offering the list (owner, asked the
+   same day: «At a glance» would show a new reader one cap, the list shows every cap just made);
+   its picture and the card it places wear the default look, so both are violet now
+   (`home-offer.png` looked at).
+3. **Violet by default** (`WidgetLook.cardColor = PLUM`, `#4A2C63`), for a new card and for one
+   never configured. `widget_preview_card` follows, and `WidgetProviderTest` reads it from the
+   default look.
+4. **The ochre** (`#5C4A0E`, `OCHRE`, «Ochre» / «Ocra»): the family's seventh, 30 ΔE from its
+   nearest (the terracotta), white ink 8.6:1, the 75% ink 5.7:1, the 85% one 6.8:1 (the weather
+   app's DESIGN §2.6 is the family's table). Seven is where the list stops (a bright series would
+   need a dark ink measured on every mark the cards draw; a strip that scrolls hides colours).
+5. **The strip of colours starts under the radio buttons** (10 dp, the first disc on their line;
+   it started under the labels at 50 dp): seven 48 dp targets want 336 dp: in the settings group (16 dp margins), less the strip's
+   own 12, a 384 dp phone leaves 340 and holds them in one row; a 360 dp phone leaves 316, and
+   `swatchesPerRow` breaks them into four over three, never one alone (with six, the strip under
+   the labels already broke there, five over one). Tested at 384 dp (one row) and in arithmetic.
+
+**Checked.** The widget module's tests (provider, ink, look store, config screen at 384 dp,
+gallery, fit), `:core:domain`'s, Settings' and the guide's, spotless. `widgets.png` (the
+one-row «At a glance» on top, a pair in ochre and terracotta, «List» at the bottom) regenerated
+and looked at.
+
+### 15 Nov 2026 — The first run offers both cards (owner)
+
+**Where it comes from.** The owner, after the entry above kept the first run on «List» alone:
+"couldn't it be done as in Tempo's onboarding, which offers both widgets, keeping the same style
+and type as the sister apps?". Asked whether the page should keep the card drawn from the
+reader's own caps (the most persuasive thing on it) or be text alone as Tempo's is, the owner
+chose the card.
+
+**Decided and built.** «Your caps on the home screen» keeps its title, and its sentence becomes
+«Two cards. A touch on a cap opens the numpad over the home screen: two touches and the amount.».
+Under it, the family's choice groups (`surfaceContainerLow`, `GroupShape`, the name in
+`titleMedium`, the line in `bodyMedium`, a tonal «Add» whose spoken label names the card),
+«At a glance» first as in the launcher's list, each with its real card at its default size on
+the default look (`HomeCardPreview(card, …)`, on the group itself, see below):
+the ring at 4×1 on the cap closest to its cap, the list at 4×2 with every cap. The wide button
+is «Done», or «Continue» before the reminder's page; «Later» went, the cards being a choice and
+not a request. `HomeOfferViewModel.pin(card)`; the note says «a card». On a phone the page now
+scrolls (the list's «Add» under the fold), as Tempo's does at a large text size. This changes
+the entry above for the page: the first run no longer offers «List» alone.
+
+**Checked.** `HomeOfferPageTest` (both cards, «At a glance» above, each request, «Done» without
+a card, a placed card, twice the text size, an open foldable), the widget module's tests,
+spotless; `home-offer.png` looked at.
+
+**Then, the same day: no stage under the cards** (owner: the ground round the cards, a wallpaper
+in the containers' colours, sat badly with the card's colour). On the first run the card stands
+on the choice group itself: the default card is solid, so nothing shows through it, and the stage
+was a third ground between the page and the card. The widget settings keep their stage, where
+the opacity slider makes it the wallpaper the card thins over.

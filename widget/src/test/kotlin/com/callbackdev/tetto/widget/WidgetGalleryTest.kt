@@ -47,14 +47,14 @@ class WidgetGalleryTest {
         WidgetSamples.model(context, words = words, currency = euro, look = look)
 
     @Test
-    fun `at a glance, every size`() {
+    fun `the list, every size`() {
         val board = HomeBoard(context, widthDp = 380)
         sizes.forEach { size -> board.row(size to renderCard(context, size) { GlanceCardContent(sample()) }) }
         board.draw().saveTo(out, "widget-glance-sizes")
     }
 
     @Test
-    fun `in words, every size`() {
+    fun `at a glance, every size`() {
         val board = HomeBoard(context, widthDp = 380)
         sizes.forEach { size ->
             board.row(size to renderCard(context, size) { WordsCardContent(sample(words = true)) })
@@ -63,7 +63,7 @@ class WidgetGalleryTest {
     }
 
     @Test
-    fun `in words, without the sentence`() {
+    fun `at a glance, without the sentence`() {
         val look = WidgetLook(showSentence = false)
         val board = HomeBoard(context, widthDp = 380)
         listOf(Grants.TwoByTwo, Grants.OwnersTwoByTwo, Grants.FourByTwo, Grants.FourByThree).forEach { size ->
@@ -80,7 +80,7 @@ class WidgetGalleryTest {
      * with them, so the ring is seen to keep its size; then the row's own cases.
      */
     @Test
-    fun `in words, with the other caps`() {
+    fun `at a glance, with the other caps`() {
         val others = WidgetLook(showOthers = true)
         val board = HomeBoard(context, widthDp = 380)
         listOf(
@@ -99,7 +99,7 @@ class WidgetGalleryTest {
     }
 
     @Test
-    fun `in words, the other caps' cases`() {
+    fun `at a glance, the other caps' cases`() {
         val board = HomeBoard(context, widthDp = 380)
         listOf(
             // Over, on the closest: the card's own cap is the one over, never in the row too.
@@ -124,7 +124,7 @@ class WidgetGalleryTest {
 
     /** The three states a cap's ring and bar say: at ease, ahead of the days, over (in words too). */
     @Test
-    fun `in words, at ease, ahead and over`() {
+    fun `at a glance, at ease, ahead and over`() {
         val board = HomeBoard(context, widthDp = 380)
         listOf(1L, 2L, 5L).forEach { cap ->
             val look = WidgetLook(wordsCap = cap)
@@ -168,9 +168,9 @@ class WidgetGalleryTest {
         board.draw().saveTo(out, "widget-hidden-amounts")
     }
 
-    /** A one-off chosen for «In words» (owner, 6 Nov 2026): running, and the day after it ended. */
+    /** A one-off chosen for «At a glance» (owner, 6 Nov 2026): running, and the day after it ended. */
     @Test
-    fun `in words, a one-off running and ended`() {
+    fun `at a glance, a one-off running and ended`() {
         val board = HomeBoard(context, widthDp = 380)
         val running = sample().copy(caps = listOf(WidgetSamplesForTests.lisbon(running = true)))
         val ended = sample(

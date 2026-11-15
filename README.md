@@ -46,7 +46,7 @@ speed comes from having none.
   </tr>
   <tr>
     <td align="center"><img src="docs/screenshots/caps-dark.png" width="250" alt="The caps screen in the dark theme: the sentence Shopping is €30 over, it starts again on Dec 1; Shopping's tile says €30 over in words, its bar full and hatched"><br><sub><b>Over, in words</b>, never by colour alone</sub></td>
-    <td align="center"><img src="docs/screenshots/widgets.png" width="250" alt="The cards on a home screen: At a glance at four by two with five caps, each with what is left and a slim bar; two In words cards side by side, Coffee in plum with €12 left beside its ring, about €2 a day until Sunday, and Fun in clay saying €6 over, starts again on Monday; a one-row In words in teal with €62 left for Groceries"><br><sub><b>The cards</b>: a spend from the home screen</sub></td>
+    <td align="center"><img src="docs/screenshots/widgets.png" width="250" alt="The cards on a home screen: a one-row At a glance in violet with €62 left for Groceries; two At a glance cards side by side, Coffee in ochre with €12 left beside its ring, about €2 a day until Sunday, and Fun in terracotta saying €6 over, starts again on Monday; List at four by two with five caps, each with what is left and a slim bar"><br><sub><b>The cards</b>: a spend from the home screen</sub></td>
     <td align="center"><img src="docs/screenshots/onboarding.png" width="250" alt="The first run: What do you want to put a cap on? A grid of twelve areas, each an icon and a name, four of them picked: groceries, eating out, coffee and bars, transport"><br><sub><b>First run</b>: a minute, and the caps are yours</sub></td>
   </tr>
   <tr>
@@ -80,8 +80,8 @@ What 1.0 will do ([VISION.md](./VISION.md) has the full scope):
 - 🚀 **Ready in a minute**: pick the areas you want a cap on, give each an amount and a period, and
   the caps screen opens already shaped to you.
 - 💱 **One currency, any your phone knows**: changing it relabels your amounts and never converts them.
-- 🏠 **Two widgets that never scroll**: «At a glance», your caps as the card's size allows, and
-  «In words», one cap on the family's ring card. A touch on a cap opens the numpad over the home
+- 🏠 **Two widgets that never scroll**: «At a glance», one cap on the family's ring card, and
+  «List», your caps as the card's size allows, in violet or six other colours. A touch on a cap opens the numpad over the home
   screen: a spend added without opening the app.
 - ⚡ **Launcher shortcuts**: a long press on the icon, and your first four caps go straight to the numpad.
 - 🌙 **An evening reminder**, if you want one, that stays quiet on a day you already added a spend.

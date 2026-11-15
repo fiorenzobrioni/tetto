@@ -5,7 +5,7 @@ import com.callbackdev.tetto.core.model.PeriodKind
 import com.callbackdev.tetto.core.model.Share
 
 /**
- * The caps screen's sentence, and «In words»'s (PLANNING.md §4.6): a kind and its values, never a
+ * The caps screen's sentence, and «At a glance»'s (PLANNING.md §4.6): a kind and its values, never a
  * string; the words are resources, in both languages, with plurals. Every kind carries [caps], how
  * many caps there are, so the words can tell one cap from several, and "every cap" from some.
  *

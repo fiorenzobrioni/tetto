@@ -117,7 +117,9 @@ money, a ring per cap, and a numpad that opens over the home screen.
 11. **The pin request** (§8): Settings' «Home screen» group, where the launcher takes the
     request; and the first run's last page, after a run that made caps, where the launcher takes
     it and no card is there yet: «Your caps on the home screen», the real card drawn from the
-    reader's new caps, «Add the card» and «Not now». The caps are written before the page shows,
+    reader's new caps, «Add the card» and «Not now» (since 15 Nov 2026, owner: both cards, «At a
+    glance» first, each in a choice group with its line, its real card drawn from the reader's new
+    caps and its own «Add», then «Done», as the family's first runs offer theirs). The caps are written before the page shows,
     so a process ended on it loses nothing and makes nothing twice. The feature modules reach
     `:widget` through `HomeScreenCards` (`:core:data`), bound by Hilt.
 
@@ -129,6 +131,16 @@ money, a ring per cap, and a numpad that opens over the home screen.
 13. **Not backed up**: the looks live in their own file (`widgets`), outside the backup's
     allowlist (ADR 0004): a restore renews the cards' ids, and a look kept under an old id would
     dress nothing, or the wrong card.
+
+**Amended 15 Nov 2026** (owner, for the whole family): the cards take the family's names. The ring
+card (`WordsWidget`) is «At a glance» / «A colpo d'occhio», the name every app of the family
+gives the card with a picture, and it is declared first (the launcher's list sorts by name, and
+«A colpo d'occhio» / «At a glance» sorts before «Elenco» / «List»); it keeps 4×1. The caps' list
+(`GlanceWidget`) is «List» / «Elenco», a name for its form as the family's other names are, at
+4×2. Above, the names are the ones of the time. The code keeps its names: a card placed on a
+home screen is bound to its receiver's class name. A new card wears the app's colour, the
+family's violet (the nearest of the colours to the icon's indigo; the owner chose it over a new
+indigo), and so does a card never configured; the colours are seven, with the family's ochre.
 
 ## Consequences
 

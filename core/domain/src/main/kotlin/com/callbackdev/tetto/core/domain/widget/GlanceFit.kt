@@ -10,18 +10,18 @@ import kotlin.math.floor
  * reference grants: one row ≈ 85 dp tall, two ≈ 189, three ≈ 293; one cell ≈ 85 dp wide, two ≈
  * 159, three ≈ 250, four ≈ 340; and the owner's two-by-two, 188 × 218.
  *
- * «In words» is the family's ring card: its circle is **the family's circle** ([cellCircle],
+ * «At a glance» is the family's ring card: its circle is **the family's circle** ([cellCircle],
  * [rowCircle], [tallCircle]), copied constant for constant, sized by the card and never by the
  * day's words, so it stands in line with the sisters' ring cards of the same size (owner,
  * 5 Nov 2026). A change to those three functions or their constants is the family's, decided
  * with the owner, never Tetto's alone.
  */
 
-/** The three forms of «In words» (PLANNING.md §7). */
+/** The three forms of «At a glance» (PLANNING.md §7). */
 enum class WordsForm { CELL, ROW, TALL }
 
 /**
- * How a tall «In words» sets its words (PLANNING.md §7). [ALONE]: the card is its cap's alone.
+ * How a tall «At a glance» sets its words (PLANNING.md §7). [ALONE]: the card is its cap's alone.
  * With the other caps in a row at its foot (owner, 14 Nov 2026), the ring keeps the family's
  * circle in the top trailing corner and the words take what the row leaves them: [UNDER], the
  * tall card's own arrangement in that room (the name beside the ring, the words under it); or
@@ -31,7 +31,7 @@ enum class WordsForm { CELL, ROW, TALL }
 enum class WordsLayout { ALONE, UNDER, BESIDE }
 
 /**
- * What «In words» is asked to hold, measured by the caller in the launcher's face.
+ * What «At a glance» is asked to hold, measured by the caller in the launcher's face.
  *
  * @property sentence the reader's «The sentence» switch: off, a tall card says the amount and its
  *   cap alone, and its circle takes the band the sentence leaves.
@@ -127,18 +127,18 @@ data class WordsPlan(
 )
 
 /**
- * The row of other caps at a tall «In words»'s foot (owner, 14 Nov 2026): [slots] of one width
+ * The row of other caps at a tall «At a glance»'s foot (owner, 14 Nov 2026): [slots] of one width
  * across the card, whatever the caps (so one cap stands where the first of four would), of which
  * [shown] are caps and the last says [more] when they do not all fit; each its icon and figure,
  * its name where [names], and its bar; [height] tall, [GlanceFit.OTHERS_GAP] under the words.
  */
 data class OthersPlan(val slots: Int, val shown: Int, val more: Int, val names: Boolean, val height: Float)
 
-/** The three forms of «At a glance» (PLANNING.md §7). */
+/** The three forms of «List» (PLANNING.md §7). */
 enum class GlanceForm { CELL, ROW, GRID }
 
 /**
- * What «At a glance» is asked to hold.
+ * What «List» is asked to hold.
  *
  * @property caps how many caps the card shows (the reader's choice, in their order).
  * @property cellFigureEm the first cap's figure ("€12", "€30") on one line, in ems of the bold face:
@@ -261,7 +261,7 @@ object GlanceFit {
     const val BARE_WORDS_BAND = WidgetType.HERO + WidgetType.BODY
     const val WIDE_BAND_MIN_WIDTH = 230f
 
-    // --- «In words» -------------------------------------------------------------------------------
+    // --- «At a glance» -------------------------------------------------------------------------------
 
     fun wordsForm(width: Float, height: Float): WordsForm = when {
         width < CELL_MAX_WIDTH -> WordsForm.CELL
@@ -464,7 +464,7 @@ object GlanceFit {
         )
     }
 
-    // --- «In words» with the other caps (owner, 14 Nov 2026) --------------------------------------
+    // --- «At a glance» with the other caps (owner, 14 Nov 2026) --------------------------------------
 
     /**
      * The ring of a tall card with the other caps at its foot: the family's circle for the card's
@@ -486,7 +486,7 @@ object GlanceFit {
     /**
      * The row's slots: as many as the card's inner width holds at [SLOT_MIN] each, [GROUP_MAX] at
      * most (a Glance container drops its eleventh child, and a slot is two): two on two cells,
-     * three on three, four on four, as «At a glance»'s row.
+     * three on three, four on four, as «List»'s row.
      */
     fun othersSlots(width: Float): Int =
         floor((width - CARD_PADDING * 2 + SLOT_GAP) / (SLOT_MIN + SLOT_GAP)).toInt().coerceIn(1, GROUP_MAX)
@@ -717,7 +717,7 @@ object GlanceFit {
     const val BESIDE_HERO_MIN = ROW_FIGURE_SP
     const val UNDER_HERO_MIN = WidgetType.TITLE
 
-    // --- «At a glance» ----------------------------------------------------------------------------
+    // --- «List» ----------------------------------------------------------------------------
 
     fun glanceForm(width: Float, height: Float): GlanceForm = when {
         width < CELL_MAX_WIDTH -> GlanceForm.CELL

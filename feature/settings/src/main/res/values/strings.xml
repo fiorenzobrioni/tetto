@@ -183,9 +183,9 @@
 
     <!-- The home screen's cards (PLANNING.md §8), where the launcher can place one on request. -->
     <string name="settings_group_home">Home screen</string>
-    <string name="settings_card_glance">At a glance</string>
+    <string name="settings_card_glance">List</string>
     <string name="settings_card_glance_note">Your caps, each with what is left. Touch to place the card.</string>
-    <string name="settings_card_words">In words</string>
+    <string name="settings_card_words">At a glance</string>
     <string name="settings_card_words_note">One cap in a ring, and what is left in words. Touch to place the card.</string>
     <!-- The lock (owner, 6 Nov 2026): the phone's own, at start and after a minute away. -->
     <string name="settings_group_privacy">Privacy</string>

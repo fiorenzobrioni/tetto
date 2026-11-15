@@ -4,8 +4,11 @@
     <string name="shortcut_gone">Questo tetto non c’è più</string>
 
     <string name="home_offer_title">I tuoi tetti sulla schermata Home</string>
-    <string name="home_offer_body">Una scheda mostra con un colpo d’occhio quanto resta di ogni tetto, e toccandone uno si apre il tastierino sopra la schermata Home: due tocchi e l’importo.</string>
-    <string name="home_offer_add">Aggiungi la scheda</string>
+    <string name="home_offer_body">Due schede. Toccando un tetto si apre il tastierino sopra la schermata Home: due tocchi e l’importo.</string>
+    <string name="home_offer_glance_body">Un tetto in un anello, quello più vicino al suo tetto, e quanto resta a parole.</string>
+    <string name="home_offer_list_body">I tuoi tetti, ciascuno con quanto resta e una barra sottile, quanti ne stanno nella scheda.</string>
+    <string name="home_offer_add">Aggiungi</string>
+    <string name="home_offer_add_a11y">Aggiungi %1$s alla schermata Home</string>
     <string name="home_offer_added">Sulla tua schermata Home</string>
     <string name="home_offer_later">Più tardi</string>
     <string name="home_offer_done">Fatto</string>
@@ -14,7 +17,7 @@
     <string name="lock_body">Si apre con l’impronta, il volto o il blocco schermo del telefono.</string>
     <string name="lock_unlock">Sblocca</string>
     <string name="lock_prompt_title">Sblocca Tetto</string>
-    <string name="home_offer_note">Tieni premuta la scheda sulla schermata Home per sceglierne il colore e i tetti, o per ingrandirla.</string>
+    <string name="home_offer_note">Tieni premuta una scheda sulla schermata Home per sceglierne il colore e i tetti, o per ingrandirla.</string>
     <!-- Il promemoria della sera al primo avvio (owner, 7 Nov 2026): offerto, mai chiesto se non scelto. -->
     <string name="reminder_offer_title">Un promemoria la sera</string>
     <string name="reminder_offer_body">Se vuoi, una notifica la sera ti chiede se c’è qualcosa da aggiungere, e solo nei giorni in cui non hai aggiunto niente. È l’unica notifica di Tetto.</string>

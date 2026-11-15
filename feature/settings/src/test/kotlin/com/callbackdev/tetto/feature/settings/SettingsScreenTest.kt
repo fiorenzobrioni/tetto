@@ -340,12 +340,12 @@ class SettingsScreenTest {
     @Test
     fun `where the launcher can place a card, each card's row asks for it`() {
         draw(state(canPinCards = true))
-        scrollTo(SettingsTags.CARD_WORDS)
+        scrollTo(SettingsTags.CARD_GLANCE)
         compose.onNodeWithText("Home screen").assertExists()
         compose.onNodeWithTag(SettingsTags.CARD_GLANCE).performClick()
-        assertThat(pinned).isEqualTo(HomeCard.AT_A_GLANCE)
+        assertThat(pinned).isEqualTo(HomeCard.LIST)
         compose.onNodeWithTag(SettingsTags.CARD_WORDS).performClick()
-        assertThat(pinned).isEqualTo(HomeCard.IN_WORDS)
+        assertThat(pinned).isEqualTo(HomeCard.AT_A_GLANCE)
         compose.assertAccessible()
         compose.writeScreenshot("settings-home-screen")
     }

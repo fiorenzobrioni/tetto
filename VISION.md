@@ -231,12 +231,12 @@ a ledger** (history screens, statistics, accounts, income). Its speed comes from
 
 ### Widgets (Jetpack Glance)
 
-The family's pair, on the family's card, the same sizes and the same settings screen as the
-sisters' «At a glance» and «In words»:
+The family's pair, on the family's card and the same settings screen as the sisters'. The names
+are the family's since 15 Nov 2026 (owner): «At a glance» is the card with a picture in every
+app, here the ring, and it comes first; the other card is «List». Until then the ring card was
+«In words» and the list «At a glance».
 
-- **«At a glance»** («Colpo d'occhio»): the caps as many as the card's size allows, each with its
-  icon, name, what is left and a slim bar; never a scrolling list, the rest counted ("3 more").
-- **«In words»** («In parole»), **the family's ring card**: one cap, chosen per widget (or "the
+- **«At a glance»** («A colpo d'occhio»), **the family's ring card**: one cap, chosen per widget (or "the
   one closest to its cap"). The ring is what was spent, the cap's icon inside it; beside or
   under it the words: "€12 left", "Coffee · until Monday", and on a taller card the pace. The
   ring is **the family's circle**, the one Passo's and Tempo's cards draw since 4 Nov 2026: the
@@ -247,10 +247,12 @@ sisters' «At a glance» and «In words»:
   a home screen line up and read as one set. As on the sisters' cards, the reader may keep a
   tall card to the amount and its cap, without the sentence, and the circle then grows as
   theirs do.
+- **«List»** («Elenco»): the caps as many as the card's size allows, each with its icon, name,
+  what is left and a slim bar; never a scrolling list, the rest counted ("3 more").
 - **A touch on a cap adds a spend from the home screen**: the numpad opens over the home screen,
   and the reader is back on it after Add. Two touches and the amount, without opening the app.
-- **Per widget**: the family's card (light, dark, following the phone, or one of the six colours,
-  at any opacity, with a live preview), and which caps.
+- **Per widget**: the family's card (light, dark, following the phone, or one of the family's seven
+  colours, the app's violet by default, at any opacity, with a live preview), and which caps.
 - **Hide the amounts** (owner, 6 Nov 2026; Phase 6b), per widget, for a home screen others see:
   no figure anywhere on the card, TalkBack's description included; the bars, the ring, the
   names, the dates and the words stay ("Under its cap", "Ahead of the days", "Over its cap").
@@ -363,7 +365,7 @@ changes, the corrections and the additions, each with its reason.
 | Material 3 cards, `headlineLarge` on each | The family's components and type: one sentence on top, the figures tabular, the hero size kept for one number per screen | Six cards each shouting a hero number have no hierarchy; the family's screens lead with one sentence |
 | A bar from green to orange to red | The accent; the family's *attention* ink when spending runs ahead of the days, with a mark for today in the period; over said in words and shape | Colour alone fails colour-blind readers and reads as alarm; a fixed 80% means nothing on the last day of a week, while "spending ahead of the days" does |
 | A list of cards (`LazyColumn`) | A grid of tiles, two columns on a phone (owner, 5 Nov 2026) | With eight caps in a column of large cards, three are below the fold and the two-touch promise needs a scroll first; two columns show them all, and fall back to one at large text sizes |
-| (not in the concept) | **Widgets**, the family's pair, adding a spend from the home screen, «In words» the family's ring card at the sisters' sizes; the launcher's shortcuts | "How much is left" is a glance, and every sister has its pair of cards. A spend added from the home screen in two touches is the one place Tetto can be faster than opening any app |
+| (not in the concept) | **Widgets**, the family's pair, adding a spend from the home screen, «At a glance» (then «In words») the family's ring card at the sisters' sizes; the launcher's shortcuts | "How much is left" is a glance, and every sister has its pair of cards. A spend added from the home screen in two touches is the one place Tetto can be faster than opening any app |
 | (not in the concept) | **A cap's sheet**: this period, its spends, the reserve's story, clear the reserve | The chip "+€30 reserve" needs one place that says where the €30 came from |
 | The currency follows the phone, or is forced to €, $, £ | One currency for the app, any the phone knows (a searchable list), the phone's region by default; decimals from the currency (none for the yen) | A reader in Switzerland counts in francs. A change relabels the amounts and says it does not convert them |
 | A "push" notification at 20:30 | A **local** notification, opt-in, from an inexact alarm; its permission asked when turned on | Tetto has no network: nothing can be pushed. "Local" is also what makes the privacy promise true |
@@ -396,7 +398,7 @@ changes, the corrections and the additions, each with its reason.
 - **Fast.** From the caps screen, a spend is two touches and the amount; from the home screen,
   the same. The numpad answers each key at once, and the caps screen is drawn without a visible
   wait on a cold start (measured in Phase 6; a Baseline Profile if it is slow).
-- **One set on the home screen.** «In words» beside Passo's and Tempo's ring cards, at the same
+- **One set on the home screen.** «At a glance» beside Passo's and Tempo's ring cards, at the same
   size, has its ring and its lines at the same sizes as theirs.
 - **Exact.** Every rule of the engine has its unit tests (PLANNING §4.7): periods across
   daylight saving, month starts on the 29th to the 31st, leap years, a flight across time zones,
@@ -426,7 +428,7 @@ accepted with them.
    periods frozen; old spends kept for the CSV and the backup, never listed.
 3. **The reserve**: up to one period's cap (a period can at most double).
 4. **Widgets and shortcuts in v1**: yes, the family's pair, a spend added from the home screen,
-   and the launcher's four shortcuts. «In words» is the family's ring card, at the same sizes as
+   and the launcher's four shortcuts. «In words» (since 15 Nov 2026 «At a glance») is the family's ring card, at the same sizes as
    Passo's and Tempo's for every size of card and every line of text, so the cards line up on a
    home screen.
 5. **The caps screen**: two columns of tiles on a phone; a row per cap as the reader's choice in

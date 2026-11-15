@@ -76,9 +76,11 @@ class WidgetInkTest {
     }
 
     @Test
-    fun `the six colours are the family's`() {
+    fun `the seven colours are the family's`() {
         assertThat(widgetCardContainer(WidgetCardColor.BLUE)).isEqualTo(Color(0xFF0F3B6B))
+        assertThat(widgetCardContainer(WidgetCardColor.PLUM)).isEqualTo(Color(0xFF4A2C63))
         assertThat(widgetCardContainer(WidgetCardColor.CLAY)).isEqualTo(Color(0xFF7A3320))
+        assertThat(widgetCardContainer(WidgetCardColor.OCHRE)).isEqualTo(Color(0xFF5C4A0E))
     }
 
     private fun contrast(ink: Color, ground: Color): Double {

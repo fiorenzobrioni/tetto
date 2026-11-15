@@ -34,14 +34,14 @@ import com.callbackdev.tetto.core.model.CapState
 
 /*
  * A cap as a card's row draws it (PLANNING.md §7): its icon, its figure, its name, its slim bar
- * with the mark for today; and the count of the caps that do not fit. «At a glance»'s row and the
- * other caps at the foot of «In words» (owner, 14 Nov 2026) draw them alike.
+ * with the mark for today; and the count of the caps that do not fit. «List»'s row and the
+ * other caps at the foot of «At a glance» (owner, 14 Nov 2026) draw them alike.
  */
 
 /**
  * What a card's caps are drawn from: their words, the reader's text size, the inks; and each cap's
  * touch, the numpad over the home screen on it, with the sentence TalkBack reads for it. Shared by
- * «At a glance» and the row of other caps under «In words», so a cap reads the same on both.
+ * «List» and the row of other caps under «At a glance», so a cap reads the same on both.
  */
 internal class SlotParts(val context: Context, val model: WidgetModel, val palette: WidgetPalette) {
     val words = CardWords(context, model.currency, model.today, hidden = model.look.hideAmounts)

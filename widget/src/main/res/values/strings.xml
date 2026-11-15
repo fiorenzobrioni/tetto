@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- The two cards, as the launcher's picker names them (PLANNING.md §7). -->
-    <string name="widget_glance_label">At a glance</string>
+    <string name="widget_glance_label">List</string>
     <string name="widget_glance_desc">Your caps, each with what is left and a slim bar. A touch on one adds a spend.</string>
-    <string name="widget_words_label">In words</string>
+    <string name="widget_words_label">At a glance</string>
     <string name="widget_words_desc">One cap in a ring, and what is left in words. A touch adds a spend.</string>
 
     <!-- The static previews: sample values only. -->
@@ -52,7 +52,7 @@
     <string name="widget_pace_less">less than %s a day</string>
     <string name="widget_pace_less_short">under %s a day</string>
 
-    <!-- «In words»'s sentence, on a tall card (PLANNING.md §7). -->
+    <!-- «At a glance»'s sentence, on a tall card (PLANNING.md §7). -->
     <string name="widget_note_pace">about %s a day</string>
     <string name="widget_note_ahead_pace">ahead of the days: about %s a day</string>
     <string name="widget_note_pace_less">less than %s a day</string>
@@ -106,6 +106,7 @@
     <string name="widget_color_teal">Sea green</string>
     <string name="widget_color_plum">Violet</string>
     <string name="widget_color_clay">Terracotta</string>
+    <string name="widget_color_ochre">Ochre</string>
     <string name="widget_config_opacity">Background opacity</string>
     <string name="widget_opacity_full">Solid</string>
     <string name="widget_opacity_transparent">See-through</string>
@@ -126,7 +127,7 @@
     <string name="widget_config_no_caps">No caps yet: the card will show them as soon as you make one.</string>
     <string name="widget_config_reset">Reset this card</string>
     <string name="widget_config_done">Done</string>
-    <!-- An ended one-off cap, chosen for «In words» (owner, 6 Nov 2026): "Ended", "€720 of €800 · on 20 Nov". -->
+    <!-- An ended one-off cap, chosen for «At a glance» (owner, 6 Nov 2026): "Ended", "€720 of €800 · on 20 Nov". -->
     <string name="widget_ended">Ended</string>
     <string name="widget_ended_detail">%1$s of %2$s · %3$s</string>
     <string name="widget_ended_of">%1$s of %2$s</string>

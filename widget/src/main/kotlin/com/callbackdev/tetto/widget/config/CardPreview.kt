@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.glance.appwidget.ExperimentalGlanceRemoteViewsApi
 import androidx.glance.appwidget.GlanceRemoteViews
+import com.callbackdev.tetto.core.data.widget.HomeCard
 import com.callbackdev.tetto.core.domain.widget.GlanceFit
 import com.callbackdev.tetto.core.model.AppCurrency
 import com.callbackdev.tetto.core.model.CapState
@@ -147,7 +148,7 @@ internal fun PreviewSection(
     )
 }
 
-/** Two rows high and two cells wide: where «In words» draws its tall form. */
+/** Two rows high and two cells wide: where «At a glance» draws its tall form. */
 private fun DpSize.isTall(): Boolean =
     width.value >= GlanceFit.CELL_MAX_WIDTH && height.value >= GlanceFit.TALL_MIN_HEIGHT
 
@@ -231,14 +232,27 @@ private class TouchlessFrame(context: Context) : FrameLayout(context) {
 }
 
 /**
- * «At a glance» as the reader's [caps] stand on the home screen, on the family's default card, at
- * the size it is placed at: the first run's last page, where the launcher can place one
- * (PLANNING.md §8, the pin request). The card itself, as [CardPreview] draws it.
+ * [card] as the reader's [caps] stand on the home screen, on the default look (the app's colour,
+ * every cap, the closest to its cap on «At a glance»), at the size it is placed at: the first
+ * run's last page, where the launcher can place one (PLANNING.md §8, the pin request). The card
+ * itself, as [CardPreview] draws it, on no stage: the default card is solid, so no wallpaper
+ * shows through it, and a stage inside the page's choice group was a third ground whose
+ * containers' colours argued with the card's (owner, 15 Nov 2026).
  */
 @Composable
-fun HomeCardPreview(caps: List<CapState>, currency: AppCurrency, settings: UserSettings, today: LocalDate) {
+fun HomeCardPreview(
+    card: HomeCard,
+    caps: List<CapState>,
+    currency: AppCurrency,
+    settings: UserSettings,
+    today: LocalDate,
+) {
+    val kind = when (card) {
+        HomeCard.AT_A_GLANCE -> WidgetKind.WORDS
+        HomeCard.LIST -> WidgetKind.GLANCE
+    }
     val model = remember(caps, currency, settings, today) {
         WidgetModel(look = WidgetLook(), settings = settings, currency = currency, today = today, caps = caps)
     }
-    PreviewStage { CardPreview(WidgetKind.GLANCE, model, defaultPreviewSize(WidgetKind.GLANCE).size) }
+    CardPreview(kind, model, defaultPreviewSize(kind).size, Modifier.padding(vertical = 8.dp))
 }

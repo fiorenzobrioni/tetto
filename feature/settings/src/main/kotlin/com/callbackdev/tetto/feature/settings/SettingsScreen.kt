@@ -434,25 +434,26 @@ private fun SettingsList(
         }
 
         // The home screen's cards, where the launcher can place one on request (PLANNING.md §8):
-        // a row that could not do what it says is not drawn.
+        // a row that could not do what it says is not drawn. «At a glance» first, as in the
+        // launcher's list (owner, 15 Nov 2026).
         if (state.canPinCards) {
             item { GroupHeader(stringResource(R.string.settings_group_home)) }
             item {
                 SettingsGroup {
                     ValueRow(
-                        label = stringResource(R.string.settings_card_glance),
-                        value = stringResource(R.string.settings_card_glance_note),
-                        icon = TettoIcons.Widgets,
-                        onClick = { actions.pinCard(HomeCard.AT_A_GLANCE) },
-                        modifier = Modifier.testTag(SettingsTags.CARD_GLANCE),
-                    )
-                    GroupDivider()
-                    ValueRow(
                         label = stringResource(R.string.settings_card_words),
                         value = stringResource(R.string.settings_card_words_note),
                         icon = TettoIcons.Widgets,
-                        onClick = { actions.pinCard(HomeCard.IN_WORDS) },
+                        onClick = { actions.pinCard(HomeCard.AT_A_GLANCE) },
                         modifier = Modifier.testTag(SettingsTags.CARD_WORDS),
+                    )
+                    GroupDivider()
+                    ValueRow(
+                        label = stringResource(R.string.settings_card_glance),
+                        value = stringResource(R.string.settings_card_glance_note),
+                        icon = TettoIcons.Widgets,
+                        onClick = { actions.pinCard(HomeCard.LIST) },
+                        modifier = Modifier.testTag(SettingsTags.CARD_GLANCE),
                     )
                 }
             }

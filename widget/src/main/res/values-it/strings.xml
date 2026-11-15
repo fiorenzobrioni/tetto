@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="widget_glance_label">Colpo d’occhio</string>
+    <string name="widget_glance_label">Elenco</string>
     <string name="widget_glance_desc">I tuoi tetti, ciascuno con quanto resta e una barra sottile. Toccandone uno aggiungi una spesa.</string>
-    <string name="widget_words_label">In parole</string>
+    <string name="widget_words_label">A colpo d’occhio</string>
     <string name="widget_words_desc">Un tetto in un anello, e quanto resta a parole. Toccandolo aggiungi una spesa.</string>
 
     <string name="widget_preview_left">ancora 12 €</string>
@@ -95,6 +95,7 @@
     <string name="widget_color_teal">Verde mare</string>
     <string name="widget_color_plum">Viola</string>
     <string name="widget_color_clay">Terracotta</string>
+    <string name="widget_color_ochre">Ocra</string>
     <string name="widget_config_opacity">Opacità dello sfondo</string>
     <string name="widget_opacity_full">Pieno</string>
     <string name="widget_opacity_transparent">Trasparente</string>
@@ -115,7 +116,7 @@
     <string name="widget_config_no_caps">Ancora nessun tetto: la scheda li mostrerà appena ne crei uno.</string>
     <string name="widget_config_reset">Ripristina questa scheda</string>
     <string name="widget_config_done">Fatto</string>
-    <!-- Un tetto una tantum finito, scelto per «In parole» (owner, 6 Nov 2026). -->
+    <!-- Un tetto una tantum finito, scelto per «A colpo d’occhio» (owner, 6 Nov 2026). -->
     <string name="widget_ended">Finito</string>
     <string name="widget_ended_detail">%1$s su %2$s · %3$s</string>
     <string name="widget_ended_of">%1$s su %2$s</string>
