@@ -668,3 +668,8 @@ the entry above for the page: the first run no longer offers «List» alone.
 a card, a placed card, twice the text size, an open foldable), the widget module's tests,
 spotless; `home-offer.png` looked at.
 
+**Then, the same day: no stage under the cards** (owner: the ground round the cards, a wallpaper
+in the containers' colours, sat badly with the card's colour). On the first run the card stands
+on the choice group itself: the default card is solid, so nothing shows through it, and the stage
+was a third ground between the page and the card. The widget settings keep their stage, where
+the opacity slider makes it the wallpaper the card thins over.

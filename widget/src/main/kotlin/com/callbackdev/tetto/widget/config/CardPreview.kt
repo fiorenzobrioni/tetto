@@ -40,7 +40,6 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -153,18 +152,15 @@ internal fun PreviewSection(
 private fun DpSize.isTall(): Boolean =
     width.value >= GlanceFit.CELL_MAX_WIDTH && height.value >= GlanceFit.TALL_MIN_HEIGHT
 
-/**
- * The ground a preview stands on: the theme's containers, standing in for a wallpaper. [inset] is
- * the room left at its sides: none where a group already gives it (the first run's choices).
- */
+/** The ground a preview stands on: the theme's containers, standing in for a wallpaper. */
 @Composable
-internal fun PreviewStage(inset: Dp = 16.dp, content: @Composable () -> Unit) {
+internal fun PreviewStage(content: @Composable () -> Unit) {
     val colors = MaterialTheme.colorScheme
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = inset, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
             .clip(RoundedCornerShape(28.dp))
             .background(Brush.linearGradient(listOf(colors.primaryContainer, colors.tertiaryContainer)))
             .padding(horizontal = 16.dp, vertical = 24.dp),
@@ -239,7 +235,9 @@ private class TouchlessFrame(context: Context) : FrameLayout(context) {
  * [card] as the reader's [caps] stand on the home screen, on the default look (the app's colour,
  * every cap, the closest to its cap on «At a glance»), at the size it is placed at: the first
  * run's last page, where the launcher can place one (PLANNING.md §8, the pin request). The card
- * itself, as [CardPreview] draws it.
+ * itself, as [CardPreview] draws it, on no stage: the default card is solid, so no wallpaper
+ * shows through it, and a stage inside the page's choice group was a third ground whose
+ * containers' colours argued with the card's (owner, 15 Nov 2026).
  */
 @Composable
 fun HomeCardPreview(
@@ -248,7 +246,6 @@ fun HomeCardPreview(
     currency: AppCurrency,
     settings: UserSettings,
     today: LocalDate,
-    inset: Dp = 16.dp,
 ) {
     val kind = when (card) {
         HomeCard.AT_A_GLANCE -> WidgetKind.WORDS
@@ -257,5 +254,5 @@ fun HomeCardPreview(
     val model = remember(caps, currency, settings, today) {
         WidgetModel(look = WidgetLook(), settings = settings, currency = currency, today = today, caps = caps)
     }
-    PreviewStage(inset) { CardPreview(kind, model, defaultPreviewSize(kind).size) }
+    CardPreview(kind, model, defaultPreviewSize(kind).size, Modifier.padding(vertical = 8.dp))
 }

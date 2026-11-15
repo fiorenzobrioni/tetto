@@ -280,7 +280,7 @@ private fun CardChoice(
             )
             if (state != null) {
                 Box(Modifier.padding(top = 6.dp).testTag(HomeOfferTags.preview(card))) {
-                    HomeCardPreview(card, state.caps, state.currency, state.settings, state.today, inset = 0.dp)
+                    HomeCardPreview(card, state.caps, state.currency, state.settings, state.today)
                 }
             }
             val label = stringResource(R.string.home_offer_add_a11y, title)
