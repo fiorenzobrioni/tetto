@@ -622,8 +622,10 @@ from the six, in their style, no shade of violet.
    other way round from the cards' names (`WidgetKind`'s comment says so): a placed card is bound
    to its receiver's class name, and the owner's phone has cards placed.
 2. **First in the list, at 4×1.** The ring card's receiver is declared first; it already opened
-   at 4×1. The first run's «On your home screen» page still offers the list, which its words
-   describe ("what is left of each cap"); a change there is the owner's to ask.
+   at 4×1. The first run's «On your home screen» page keeps offering the list (owner, asked the
+   same day: «At a glance» would show a new reader one cap, the list shows every cap just made);
+   its picture and the card it places wear the default look, so both are violet now
+   (`home-offer.png` looked at).
 3. **Violet by default** (`WidgetLook.cardColor = PLUM`, `#4A2C63`), for a new card and for one
    never configured. `widget_preview_card` follows, and `WidgetProviderTest` reads it from the
    default look.
