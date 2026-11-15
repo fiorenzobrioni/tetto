@@ -8,7 +8,7 @@ import java.time.LocalDate
 /** Which caps a card shows (PLANNING.md §7, the cards' settings), from the caps in the reader's order. */
 object WidgetCaps {
     /**
-     * «At a glance»: the caps the reader [chosen] for this card, in the reader's order; every cap
+     * «List»: the caps the reader [chosen] for this card, in the reader's order; every cap
      * when they chose none (null), and again when every one they chose has been deleted since,
      * rather than a card with nothing to show. A cap made after the choice is not added to it.
      */
@@ -20,7 +20,7 @@ object WidgetCaps {
     }
 
     /**
-     * «In words»: the cap the reader [chosen] for this card, or none when it has been deleted
+     * «At a glance»: the cap the reader [chosen] for this card, or none when it has been deleted
      * (the card says so), ended or not (a chosen one-off says it has ended); with none chosen
      * (null), the one closest to its cap: the first over in the reader's order, else the lowest
      * share left, a tie to the first, never an ended one-off. None without caps.
@@ -34,10 +34,10 @@ object WidgetCaps {
     }
 
     /**
-     * «In words»'s other caps (owner, 14 Nov 2026), the row under its own [shown] cap: none unless
+     * «At a glance»'s other caps (owner, 14 Nov 2026), the row under its own [shown] cap: none unless
      * the reader turned them on ([show]); else the caps they [chosen], in the reader's order, or
      * every one when they chose none (null), and again when every one they chose has been deleted
-     * since, as «At a glance» does. Never the card's own cap, which a card on the closest changes
+     * since, as «List» does. Never the card's own cap, which a card on the closest changes
      * day by day, and never an ended one-off: a card says what is left now.
      */
     fun others(all: List<CapState>, shown: CapState?, show: Boolean, chosen: Set<Long>?): List<CapState> {
@@ -49,7 +49,7 @@ object WidgetCaps {
 }
 
 /**
- * What «In words» says of its cap under the figure on a tall card (PLANNING.md §7, «the cap's
+ * What «At a glance» says of its cap under the figure on a tall card (PLANNING.md §7, «the cap's
  * sentence»): a kind and its values, never a string; the words are the widget's resources.
  *
  * - [Pace]: about how much a day is left until the period's last day, or less than one unit

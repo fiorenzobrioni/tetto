@@ -70,7 +70,7 @@ import com.callbackdev.tetto.widget.textEm
 import com.callbackdev.tetto.widget.widgetDressFor
 
 /**
- * «In words», the family's ring card (PLANNING.md §7): one cap, its ring the family's circle for
+ * «At a glance», the family's ring card (PLANNING.md §7): one cap, its ring the family's circle for
  * the card's size, the cap's icon inside it, and the words. The forms and their arithmetic are
  * [GlanceFit]'s; this file draws them. The whole card is the cap: a touch adds a spend to it.
  * Two rows high and up, where the reader asks for them (owner, 14 Nov 2026), the other caps stand
@@ -212,7 +212,7 @@ private class WordsParts(
     var besideLastWords: List<String> = emptyList()
         private set
 
-    /** The other caps' row: drawn as «At a glance» draws a row's caps. */
+    /** The other caps' row: drawn as «List» draws a row's caps. */
     val slots by lazy { SlotParts(context, model, palette) }
 
     fun spec(size: DpSize): WordsSpec {

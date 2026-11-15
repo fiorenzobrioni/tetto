@@ -147,7 +147,7 @@ internal fun PreviewSection(
     )
 }
 
-/** Two rows high and two cells wide: where «In words» draws its tall form. */
+/** Two rows high and two cells wide: where «At a glance» draws its tall form. */
 private fun DpSize.isTall(): Boolean =
     width.value >= GlanceFit.CELL_MAX_WIDTH && height.value >= GlanceFit.TALL_MIN_HEIGHT
 
@@ -231,7 +231,7 @@ private class TouchlessFrame(context: Context) : FrameLayout(context) {
 }
 
 /**
- * «At a glance» as the reader's [caps] stand on the home screen, on the family's default card, at
+ * «List» as the reader's [caps] stand on the home screen, on the family's default card, at
  * the size it is placed at: the first run's last page, where the launcher can place one
  * (PLANNING.md §8, the pin request). The card itself, as [CardPreview] draws it.
  */

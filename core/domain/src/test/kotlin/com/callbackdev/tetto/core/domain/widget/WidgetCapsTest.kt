@@ -12,7 +12,7 @@ import com.callbackdev.tetto.core.model.PeriodKind
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
-/** Which caps a card shows, and what «In words» says of its cap. Today is Wednesday 11 Nov 2026. */
+/** Which caps a card shows, and what «At a glance» says of its cap. Today is Wednesday 11 Nov 2026. */
 class WidgetCapsTest {
     private val today = date(2026, 11, 11)
 
@@ -44,20 +44,20 @@ class WidgetCapsTest {
     private val groceries = state(3, euros(200), euros(50))
 
     @Test
-    fun `at a glance shows every cap, or the reader's choice in the reader's order`() {
+    fun `the list shows every cap, or the reader's choice in the reader's order`() {
         val all = listOf(coffee, dinners, groceries)
         assertThat(WidgetCaps.glance(all, null)).isEqualTo(all)
         assertThat(WidgetCaps.glance(all, setOf(3L, 1L))).containsExactly(coffee, groceries).inOrder()
     }
 
     @Test
-    fun `at a glance whose chosen caps are all gone shows every cap`() {
+    fun `the list whose chosen caps are all gone shows every cap`() {
         val all = listOf(coffee, groceries)
         assertThat(WidgetCaps.glance(all, setOf(9L))).isEqualTo(all)
     }
 
     @Test
-    fun `in words shows the chosen cap, or none when it is gone`() {
+    fun `at a glance shows the chosen cap, or none when it is gone`() {
         val all = listOf(coffee, dinners)
         assertThat(WidgetCaps.words(all, 1L)).isEqualTo(coffee)
         assertThat(WidgetCaps.words(all, 9L)).isNull()
@@ -65,13 +65,13 @@ class WidgetCapsTest {
     }
 
     @Test
-    fun `in words shows no other caps unless the reader turns them on`() {
+    fun `at a glance shows no other caps unless the reader turns them on`() {
         val all = listOf(coffee, dinners, groceries)
         assertThat(WidgetCaps.others(all, coffee, show = false, chosen = null)).isEmpty()
     }
 
     @Test
-    fun `in words' other caps are every cap but its own, in the reader's order`() {
+    fun `at a glance's other caps are every cap but its own, in the reader's order`() {
         val all = listOf(coffee, dinners, groceries)
         assertThat(WidgetCaps.others(all, dinners, show = true, chosen = null))
             .containsExactly(coffee, groceries).inOrder()
@@ -79,7 +79,7 @@ class WidgetCapsTest {
     }
 
     @Test
-    fun `in words' other caps are the reader's choice, never its own cap`() {
+    fun `at a glance's other caps are the reader's choice, never its own cap`() {
         val all = listOf(coffee, dinners, groceries)
         assertThat(WidgetCaps.others(all, coffee, show = true, chosen = setOf(3L, 2L)))
             .containsExactly(dinners, groceries).inOrder()
@@ -89,26 +89,26 @@ class WidgetCapsTest {
     }
 
     @Test
-    fun `in words' other caps whose chosen are all gone are every other cap`() {
+    fun `at a glance's other caps whose chosen are all gone are every other cap`() {
         val all = listOf(coffee, dinners, groceries)
         assertThat(WidgetCaps.others(all, coffee, show = true, chosen = setOf(9L)))
             .containsExactly(dinners, groceries).inOrder()
     }
 
     @Test
-    fun `in words' other caps leave an ended one-off out`() {
+    fun `at a glance's other caps leave an ended one-off out`() {
         val ended = state(6, euros(20), euros(5)).copy(ended = true)
         assertThat(WidgetCaps.others(listOf(coffee, ended, groceries), coffee, show = true, chosen = null))
             .containsExactly(groceries)
     }
 
     @Test
-    fun `in words with no choice shows the closest to its cap`() {
+    fun `at a glance with no choice shows the closest to its cap`() {
         assertThat(WidgetCaps.words(listOf(coffee, dinners, groceries), null)).isEqualTo(dinners)
     }
 
     @Test
-    fun `in words with no choice shows the first cap over`() {
+    fun `at a glance with no choice shows the first cap over`() {
         val over = state(4, euros(10), euros(14))
         assertThat(WidgetCaps.words(listOf(coffee, dinners, over), null)).isEqualTo(over)
     }

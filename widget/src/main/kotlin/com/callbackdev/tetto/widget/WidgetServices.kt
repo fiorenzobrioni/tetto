@@ -74,8 +74,8 @@ class PinnedCards @Inject constructor(@ApplicationContext private val context: C
 
     override fun pin(card: HomeCard): Boolean {
         val kind = when (card) {
-            HomeCard.AT_A_GLANCE -> WidgetKind.GLANCE
-            HomeCard.IN_WORDS -> WidgetKind.WORDS
+            HomeCard.LIST -> WidgetKind.GLANCE
+            HomeCard.AT_A_GLANCE -> WidgetKind.WORDS
         }
         return runCatching { manager?.requestPinAppWidget(TettoWidgets.provider(context, kind), null, null) == true }
             .getOrDefault(false)

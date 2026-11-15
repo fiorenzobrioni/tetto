@@ -96,7 +96,7 @@ constructor(
     /** Whether the page has anything to offer: a launcher that takes the request, and no card yet. */
     fun worthOffering(): Boolean = cards.canPin() && !cards.placed()
 
-    fun pin(): Boolean = cards.pin(HomeCard.AT_A_GLANCE)
+    fun pin(): Boolean = cards.pin(HomeCard.LIST)
 
     fun placed(): Boolean = cards.placed()
 

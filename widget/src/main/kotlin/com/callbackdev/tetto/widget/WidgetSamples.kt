@@ -31,7 +31,7 @@ object WidgetSamples {
     /** Wednesday 11 November 2026: a week half gone, a month a third gone. */
     val Today: LocalDate = LocalDate.of(2026, 11, 11)
 
-    /** The sample card: «In words» on its first cap ([words]), «At a glance» on all five. */
+    /** The sample card: «At a glance» on its first cap ([words]), «List» on all five. */
     fun model(
         context: Context,
         words: Boolean = false,

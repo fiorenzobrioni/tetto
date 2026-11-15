@@ -35,12 +35,12 @@ All notable changes to Tetto are documented here. The format follows
   restored from one, after it is read whole and checked and you have seen what it holds; the
   spends for a spreadsheet, one row each, as CSV; and erasing everything, back to the first run.
   Tetto still sends nothing: no storage permission is asked, the file goes where you put it.
-- Two home-screen cards, on the same card as the family's: «At a glance», your caps as many as
-  the card's size allows, each with what is left and a slim bar; and «In words», one cap in a
-  ring (the one you choose, or the closest to its cap) with what is left in words, and, two rows
-  high, your other caps in a row under it if you want them, each one touch from its numpad. Over
-  is said in words on the cards too. Each card has its own settings: its background and colour,
-  its opacity, which caps, the sentence and the other caps.
+- Two home-screen cards, on the same card as the family's: «At a glance», one cap in a ring (the
+  one you choose, or the closest to its cap) with what is left in words, and, two rows high, your
+  other caps in a row under it if you want them, each one touch from its numpad; and «List», your
+  caps as many as the card's size allows, each with what is left and a slim bar. Over is said in
+  words on the cards too. Each card has its own settings: its background and colour (violet
+  until you choose one of the seven), its opacity, which caps, the sentence and the other caps.
 - A spend from the home screen: a touch on a cap opens the numpad over the home screen, and a
   moment after Add you are back where you were; Undo puts the amount back on the numpad.
 - The launcher's shortcuts: a long press on Tetto's icon, and your first four caps go straight to

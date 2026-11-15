@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  «In words» (PLANNING.md §7), the family's ring card: one cap in the family's circle, and the
+  «At a glance» (PLANNING.md §7), the family's ring card: one cap in the family's circle, and the
   words. Placed four cells by one; at least one cell; no maximum. Pushed, never polled, as
-  «At a glance»; the settings screen is optional.
+  «List»; the settings screen is optional.
 -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:configure="com.callbackdev.tetto.widget.config.WidgetConfigActivity"

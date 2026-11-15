@@ -22,12 +22,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
-/** The two cards, as the settings screen and the previews need to tell them apart. */
+/**
+ * The two cards, as the settings screen and the previews need to tell them apart. The code's names
+ * are older than the cards' (owner, 15 Nov 2026: the ring card became «At a glance», the list
+ * «List»): they stay, because a card placed on a home screen is bound to its receiver's class
+ * name, and a rename would take it off every phone.
+ */
 enum class WidgetKind {
-    /** «At a glance»: the caps, each its icon, what is left and a slim bar. */
+    /** «List»: the caps, each its icon, what is left and a slim bar. */
     GLANCE,
 
-    /** «In words»: one cap in the family's ring, and the words. */
+    /** «At a glance»: one cap in the family's ring, and the words. */
     WORDS,
 }
 

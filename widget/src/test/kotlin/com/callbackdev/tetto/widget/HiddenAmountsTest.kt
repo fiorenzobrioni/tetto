@@ -72,12 +72,12 @@ class HiddenAmountsTest {
     }
 
     @Test
-    fun `at a glance shows no figure, and still says over`() {
+    fun `the list shows no figure, and still says over`() {
         val model = WidgetSamples.model(context, currency = euro, look = WidgetLook(hideAmounts = true))
         sizes.forEach { size ->
             val texts = everything(size) { GlanceCardContent(model) }
             // The count of caps that do not fit ("3 more") is not an amount.
-            assertNoFigure(texts.filterNot { it.contains("more") || it.startsWith("+") }, "At a glance ${size.width}")
+            assertNoFigure(texts.filterNot { it.contains("more") || it.startsWith("+") }, "List ${size.width}")
         }
         val grid = everything(Grants.FourByThree) { GlanceCardContent(model) }
         assertThat(grid.joinToString()).contains("Over")
@@ -85,13 +85,13 @@ class HiddenAmountsTest {
     }
 
     @Test
-    fun `in words shows no figure, at ease, ahead and over`() {
+    fun `at a glance shows no figure, at ease, ahead and over`() {
         listOf(1L, 2L, 5L).forEach { cap ->
             listOf(true, false).forEach { sentence ->
                 val look = WidgetLook(wordsCap = cap, showSentence = sentence, hideAmounts = true)
                 val model = WidgetSamples.model(context, currency = euro, look = look)
                 sizes.forEach { size ->
-                    assertNoFigure(everything(size) { WordsCardContent(model) }, "In words, cap $cap, ${size.width}")
+                    assertNoFigure(everything(size) { WordsCardContent(model) }, "At a glance, cap $cap, ${size.width}")
                 }
             }
         }

@@ -1,5 +1,8 @@
 package com.callbackdev.tetto.widget
 
+import androidx.compose.ui.graphics.toArgb
+import com.callbackdev.tetto.core.designsystem.theme.widgetCardContainer
+import com.callbackdev.tetto.core.model.WidgetLook
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import java.io.File
@@ -38,7 +41,7 @@ class WidgetProviderTest {
     }
 
     @Test
-    fun `at a glance is placed four by two, in words four by one`() {
+    fun `the list is placed four by two, at a glance four by one`() {
         val glance = provider("widget_glance_info.xml")
         val words = provider("widget_words_info.xml")
         assertThat(glance["targetCellWidth"] to glance["targetCellHeight"]).isEqualTo("4" to "2")
@@ -62,6 +65,7 @@ class WidgetProviderTest {
     @Test
     fun `the static preview's card is the default card`() {
         val colors = File("src/main/res/values/colors.xml").readText()
-        assertThat(colors).contains("<color name=\"widget_preview_card\">#FF0F3B6B</color>")
+        val card = "#%08X".format(widgetCardContainer(WidgetLook().cardColor).toArgb())
+        assertThat(colors).contains("<color name=\"widget_preview_card\">$card</color>")
     }
 }

@@ -29,7 +29,7 @@ import kotlin.math.abs
  * Nothing a card says is cut (PLANNING.md §7): every form at the family's reference grants, at
  * 100, 115 and 130% text, every line set 5% wider than this process measures it, as a launcher on
  * another face draws it. A cap's name may end in an ellipsis (it is the reader's, and as long as
- * they made it); a figure, a sentence, a word never. And «In words»'s ring is the family's circle
+ * they made it); a figure, a sentence, a word never. And «At a glance»'s ring is the family's circle
  * on the card as drawn, not only in the arithmetic.
  */
 @RunWith(AndroidJUnit4::class)
@@ -73,7 +73,7 @@ class WidgetFitTest {
                         val mayEllipsize = { text: String -> names(model).any { it in text } }
                         cutTexts(context, size, STRETCH, mayEllipsize) { WordsCardContent(model) }
                             .forEach {
-                                cut += "In words, cap $cap, sentence $sentence, hidden $hidden, " +
+                                cut += "At a glance, cap $cap, sentence $sentence, hidden $hidden, " +
                                     "${size.width}×${size.height} at $scale: $it"
                             }
                     }
@@ -91,7 +91,7 @@ class WidgetFitTest {
                         val mayEllipsize = { text: String -> names(model).any { it in text } }
                         cutTexts(context, size, STRETCH, mayEllipsize) { WordsCardContent(model) }
                             .forEach {
-                                cut += "In words with the others, cap $cap, sentence $sentence, hidden $hidden, " +
+                                cut += "At a glance with the others, cap $cap, sentence $sentence, hidden $hidden, " +
                                     "${size.width}×${size.height} at $scale: $it"
                             }
                     }
@@ -99,7 +99,7 @@ class WidgetFitTest {
                 val model = WidgetSamples.model(context, currency = euro, look = WidgetLook(hideAmounts = hidden))
                 val mayEllipsize = { text: String -> names(model).any { it in text } }
                 cutTexts(context, size, STRETCH, mayEllipsize) { GlanceCardContent(model) }
-                    .forEach { cut += "At a glance, hidden $hidden, ${size.width}×${size.height} at $scale: $it" }
+                    .forEach { cut += "List, hidden $hidden, ${size.width}×${size.height} at $scale: $it" }
             }
         }
         assertThat(cut).isEmpty()
@@ -115,7 +115,7 @@ class WidgetFitTest {
     fun `nothing is cut at 130 percent`() = check(1.3f)
 
     @Test
-    fun `in words draws the family's circle at every reference grant`() {
+    fun `at a glance draws the family's circle at every reference grant`() {
         val expected = mapOf(
             Grants.OneByOne to 69f,
             Grants.OneByTwo to 69f,

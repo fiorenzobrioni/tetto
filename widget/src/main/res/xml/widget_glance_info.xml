@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  «At a glance» (PLANNING.md §7): the caps, each its icon, what is left and a slim bar. Placed four
+  «List» (PLANNING.md §7): the caps, each its icon, what is left and a slim bar. Placed four
   cells by two; at least one cell (40 dp by the platform's 70 × n − 30); no maximum (a launcher
   turns a dp maximum into the smallest cell count across its grids). Every form has a layout for
   any grant (GlanceFit).

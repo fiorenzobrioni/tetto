@@ -55,7 +55,7 @@
     <!-- On the home screen -->
     <string name="guide_home_title">On the home screen</string>
     <string name="guide_home_two_title">Two widgets</string>
-    <string name="guide_home_two_body">«At a glance» holds your caps, as many as its size allows, each with what is left and a slim bar. «In words» holds one cap in a ring, with what is left in words: the cap you choose, or the one closest to its cap, and, two rows high, your other caps under it if you want them. Neither ever scrolls: what does not fit is counted. Touch and hold one for its own settings: its background and colour, its opacity, its caps.</string>
+    <string name="guide_home_two_body">«At a glance» holds one cap in a ring, with what is left in words: the cap you choose, or the one closest to its cap, and, two rows high, your other caps under it if you want them. «List» holds your caps, as many as its size allows, each with what is left and a slim bar. Neither ever scrolls: what does not fit is counted. Touch and hold one for its own settings: its background and colour, its opacity, its caps.</string>
     <string name="guide_home_add_title">A spend without opening the app</string>
     <string name="guide_home_add_body">A touch on a cap on a widget opens the numpad over the home screen: two touches and the amount, and you are back where you were. A long press on Tetto’s icon offers your first four caps the same way.</string>
     <string name="guide_home_dates_title">Days, not countdowns</string>

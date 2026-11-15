@@ -114,7 +114,7 @@ that does not match it.
 | `:core:designsystem` | Android library | M3 theme (Chiaro's dresses through Passo and Tempo), typography, shapes, motion, page gutter (`PageWidth.kt`), the widget card colours, `TettoIcons` (the curated cap icons, Material Symbols drawn in code); the settings rows and `StatusCard`; the numpad's keys, the choice segments (`ChoiceSegments`: a cap's period), a cap's tile and its row (the list), an ended one-off's (`EndedCapTile`, `EndedCapRow`), the bar with its mark, the ring; the amount field (`MoneyField`, through `:core:domain`'s `MoneyInput`, its one use of the domain) and the currency picker (`CurrencyPickerDialog`, `Currencies`), shared by the editor, the first run and Settings; money formatting (`MoneyFormat`, from minor units and the locale) |
 | `:core:testing` | Android library, test-only | `assertAccessible()` (labels, 48dp touch targets) and `walkPage()`, shared by the UI tests as `testImplementation`; `RealMainThread`, Main on a thread of its own for a ViewModel's test on real threads, stopped first in `@After` with the test's ViewModels (PLANNING.md §12) |
 | `:feature:*` | Android library | `caps` (the caps screen with its first-day tip, the numpad sheet and its ViewModel, a cap's sheet, the cap editor, the numpad over the home screen's ViewModel and sheet), `onboarding` (welcome, the areas, the amounts), `settings` (the guide's card, money, the reminder, appearance, your data with its `DataViewModel`, about), `guide` (six chapters in the family's prose kit, its examples drawn by the engine in the reader's currency and week: `GuideScreen`, `GuideSamples`, `GuideViewModel`) |
-| `:widget` | Android library | the two Glance cards («At a glance», «In words»), the ring's painter, their settings screen with the real card as its preview, their looks (`WidgetLookStore`, the `widgets` file), the refresh (`WidgetUpdater` after every write, `MidnightAlarm`, the exempt broadcasts), the pin request (`PinnedCards`), the generated previews, the card that says it could not be drawn (`WidgetFailure`) |
+| `:widget` | Android library | the two Glance cards («At a glance», the ring, in `words/`; «List», in `glance/`: the code's names are older than the cards' and stay), the ring's painter, their settings screen with the real card as its preview, their looks (`WidgetLookStore`, the `widgets` file), the refresh (`WidgetUpdater` after every write, `MidnightAlarm`, the exempt broadcasts), the pin request (`PinnedCards`), the generated previews, the card that says it could not be drawn (`WidgetFailure`) |
 | `:app` | application | `Application`, `MainActivity` (the reader's appearance), the shell (onboarding, the first run's last pages `HomeOffer` and `ReminderOffer`, then Navigation 3), `QuickAddActivity` (the numpad over the home screen, from a card or a shortcut), the dynamic launcher shortcuts (`CapShortcuts`), the lock's pages (`LockedPage`, `LockedSheet`), DI entry points; wires everything |
 
 Rules: `:core:model` and `:core:domain` stay pure Kotlin/JVM; if a class there needs a `Context`
@@ -225,12 +225,13 @@ open foldable shows a centred column and a phone upright is untouched. TalkBack 
 one sentence ("Coffee, €12 left of €20, until Monday").
 
 **Widgets** (PLANNING.md §7, `docs/adr/0003-widgets.md` from Phase 5): the family's pair,
-«At a glance» and «In words», on the family's card (Passo's ADR 0005, from Chiaro): its corner,
-insets, grounds, Chiaro's six colours (`WidgetPalette.kt`), opacity and ink rule. The forms'
+«At a glance» (the ring, first in the launcher's list, 4×1) and «List» (4×2), on the family's card
+(Passo's ADR 0005, from Chiaro): its corner, insets, grounds, the family's seven colours
+(`WidgetPalette.kt`; the app's violet by default), opacity and ink rule. The forms'
 arithmetic is pure (`GlanceFit`) and pinned by tests at the family's reference grants; a gallery
 test draws every form to `widget/build/screenshots`: look at them after changing a card. A card
 says dates ("until Monday"), never hours from now: it is redrawn at midnight, not each minute.
-**«In words» is the family's ring card** (owner, 5 Nov 2026): its ring is **the family's
+**«At a glance» is the family's ring card** (owner, 5 Nov 2026; «In words» until 15 Nov 2026): its ring is **the family's
 circle** (PLANNING.md §7), the three functions both sisters draw their circle with since
 4 Nov 2026 (Tempo's `WordsFit.cellCircle`, `rowCircle`, `tallCircle`; Passo's `dotRingSize`,
 `rowRingSize`, `tallCircle`), and its type steps the family's widget scale (`WidgetType`),

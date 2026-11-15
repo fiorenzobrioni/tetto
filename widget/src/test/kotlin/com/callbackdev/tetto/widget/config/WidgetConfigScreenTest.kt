@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -13,6 +14,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.callbackdev.tetto.core.designsystem.theme.TettoTheme
@@ -75,7 +77,7 @@ class WidgetConfigScreenTest {
         show(WidgetKind.GLANCE)
         compose.onNodeWithContentDescription("Card preview").assertExists()
         compose.onNodeWithText("Background").assertExists()
-        compose.onNodeWithText("Blue").assertExists()
+        compose.onNodeWithText("Violet").assertExists()
         compose.assertAccessible()
         compose.writeScreenshot("widget-config-glance")
     }
@@ -91,8 +93,31 @@ class WidgetConfigScreenTest {
         assertThat(look.cardColor).isEqualTo(WidgetCardColor.CLAY)
     }
 
+    /**
+     * The seventh colour (owner, 15 Nov 2026): from a 384dp phone the seven swatches stand in one
+     * row; on a 360dp phone, the narrowest in use, they break into four over three, never one alone.
+     */
     @Test
-    fun `at a glance shows every cap until the reader ticks some, starting from all`() {
+    @Config(qualifiers = "en-rGB-w384dp-h891dp-xhdpi")
+    fun `the seven colours stand in one row from a 384dp phone`() {
+        show(WidgetKind.WORDS)
+        val names = listOf("Blue", "Light blue", "Green", "Sea green", "Violet", "Terracotta", "Ochre")
+        val tops = names.map { compose.onNodeWithContentDescription(it).getUnclippedBoundsInRoot().top }
+        assertThat(tops.toSet()).hasSize(1)
+        compose.writeScreenshot("widget-config-colours-384")
+    }
+
+    @Test
+    fun `a strip too narrow for seven is balanced, never one colour alone`() {
+        // The strip on a 384dp and a 360dp phone: the screen less the group's margins and its own.
+        assertThat(swatchesPerRow(7, 384.dp - 32.dp - 12.dp)).isEqualTo(7)
+        assertThat(swatchesPerRow(7, 360.dp - 32.dp - 12.dp)).isEqualTo(4)
+        assertThat(swatchesPerRow(7, 150.dp)).isEqualTo(3)
+        assertThat(swatchesPerRow(7, 10.dp)).isEqualTo(1)
+    }
+
+    @Test
+    fun `the list shows every cap until the reader ticks some, starting from all`() {
         show(WidgetKind.GLANCE)
         scrollTo(WidgetConfigTags.ALL_CAPS)
         compose.onNodeWithTag(WidgetConfigTags.ALL_CAPS).performClick()
@@ -113,7 +138,7 @@ class WidgetConfigScreenTest {
     }
 
     @Test
-    fun `in words, the closest or one cap, and the sentence`() {
+    fun `at a glance, the closest or one cap, and the sentence`() {
         show(WidgetKind.WORDS)
         scrollTo(WidgetConfigTags.cap(5))
         compose.onNodeWithTag(WidgetConfigTags.cap(5)).performClick()
@@ -131,7 +156,7 @@ class WidgetConfigScreenTest {
     }
 
     @Test
-    fun `in words, the other caps are every one or those ticked, never the card's own`() {
+    fun `at a glance, the other caps are every one or those ticked, never the card's own`() {
         look = WidgetLook(wordsCap = 1L)
         show(WidgetKind.WORDS)
         scrollTo(WidgetConfigTags.OTHERS)

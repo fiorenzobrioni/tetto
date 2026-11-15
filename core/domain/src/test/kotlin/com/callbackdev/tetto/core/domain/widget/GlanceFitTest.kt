@@ -75,7 +75,7 @@ class GlanceFitTest {
         assertThat(GlanceFit.BARE_WORDS_BAND * LINE_BOX_EM).isWithin(0.001f).of(66f)
     }
 
-    // --- «In words» ---------------------------------------------------------------------------------
+    // --- «At a glance» ---------------------------------------------------------------------------------
 
     @Test
     fun `the forms by size`() {
@@ -232,7 +232,7 @@ class GlanceFitTest {
         assertThat(widthOf(7f, plan.heroSp, 1f)).isAtMost(159f - GlanceFit.CARD_PADDING * 2)
     }
 
-    // --- «In words» with the other caps (owner, 14 Nov 2026) ----------------------------------------
+    // --- «At a glance» with the other caps (owner, 14 Nov 2026) ----------------------------------------
 
     @Test
     fun `with the other caps the ring keeps the family's circle at every tall grant`() {
@@ -342,7 +342,7 @@ class GlanceFitTest {
         assertThat(GlanceFit.wordsPlan(words(340f, 189f)).others).isNull()
     }
 
-    // --- «At a glance» -----------------------------------------------------------------------------
+    // --- «List» -----------------------------------------------------------------------------
 
     @Test
     fun `glance forms by size`() {

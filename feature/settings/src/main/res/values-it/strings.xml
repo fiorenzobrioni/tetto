@@ -175,9 +175,9 @@
     <string name="data_failed_restore_body">Qualcosa è andato storto durante la scrittura. I tuoi tetti e le impostazioni sono com’erano.</string>
 
     <string name="settings_group_home">Schermata Home</string>
-    <string name="settings_card_glance">Colpo d’occhio</string>
+    <string name="settings_card_glance">Elenco</string>
     <string name="settings_card_glance_note">I tuoi tetti, ciascuno con quanto resta. Tocca per mettere la scheda.</string>
-    <string name="settings_card_words">In parole</string>
+    <string name="settings_card_words">A colpo d’occhio</string>
     <string name="settings_card_words_note">Un tetto in un anello, e quanto resta a parole. Tocca per mettere la scheda.</string>
     <!-- Il blocco (owner, 6 Nov 2026): quello del telefono, all'apertura e dopo un minuto fuori. -->
     <string name="settings_group_privacy">Riservatezza</string>

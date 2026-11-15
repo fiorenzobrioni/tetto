@@ -35,8 +35,9 @@ class ReadmeScreenshots {
     fun onlyOnRequest() = assumeTrue("Run with -PupdateScreenshots", output != null)
 
     /**
-     * The pair on a home screen: «At a glance» at four by two; «In words» two by two in plum on
-     * the cap at ease and in clay on the one over, side by side; a one-row «In words».
+     * The pair on a home screen, «At a glance» first as in the launcher's list: a one-row «At a
+     * glance» in the app's violet; «At a glance» two by two in ochre on the cap at ease and in
+     * terracotta on the one over, side by side; «List» at four by two in the violet.
      */
     @Test
     fun widgets() {
@@ -50,16 +51,16 @@ class ReadmeScreenshots {
             look = WidgetLook(cardColor = color, wordsCap = cap),
         )
         val board = HomeBoard(context, widthDp = 393)
+            .row(row to renderCard(context, row) { WordsCardContent(words(2, WidgetCardColor.PLUM)) })
+            .row(
+                half to renderCard(context, half) { WordsCardContent(words(1, WidgetCardColor.OCHRE)) },
+                half to renderCard(context, half) { WordsCardContent(words(5, WidgetCardColor.CLAY)) },
+            )
             .row(
                 panel to renderCard(context, panel) {
                     GlanceCardContent(WidgetSamples.model(context, currency = euro))
                 },
             )
-            .row(
-                half to renderCard(context, half) { WordsCardContent(words(1, WidgetCardColor.PLUM)) },
-                half to renderCard(context, half) { WordsCardContent(words(5, WidgetCardColor.CLAY)) },
-            )
-            .row(row to renderCard(context, row) { WordsCardContent(words(2, WidgetCardColor.TEAL)) })
         board.draw().saveTo(File(checkNotNull(output)), "widgets")
     }
 }

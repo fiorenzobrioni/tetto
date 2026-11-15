@@ -258,7 +258,7 @@ class OneOffTest {
     }
 
     @Test
-    fun `the cards leave an ended one-off out, unless it was chosen for «In words»`() {
+    fun `the cards leave an ended one-off out, unless it was chosen for «At a glance»`() {
         val plan = checkNotNull(CatchUp.plan(lisbon, euros(799), rule(ONE_OFF), date(2026, 11, 21)))
         val ended = state(lisbon.after(plan), Money.ZERO, date(2026, 11, 22), plan.closed.single())
         val coffee = CapStates.of(cap(WEEK, date(2026, 11, 16), id = 2), euros(2), rule(WEEK), date(2026, 11, 22), EUR)

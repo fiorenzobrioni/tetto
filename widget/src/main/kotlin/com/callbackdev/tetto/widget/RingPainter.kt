@@ -153,7 +153,7 @@ internal object RingPainter {
     private const val DEG = (PI / 180).toFloat()
 }
 
-/** A cap's icon alone, for a slot or an item of «At a glance»: a bitmap at the size shown. */
+/** A cap's icon alone, for a slot or an item of «List»: a bitmap at the size shown. */
 internal fun iconBitmap(icon: CapIcon, sideDp: Dp, density: Float, color: Color): Bitmap = CapIconDrawing.bitmap(
     icon,
     (sideDp.value * density).roundToInt().coerceIn(1, RingPainter.MAX_SIDE_PX),

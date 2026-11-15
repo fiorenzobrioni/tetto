@@ -55,7 +55,7 @@ import com.callbackdev.tetto.widget.textEm
 import com.callbackdev.tetto.widget.widgetDressFor
 
 /**
- * «At a glance» (PLANNING.md §7): the caps the card shows, as many as its size allows, each with its
+ * «List» (PLANNING.md §7): the caps the card shows, as many as its size allows, each with its
  * icon, what is left and a slim bar with the mark for today; never a scrolling list, the rest
  * counted. A touch on a cap adds a spend to it; the rest of the card opens the caps screen. The
  * forms and their arithmetic are [GlanceFit]'s; this file draws them.
