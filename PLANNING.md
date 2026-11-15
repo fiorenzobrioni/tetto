@@ -657,7 +657,7 @@ chose the card.
 Under it, the family's choice groups (`surfaceContainerLow`, `GroupShape`, the name in
 `titleMedium`, the line in `bodyMedium`, a tonal «Add» whose spoken label names the card),
 «At a glance» first as in the launcher's list, each with its real card at its default size on
-the default look (`HomeCardPreview(card, …)`, the stage without side room inside the group):
+the default look (`HomeCardPreview(card, …)`, on the group itself, see below):
 the ring at 4×1 on the cap closest to its cap, the list at 4×2 with every cap. The wide button
 is «Done», or «Continue» before the reminder's page; «Later» went, the cards being a choice and
 not a request. `HomeOfferViewModel.pin(card)`; the note says «a card». On a phone the page now
