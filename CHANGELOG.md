@@ -49,7 +49,7 @@ All notable changes to Tetto are documented here. The format follows
   (one alarm that never wakes the phone, only while a card is placed), and when the clock, the
   time zone or the language changes.
 - After the first run, and in Settings, Tetto offers to put a card on your home screen, where the
-  launcher allows it.
+  launcher allows it: both cards, each drawn with the caps you just made, to pick one or both.
 - The guide, first in Settings: what the caps screen answers, how a period, the reserve and
   forgiveness work, the numpad and fixing a spend, the home screen, your data, and what Tetto does
   not do. Its examples are the app's own tiles, bars and numpad, in your currency and your week,
